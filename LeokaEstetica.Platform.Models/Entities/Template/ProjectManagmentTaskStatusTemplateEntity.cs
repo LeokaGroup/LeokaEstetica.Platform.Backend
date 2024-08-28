@@ -13,12 +13,12 @@ public class ProjectManagmentTaskStatusTemplateEntity
     /// <summary>
     /// Название статуса.
     /// </summary>
-    public string StatusName { get; set; }
+    public string? StatusName { get; set; }
 
     /// <summary>
     /// Системное название статуса.
     /// </summary>
-    public string StatusSysName { get; set; }
+    public string? StatusSysName { get; set; }
 
     /// <summary>
     /// Порядковый номер.

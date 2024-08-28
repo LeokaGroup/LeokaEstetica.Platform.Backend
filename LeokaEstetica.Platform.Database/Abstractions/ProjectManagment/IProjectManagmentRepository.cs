@@ -45,7 +45,7 @@ public interface IProjectManagmentRepository
     /// <param name="templateStatusIds">Список Id статусов.</param>
     /// <returns>Словарь с Id шаблонов и статусов.</returns>
     Task<IEnumerable<GetTemplateStatusIdByStatusIdOutput>> GetTemplateStatusIdsByStatusIdsAsync(
-        IEnumerable<long> templateStatusIds);
+        IEnumerable<int> templateStatusIds);
 
     /// <summary>
     /// Метод получает задачи проекта для рабочего пространства.
@@ -217,10 +217,10 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="currentTaskStatusId">Id текущего статуса задачи.</param>
     /// <param name="transitionType">Тип перехода.</param>
-    /// <param name="templateId">Id шаблона проекта.</param>
+    /// <param name="templateId">Id шаблона проекта. Может быть NULL у системных статусов.</param>
     /// <returns>Список переходов.</returns>
     Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(long currentTaskStatusId,
-        TransitionTypeEnum transitionType, int templateId);
+        TransitionTypeEnum transitionType, int? templateId);
 
     /// <summary>
     /// Метод получает статусы из таблицы связей многие-многие, чтобы дальше работать с
@@ -790,10 +790,9 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectTaskIds">Id задач в рамках проекта.</param>
-    /// <param name="templateId">Id шаблона проекта.</param>
     /// <returns>Словарь со статусами.</returns>
     Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectTaskStatusesAsync(long projectId,
-        IEnumerable<long> projectTaskIds, int templateId);
+        IEnumerable<long> projectTaskIds);
     
     /// <summary>
     /// Метод получает статусы историй.
@@ -818,4 +817,42 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <returns>список Id документов в MongoDB.</returns>
     Task<IEnumerable<string>> GetProjectMongoDocumentIdsByProjectIdAsync(long projectId);
+    
+    /// <summary>
+    /// Метод получает статусы эпиков.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="projectTaskIds">Id задач в рамках проекта.</param>
+    /// <returns>Словарь со статусами.</returns>
+    Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectEpicStatusesAsync(long projectId,
+        IEnumerable<long> projectTaskIds);
+    
+    /// <summary>
+    /// Метод получает статусы историй.
+    /// </summary>
+    /// <returns>Статусы эпиков.</returns>
+    Task<IEnumerable<StoryStatusOutput>> GetStoryStatusesAsync();
+
+    /// <summary>
+    /// Метод получает системные статусы эпиков и историй.
+    /// Склонения нам не важны, так как отличить их можно по TaskStatusId
+    /// когда их распределяем по статусам в раб.пространстве.
+    /// </summary>
+    /// <returns>Системные статусы эпиков.</returns>
+    Task<IEnumerable<StoryAndEpicSystemStatusOutput>> GetEpicAndStorySystemStatusesAsync();
+
+    /// <summary>
+    /// Метод получает словарь со статусами эпиков.
+    /// </summary>
+    /// <param name="epicIds">Id эпиков (не в рамках проекта).</param>
+    /// <returns>Словарь со статусами эпиков.</returns>
+    Task<IDictionary<long, StoryAndEpicSystemStatusOutput>> GetEpicStatusesDictionaryAsync(IEnumerable<long> epicIds);
+    
+    /// <summary>
+    /// Метод получает словарь со статусами историй.
+    /// </summary>
+    /// <param name="epicIds">Id историй (не в рамках проекта).</param>
+    /// <returns>Словарь со статусами историй.</returns>
+    Task<IDictionary<long, StoryAndEpicSystemStatusOutput>> GetStoryStatusesDictionaryAsync(
+        IEnumerable<long> storyIds);
 }

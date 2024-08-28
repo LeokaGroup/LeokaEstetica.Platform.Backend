@@ -137,6 +137,11 @@ public class ProjectManagmentTaskOutput
     public string FullProjectTaskId => string.Concat(TaskIdPrefix + "-", ProjectTaskId);
     
     /// <summary>
+    /// Id спринта в рамках проекта вместе с префиксом.
+    /// </summary>
+    public string? FullProjectSprintId { get; set; }
+    
+    /// <summary>
     /// Id задачи вместе с префиксом.
     /// </summary>
     public string FullTaskId => string.Concat(TaskIdPrefix + "-", TaskId);
@@ -175,6 +180,21 @@ public class ProjectManagmentTaskOutput
     /// Признак наличия доступа.
     /// </summary>
     public bool IsAccess { get; set; }
+
+    /// <summary>
+    /// Признак системного статуса.
+    /// </summary>
+    public bool IsSystemStatus { get; set; }
+    
+    /// <summary>
+    /// Признак кастомного статуса.
+    /// </summary>
+    public bool IsCustomStatus { get; set; }
+    
+    /// <summary>
+    /// Признак статуса шаблона (если статус принадлежит какому-либо шаблону).
+    /// </summary>
+    public bool IsTemplateStatus { get; set; }
 }
 
 /// <summary>

@@ -3,9 +3,11 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Models.Dto.Output.Roles;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
@@ -754,6 +756,50 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
         var result = await connection.QueryFirstOrDefaultAsync<Guid>(query, parameters);
 
         return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<ComponentRoleOutput>> GetComponentRolesAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var query = "SELECT component_role_id, " +
+                    "component_role_name, " +
+                    "component_role_sys_name " +
+                    "FROM roles.component_roles " +
+                    "ORDER BY position";
+
+        var result = (await connection.QueryAsync<ComponentRoleOutput>(query)).Select(x =>
+        {
+            x.ComponentRoleSysName = x.ComponentRoleSysName!.ToPascalCaseFromSnakeCase();
+
+            return x;
+        });
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task AddComponentUserRolesAsync(long userId, IEnumerable<int>? componentRoles)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new List<DynamicParameters>();
+        var compRoles = componentRoles.AsList();
+
+        foreach (var cr in compRoles)
+        {
+            var tempParameters = new DynamicParameters();
+            tempParameters.Add("@userId", userId);
+            tempParameters.Add("@componentRoles", cr);
+            
+            parameters.Add(tempParameters);
+        }
+
+        var query = "INSERT INTO roles.component_user_roles (component_role_id, user_id) " +
+                    "VALUES (@componentRoles, @userId)";
+
+        await connection.ExecuteAsync(query, parameters);
     }
 
     #endregion

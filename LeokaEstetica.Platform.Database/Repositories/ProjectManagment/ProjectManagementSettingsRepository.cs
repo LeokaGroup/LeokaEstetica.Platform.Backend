@@ -187,37 +187,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
 
-        var query = "WITH cte_company_project_users AS (" +
-                    "SELECT pi.\"UserId\", " +
-                    "pi.\"LastName\", " +
-                    "pi.\"FirstName\", " +
-                    "pi.\"Patronymic\" AS \"SecondName\", " +
-                    "u.\"Email\", " +
-                    "TO_CHAR(u.\"LastAutorization\", 'DD.MM.YYYY HH24:MI') AS LastAutorization, " +
-                    "(CASE WHEN u.\"UserId\" <> (SELECT up.\"UserId\" " +
-                    "FROM \"Projects\".\"UserProjects\" AS up " +
-                    "WHERE up.\"ProjectId\" <> @projectId " +
-                    "LIMIT 1) THEN FALSE " +
-                    "ELSE TRUE END) AS IsOwner, " +
-                    "COALESCE(om.member_role, 'Участник') AS Role " +
-                    "FROM project_management.organization_projects AS op " +
-                    "INNER JOIN project_management.organization_members AS om " +
-                    "ON op.organization_id = om.organization_id " +
-                    "INNER JOIN \"Profile\".\"ProfilesInfo\" AS pi " +
-                    "ON om.member_id = \"UserId\" " +
-                    "INNER JOIN dbo.\"Users\" AS u " +
-                    "ON pi.\"UserId\" = u.\"UserId\" " +
-                    "WHERE op.project_id = @projectId " +
-                    "AND op.is_active " +
-                    "AND pi.\"UserId\" = ANY (SELECT ptm.\"UserId\" " +
-                    "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
-                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
-                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
-                    "WHERE pt.\"ProjectId\" = @projectId))" +
-                    "SELECT * " +
-                    "FROM cte_company_project_users " +
-                    "UNION " +
-                    "SELECT pi.\"UserId\", " +
+        var query = "SELECT pi.\"UserId\", " +
                     "pi.\"LastName\", " +
                     "pi.\"FirstName\", " +
                     "pi.\"Patronymic\" AS \"SecondName\", " +
@@ -238,9 +208,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "ON pi.\"UserId\" = u.\"UserId\" " +
                     "WHERE op.project_id = @projectId " +
                     "AND op.is_active " +
-                    "AND pi.\"UserId\" IN (SELECT pi.\"UserId\" " +
-                    "FROM cte_company_project_users) " +
-                    "AND pi.\"UserId\" = ANY (SELECT ptm.\"UserId\" " +
+                    "AND om.member_id = ANY (SELECT ptm.\"UserId\" " +
                     "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
                     "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
                     "ON pt.\"TeamId\" = ptm.\"TeamId\" " +

@@ -14,8 +14,9 @@ public interface IUserService
     /// </summary>
     /// <param name="password">Пароль. Он не хранится в БД. Хранится только его хэш.</param>
     /// <param name="email">Почта пользователя.</param>
+    /// <param name="componentRoles">Список компонентных ролей пользователя.</param>
     /// <returns>Данные пользователя.</returns>
-    Task<UserSignUpOutput> CreateUserAsync(string password, string email);
+    Task<UserSignUpOutput> CreateUserAsync(string? password, string? email, IEnumerable<int>? componentRoles);
 
     /// <summary>
     /// Метод подтверждает аккаунт пользователя по коду, который ранее был отправлен пользователю на почту и записан в БД.

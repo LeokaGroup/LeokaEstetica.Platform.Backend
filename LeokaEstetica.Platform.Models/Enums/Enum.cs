@@ -63,6 +63,11 @@ public class Enum : IEnum
     public const string OrderType = "order_type_enum";
 
     /// <summary>
+    /// Тип Enum для компонентной роли.
+    /// </summary>
+    public const string ComponentRole = "component_role_enum";
+
+    /// <summary>
     /// Конструктор по дефолту.
     /// </summary>
     /// <param name="type">Тип Enum в базе данных.</param>
@@ -169,6 +174,16 @@ public class Enum : IEnum
     {
         Type = SubscriptionType;
         Value = value.ToString();
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа.</param>
+    public Enum(ComponentRoleEnum value)
+    {
+        Type = ComponentRole;
+        Value = value.ToString().ToSnakeCase();
     }
     
     /// <summary>

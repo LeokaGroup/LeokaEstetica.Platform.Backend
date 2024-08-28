@@ -98,7 +98,8 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                       tst.status_name, 
                       tst.status_sys_name,
                       tst.task_status_id,
-                      ptt.template_name 
+                      ptt.template_name,
+                      tst.is_system_status AS IsSystemStatus
                       FROM templates.project_management_task_status_intermediate_templates AS tsit 
                       INNER JOIN templates.project_management_task_status_templates AS tst 
                         ON tsit.status_id = tst.status_id 
@@ -130,7 +131,7 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
     /// <param name="templateStatusIds">Список Id статусов.</param>
     /// <returns>Словарь с Id шаблонов и статусов.</returns>
     public async Task<IEnumerable<GetTemplateStatusIdByStatusIdOutput>> GetTemplateStatusIdsByStatusIdsAsync(
-        IEnumerable<long> templateStatusIds)
+        IEnumerable<int> templateStatusIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var compiler = new PostgresCompiler();
@@ -167,8 +168,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "WHEN @strategy = 'sm' THEN LEFT(t.name, 40) " +
                     "WHEN @strategy = 'kn' THEN LEFT(t.name, 100) " +
                      "END AS name," +
-                    "t.name as NameTooltip,"+
-                    "t.details AS details," +
+		    "CASE " +
+                    "WHEN LENGTH(t.name)<=40 THEN null "+
+		    "ELSE t.name " +
+                    "END AS NameTooltip," +
+		    "t.details AS details," +
                     "t.created," +
                     "t.updated," +
                     "t.project_id," +
@@ -193,7 +197,10 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "WHEN @strategy = 'sm' THEN LEFT(e.epic_name, 40) " +
                     "WHEN @strategy = 'kn'THEN LEFT(e.epic_name, 100) " +
                     "END AS name," +
-                    "e.epic_name as NameTooltip,"+
+		    "CASE " +
+		    "WHEN LENGTH(e.epic_name)<=40 THEN null " +
+		    "ELSE e.epic_name " +
+		    "END AS NameTooltip," +
                     "e.epic_description AS details," +
                     "e.created_at AS created," +
                     "e.updated_at AS updated," +
@@ -221,8 +228,11 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     " WHEN @strategy = 'sm' THEN LEFT(us.story_name, 40) " +
                     "WHEN @strategy = 'kn' THEN LEFT(us.story_name, 100) " +
                     "END AS name," +
-                    "us.story_name as NameTooltip,"+
-                    "us.story_description AS details," +
+		    "CASE " +
+		    "WHEN LENGTH(us.story_name)<=40 THEN null " +
+		    "ELSE us.story_name " +
+		    "END AS NameTooltip," +
+		    "us.story_description AS details," +
                     "us.created_at AS created," +
                     "us.updated_at AS updated," +
                     "us.project_id," +
@@ -239,7 +249,8 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
                     "FROM project_management.user_stories AS us " +
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
-                    "WHERE us.project_id = @projectId;";
+                    "WHERE us.project_id = @projectId "+
+                    "ORDER BY Created DESC";
 
         var result = await connection.QueryAsync<ProjectTaskExtendedEntity>(query, parameters);
 
@@ -448,32 +459,25 @@ internal sealed class ProjectManagmentRepository : BaseRepository, IProjectManag
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
-
+        
         // Скрипт учитывает все таблицы, где есть айдишники задач в рамках проекта (эпики, истории, задачи, ошибки).
-        var query = @"DROP TABLE IF EXISTS temp_max_table;
-                    WITH max_task_id AS (SELECT MAX(COALESCE(pt.project_task_id, 0)) AS max_project_project_task_id,
-                            MAX(COALESCE(e.project_epic_id, 0))     AS max_epic_project_epic_id,
-                            MAX(COALESCE(et.project_task_id, 0))    AS max_epic_tasks_project_task_id,
-                            MAX(COALESCE(us.user_story_task_id, 0)) AS max_user_story_task_id 
-                     FROM project_management.project_tasks AS pt 
-                              LEFT JOIN project_management.epics AS e 
-                                        ON pt.project_id = e.project_id 
-                              LEFT JOIN project_management.epic_tasks AS et 
-                                        ON et.epic_id = e.epic_id 
-                              LEFT JOIN project_management.user_stories AS us 
-                                        ON pt.project_id = us.project_id 
-                     WHERE pt.project_id = @projectId) 
-                    SELECT UNNEST(ARRAY [max_task_id.max_project_project_task_id, max_task_id.max_epic_project_epic_id,
-                                 max_task_id.max_epic_tasks_project_task_id, max_task_id.max_user_story_task_id]) AS x 
-                    INTO TEMP TABLE temp_max_table 
-                    FROM max_task_id;
+        var query = "WITH max_project_task_id_cte AS (SELECT pt.project_task_id " +
+                    "FROM project_management.project_tasks AS pt " +
+                    "WHERE pt.project_id = @projectId " +
+                    "UNION " +
+                    "SELECT e.project_epic_id AS project_task_id " +
+                    "FROM project_management.epics AS e " +
+                    "WHERE e.project_id = @projectId " +
+                    "UNION " +
+                    "SELECT us.user_story_task_id AS project_task_id " +
+                    "FROM project_management.user_stories AS us " +
+                    "WHERE us.project_id = @projectId) " +
+                    "SELECT COALESCE(MAX(project_task_id), 0) " +
+                    "FROM max_project_task_id_cte";
 
-                    SELECT MAX(x) 
-                    FROM temp_max_table;";
+        var lastProjectTaskId = await connection.QueryFirstOrDefaultAsync<long>(query, parameters);
 
-        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
-
-        return result;
+        return lastProjectTaskId;
     }
 
     /// <summary>
@@ -778,24 +782,28 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
     /// <inheritdoc />
     public async Task<IEnumerable<long>> GetProjectManagementTransitionIntermediateTemplatesAsync(
-        long currentTaskStatusId, TransitionTypeEnum transitionType, int templateId)
+        long currentTaskStatusId, TransitionTypeEnum transitionType, int? templateId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@currentTaskStatusId", currentTaskStatusId);
         parameters.Add("@transitionType", new Enum(transitionType));
-        parameters.Add("@templateId", templateId);
 
         var query = "SELECT tit.to_status_id " +
                     "FROM templates.project_management_transition_intermediate_templates AS tit " +
-                    "INNER JOIN templates.project_management_task_status_intermediate_templates AS pmtsit " +
+                    "LEFT JOIN templates.project_management_task_status_intermediate_templates AS pmtsit " +
                     "ON tit.to_status_id = pmtsit.status_id " +
-                    "INNER JOIN templates.project_management_task_status_templates AS pmtst " +
+                    "LEFT JOIN templates.project_management_task_status_templates AS pmtst " +
                     "ON pmtsit.status_id = pmtst.status_id " +
                     "WHERE tit.from_status_id = @currentTaskStatusId " +
-                    "AND tit.transition_type = @transitionType " +
-                    "AND pmtsit.template_id = @templateId";
+                    "AND tit.transition_type = @transitionType ";
+
+        if (templateId.HasValue)
+        {
+            parameters.Add("@templateId", templateId);
+            query += "AND pmtsit.template_id = @templateId";
+        }
 
         var result = await connection.QueryAsync<long>(query, parameters);
 
@@ -2433,7 +2441,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var query = "WITH cte_sprint_tasks AS ( " +
                     "SELECT project_task_id " +
                     "FROM project_management.sprint_tasks) " +
-                    "SELECT sprint_id, sprint_name " +
+                    "SELECT sprint_id, sprint_name, project_sprint_id " +
                     "FROM project_management.sprints " +
                     "WHERE project_id = @projectId " +
                     "AND @projectTaskId <> ANY (SELECT * FROM cte_sprint_tasks)";
@@ -2995,23 +3003,23 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     
     /// <inheritdoc />
     public async Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectTaskStatusesAsync(long projectId,
-        IEnumerable<long> projectTaskIds, int templateId)
+        IEnumerable<long> projectTaskIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
         parameters.Add("@projectTaskIds", projectTaskIds.AsList());
-        parameters.Add("@templateId", templateId);
 
         var query = "SELECT t.project_task_id, " +
+                    "t.task_type_id," +
+                    "(CASE WHEN t.task_type_id = 1 THEN 'Задача' " +
+                    "ELSE 'Ошибка' END) AS TaskTypeName, " +
                     "(SELECT tpmtst.status_name " +
                     "FROM templates.project_management_task_status_templates AS tpmtst " +
                     "INNER JOIN templates.project_management_task_status_intermediate_templates AS tpmtsit " +
                     "ON tpmtst.status_id = tpmtsit.status_id " +
-                    "WHERE t.task_status_id = tpmtst.status_id " +
-                    "AND tpmtsit.template_id = @templateId " +
-                    "AND NOT tpmtst.is_system_status) AS TaskStatusName " +
+                    "WHERE t.task_status_id = tpmtst.status_id) AS TaskStatusName " +
                     "FROM project_management.project_tasks AS t " +
                     "WHERE t.project_task_id = ANY(@projectTaskIds) " +
                     "AND t.project_id = @projectId";
@@ -3035,7 +3043,8 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var query = "SELECT us.user_story_task_id AS project_task_id, " +
                     "(SELECT status_name " +
                     "FROM project_management.user_story_statuses " +
-                    "WHERE status_id = us.status_id) AS TaskStatusName " +
+                    "WHERE status_id = us.status_id) AS TaskStatusName," +
+                    "'История' AS TaskTypeName " +
                     "FROM project_management.user_stories AS us " +
                     "INNER JOIN project_management.user_story_statuses AS uss " +
                     "ON us.status_id = uss.status_id " +
@@ -3092,6 +3101,113 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         var result = await connection.QueryAsync<string>(query, parameters);
 
         return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, ProjectTaskTypeOutput>> GetProjectEpicStatusesAsync(long projectId,
+        IEnumerable<long> projectTaskIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@projectTaskIds", projectTaskIds.AsList());
+
+        var query = "SELECT e.project_epic_id AS ProjectTaskId, " +
+                    "es.status_name AS TaskStatusName," +
+                    "4 AS TaskTypeId," +
+                    "'Эпик' AS TaskTypeName " +
+                    "FROM project_management.epics AS e " +
+                    "INNER JOIN project_management.epic_statuses AS es " +
+                    "ON e.status_id = es.status_id " +
+                    "WHERE e.project_id = @projectId " +
+                    "AND project_epic_id = ANY (@projectTaskIds)";
+
+        var result = (await connection.QueryAsync<ProjectTaskTypeOutput>(query, parameters))
+            .ToDictionary(k => k.ProjectTaskId, v => v);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<StoryStatusOutput>> GetStoryStatusesAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var query = @"SELECT status_id, status_name, status_sys_name 
+                      FROM project_management.user_story_statuses";
+
+        var result = await connection.QueryAsync<StoryStatusOutput>(query);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<StoryAndEpicSystemStatusOutput>> GetEpicAndStorySystemStatusesAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        // Хоть статус InWork и принадлежит некоторым шаблонам, он также является системным.
+        var query = "SELECT status_id, " +
+                    "status_name, " +
+                    "status_sys_name, " +
+                    "task_status_id, " +
+                    "is_system_status " +
+                    "FROM templates.project_management_task_status_templates " +
+                    "WHERE NOT status_id = ANY (SELECT status_id " +
+                    "FROM templates.project_management_task_status_intermediate_templates) " +
+                    "AND is_system_status " +
+                    "OR status_sys_name = 'InWork'";
+
+        var result = await connection.QueryAsync<StoryAndEpicSystemStatusOutput>(query);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, StoryAndEpicSystemStatusOutput>> GetEpicStatusesDictionaryAsync(
+        IEnumerable<long> epicIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@epicIds", epicIds.AsList());
+
+        var query = "SELECT es.status_id, " +
+                    "es.status_name, " +
+                    "es.status_sys_name," +
+                    "e.epic_id AS StoryEpicId " +
+                    "FROM project_management.epic_statuses AS es " +
+                    "INNER JOIN project_management.epics AS e " +
+                    "ON es.status_id = e.status_id " +
+                    "AND e.epic_id = ANY (@epicIds)";
+        
+        var result = await connection.QueryAsync<StoryAndEpicSystemStatusOutput>(query, parameters);
+
+        return result.ToDictionary(k => k.StoryEpicId, v => v);
+    }
+
+    /// <inheritdoc />
+    public async Task<IDictionary<long, StoryAndEpicSystemStatusOutput>> GetStoryStatusesDictionaryAsync(
+        IEnumerable<long> storyIds)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@storyIds", storyIds.AsList());
+
+        var query = "SELECT uss.status_id, " +
+                    "uss.status_name, " +
+                    "uss.status_sys_name," +
+                    "us.story_id AS StoryEpicId " +
+                    "FROM project_management.user_story_statuses AS uss " +
+                    "INNER JOIN project_management.user_stories AS us " +
+                    "ON uss.status_id = us.story_status_id " +
+                    "AND us.story_id = ANY (@storyIds)";
+        
+        var result = await connection.QueryAsync<StoryAndEpicSystemStatusOutput>(query, parameters);
+
+        return result.ToDictionary(k => k.StoryEpicId, v => v);
     }
 
     #endregion

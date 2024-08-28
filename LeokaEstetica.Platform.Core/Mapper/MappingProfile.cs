@@ -268,6 +268,9 @@ public class MappingProfile : Profile
         CreateMap<SearchAgileObjectOutput, ProjectManagmentTaskOutput>();
         CreateMap<EpicTaskOutput, ProjectManagmentTaskOutput>()
             .ForMember(p => p.TaskStatusName, p => p.MapFrom(src => src.StatusName));
+        
+        CreateMap<StoryAndEpicSystemStatusOutput, ProjectManagmentTaskStatusTemplateOutput>();
+        CreateMap<ProjectManagmentTaskOutput, ProjectTaskExtendedEntity>();
     }
     
     /// <summary>

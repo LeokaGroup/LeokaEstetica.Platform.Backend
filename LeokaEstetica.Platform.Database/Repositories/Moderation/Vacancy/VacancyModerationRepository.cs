@@ -93,7 +93,7 @@ internal sealed class VacancyModerationRepository : BaseRepository, IVacancyMode
     }
 
     /// <summary>
-    /// Метод получает список вакансий для модерации.
+    /// Метод получает список вакансий со статусом "на модерации".
     /// </summary>
     /// <returns>Список вакансий.</returns>
     public async Task<IEnumerable<ModerationVacancyEntity>> VacanciesModerationAsync()
@@ -145,13 +145,37 @@ internal sealed class VacancyModerationRepository : BaseRepository, IVacancyMode
 
         return result;
     }
+	/// <summary>
+	/// Метод получает список вакансий со всеми статусами.
+	/// </summary>
+	/// <returns>Список вакансий.</returns>
+	public async Task<IEnumerable<ModerationVacancyEntity>> AllVacanciesModerationAsync()
+	{
+		var result = await _pgContext.ModerationVacancies
+			.Include(up => up.UserVacancy)
+			.Select(p => new ModerationVacancyEntity
+			{
+				ModerationId = p.ModerationId,
+				VacancyId = p.VacancyId,
+				UserVacancy = new UserVacancyEntity
+				{
+					VacancyName = p.UserVacancy.VacancyName,
+					DateCreated = p.UserVacancy.DateCreated
+				},
+				DateModeration = p.DateModeration,
+				ModerationStatusId = p.ModerationStatusId,
+				ModerationStatus = p.ModerationStatus
+			})
+			.ToListAsync();
 
-    /// <summary>
-    /// Метод одобряет вакансию на модерации.
-    /// </summary>
-    /// <param name="vacancyId">Id вакансии.</param>
-    /// <returns>Признак подтверждения вакансии.</returns>
-    public async Task<bool> ApproveVacancyAsync(long vacancyId)
+		return result;
+	}
+	/// <summary>
+	/// Метод одобряет вакансию на модерации.
+	/// </summary>
+	/// <param name="vacancyId">Id вакансии.</param>
+	/// <returns>Признак подтверждения вакансии.</returns>
+	public async Task<bool> ApproveVacancyAsync(long vacancyId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         var parameters = new DynamicParameters();

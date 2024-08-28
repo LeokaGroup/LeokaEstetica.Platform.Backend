@@ -1,10 +1,12 @@
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.User;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
+using LeokaEstetica.Platform.Models.Dto.Output.Roles;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
 using Microsoft.AspNetCore.Authorization;
@@ -26,6 +28,7 @@ public class UserController : BaseController
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
     private readonly ILogger<UserController> _logger;
     private readonly IAccessUserService _accessUserService;
+    private readonly IUserRepository _userRepository;
 
     /// <summary>
     /// Конструктор.
@@ -34,15 +37,18 @@ public class UserController : BaseController
     /// <param name="validationExcludeErrorsService">Сервис исключения ошибок, которые не надо проверять.</param>
     /// <param name="logger">Логгер.</param>
     /// <param name="accessUserService">Сервис доступа пользователей.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
     public UserController(IUserService userService, 
         IValidationExcludeErrorsService validationExcludeErrorsService,
         ILogger<UserController> logger,
-        IAccessUserService accessUserService)
+        IAccessUserService accessUserService,
+         IUserRepository userRepository)
     {
         _userService = userService;
         _validationExcludeErrorsService = validationExcludeErrorsService;
         _logger = logger;
         _accessUserService = accessUserService;
+        _userRepository = userRepository;
     }
 
     /// <summary>
@@ -69,8 +75,9 @@ public class UserController : BaseController
 
             return result;
         }
-        
-        result = await _userService.CreateUserAsync(userSignUpInput.Password, userSignUpInput.Email);
+
+        result = await _userService.CreateUserAsync(userSignUpInput.Password, userSignUpInput.Email,
+            userSignUpInput.ComponentRoles);
 
         return result;
     }
@@ -315,6 +322,25 @@ public class UserController : BaseController
     public async Task<AuthProviderConfigOutput> GetAuthProviderConfigAsync()
     {
         var result = await _userService.GetAuthProviderConfigAsync();
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод получает компонентные роли для выбора.
+    /// </summary>
+    /// <returns>Список компонентных ролей.</returns>
+    [AllowAnonymous]
+    [HttpGet]
+    [Route("component-roles")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<ComponentRoleOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<ComponentRoleOutput>> GetComponentRolesAsync()
+    {
+        var result = await _userRepository.GetComponentRolesAsync();
 
         return result;
     }

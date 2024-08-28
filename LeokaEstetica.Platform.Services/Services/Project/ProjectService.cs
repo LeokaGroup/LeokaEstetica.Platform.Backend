@@ -1,4 +1,3 @@
-using System.Globalization;
 using AutoMapper;
 using Dapper;
 using LeokaEstetica.Platform.Access.Abstractions.ProjectManagement;
@@ -399,18 +398,16 @@ internal sealed class ProjectService : IProjectService
 		}
 	}
 
-    /// <summary>
-    /// Метод получает список проектов для каталога.
-    /// </summary>
-    /// <returns>Список проектов.</returns>
-    public async Task<CatalogProjectResultOutput> CatalogProjectsAsync()
+	/// <inheritdoc />
+    public async Task<CatalogProjectResultOutput> GetCatalogProjectsAsync(CatalogProjectInput catalogProjectInput)
     {
         try
         { 
-            var result = new CatalogProjectResultOutput
-            {
-                CatalogProjects = await _projectRepository.CatalogProjectsAsync()
-            };
+	        // Разбиваем строку стадий проекта, так как там может приходить несколько значений в строке.
+	        catalogProjectInput.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(
+		        catalogProjectInput.StageValues);
+
+	        var result = await _projectRepository.GetCatalogProjectsAsync(catalogProjectInput);
 
             result.CatalogProjects = await ExecuteCatalogConditionsAsync(result.CatalogProjects.AsList());
 
@@ -990,9 +987,13 @@ internal sealed class ProjectService : IProjectService
 			var inviteUserId = await GetUserIdAsync(inviteText, inviteType);
 
 			var isInvitedUser = await _projectRepository.CheckProjectTeamMemberAsync(teamId, inviteUserId);
+			
+			// Проверяем, не отправляли ли уже приглашение, чтобы не плодить дубликаты.
+			var isSendedInvite = await _projectNotificationsRepository.CheckSendedInviteProjectTeamAsync(inviteUserId,
+				projectId);
 
             // Проверяем, не приглашали ли уже пользователя в команду проекта. Если да, то не даем пригласить повторно.
-            if (isInvitedUser)
+            if (isInvitedUser || isSendedInvite)
             {
                 var ex = new InvalidOperationException("Пользователь уже был приглашен в команду проекта. " +
                                                        $"TeamId: {teamId}. " +
@@ -1007,7 +1008,7 @@ internal sealed class ProjectService : IProjectService
                 throw ex;
             }
 
-			// Находим название проекта.
+            // Находим название проекта.
 			var projectName = await _projectRepository.GetProjectNameByProjectIdAsync(projectId);
 
 			await SendEmailNotificationInviteTeamProjectAsync(projectId, inviteUserId, projectName);
@@ -1026,32 +1027,6 @@ internal sealed class ProjectService : IProjectService
 								 $"InviteType был {inviteType}. " +
 								 $"ProjectId был {projectId}. " +
 								 $"VacancyId был {vacancyId}");
-			throw;
-		}
-	}
-
-    /// <summary>
-    /// Метод фильтрации проектов в зависимости от параметров фильтров.
-    /// </summary>
-    /// <param name="filterProjectInput">Входная модель.</param>
-    /// <returns>Список проектов после фильтрации.</returns>
-    public async Task<IEnumerable<CatalogProjectOutput>> FilterProjectsAsync(FilterProjectInput filters)
-    {
-        try
-        {
-            // Разбиваем строку стадий проекта, так как там может приходить несколько значений в строке.
-            filters.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(filters.StageValues);
-
-            var result = await _projectRepository.FilterProjectsAsync(filters);
-
-            var resultProjects = await ExecuteCatalogConditionsAsync(result.AsList());
-
-            return resultProjects;
-        }
-
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, ex.Message);
 			throw;
 		}
 	}
@@ -1438,7 +1413,18 @@ internal sealed class ProjectService : IProjectService
 			// Находим Id команды проекта.
 			var teamId = await _projectRepository.GetProjectTeamIdAsync(projectId);
 
-			await _projectRepository.RemoveUserProjectTeamAsync(userId, teamId);
+			var isExcludeOwner = await _projectRepository.CheckProjectOwnerAsync(projectId, userId);
+
+			if (isExcludeOwner)
+			{
+				throw new InvalidOperationException("Попытка исключить владельца проекта. " +
+				                                    "Пользователь не знает, что произошло. " +
+				                                    "Возможно, показали ему кнопку исключения владельца. " +
+				                                    "Срочно разобраться и поправить. " +
+				                                    "Исключить владельца невозможно. Прервали пользователя.");
+			}
+
+			await _projectRepository.RemoveUserProjectTeamAsync(userId, teamId, projectId);
 		}
 
 		catch (Exception ex)
@@ -1774,7 +1760,7 @@ internal sealed class ProjectService : IProjectService
 	}
 
 	/// <summary>
-	/// Метод записывает участника команды проекта.
+	/// Метод записывает участника команды проекта. 
 	/// </summary>
 	/// <param name="user">Данные пользователя.</param>
 	/// <returns>Участник.</returns>

@@ -143,6 +143,22 @@ internal sealed class VacancyService : IVacancyService
         
         try
         {
+            if (vacancyInput.ProjectId == 0)
+            {
+                await _hubNotificationService.Value.SendNotificationAsync("Ошибка",
+                    "Невозможно создать вакансию без проекта.",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCreatedUserVacancy",
+                    userCode, UserConnectionModuleEnum.Main);
+                
+                var ex = new InvalidOperationException(
+                    "Попытка создать вакансию при отсутствии проектов у пользователя. " +
+                    $"UserId: {userId}. ");
+
+                await _discordService.SendNotificationErrorAsync(ex);
+
+                throw ex;
+            }
+
             var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(vacancyInput.ProjectId, userId);
 
             if (!isProjectOwner)
@@ -346,6 +362,10 @@ internal sealed class VacancyService : IVacancyService
             result.IsSuccess = true;
             result.IsAccess = true;
 
+            result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
+            result.Demands = ClearHtmlBuilder.Clear(result.Demands);
+            result.VacancyText = ClearHtmlBuilder.Clear(result.VacancyText);
+            
             return result;
         }
 
@@ -924,46 +944,18 @@ internal sealed class VacancyService : IVacancyService
     private async Task<IEnumerable<VacancyOutput>> FillVacanciesStatusesAsync(
         List<VacancyOutput> vacancies, long userId)
     {
-        // Получаем список вакансий на модерации.
-        var moderationVacancies = await _vacancyModerationService.VacanciesModerationAsync();
-
-        // Получаем список вакансий из каталога вакансий.
-        var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
-        
-        // Находим вакансии в архиве.
-        var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).ToList();
+        //Получаем вакансии пользователей 
+        var userVacancies = (await _vacancyModerationService.AllVacanciesModerationAsync()).Vacancies.ToList();
 
         // Проставляем статусы вакансий.
         foreach (var pv in vacancies)
         {
-            // Ищем в модерации вакансий.
-            var isVacancy = moderationVacancies.Vacancies.Any(v => v.VacancyId == pv.VacancyId);
-
-            if (isVacancy)
+          foreach(var uv in userVacancies)
             {
-                pv.VacancyStatusName = moderationVacancies.Vacancies
-                    .Where(v => v.VacancyId == pv.VacancyId)
-                    .Select(v => v.ModerationStatusName)
-                    .FirstOrDefault();
-                
-                continue;
-            }
-                
-            // Ищем вакансию в каталоге вакансий.
-            var isCatalogVacancy = catalogVacancies.Any(v => v.VacancyId == pv.VacancyId);
-
-            if (isCatalogVacancy)
-            {
-                pv.VacancyStatusName = _approveVacancy;
-                continue;
-            }
-            
-            // Ищем в архиве вакансий.
-            var isArchiveVacancy = archivedVacancies.Any(v => v.VacancyId == pv.VacancyId);
-            
-            if (isArchiveVacancy)
-            {
-                pv.VacancyStatusName = _archiveVacancy;
+                if (pv.VacancyId == uv.VacancyId)
+                {
+					pv.VacancyStatusName = uv.ModerationStatusName;
+				}
             }
         }
 

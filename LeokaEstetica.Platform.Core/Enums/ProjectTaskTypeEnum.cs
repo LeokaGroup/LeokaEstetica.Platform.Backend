@@ -8,17 +8,17 @@ public enum ProjectTaskTypeEnum
     /// <summary>
     /// Задача.
     /// </summary>
-    Task = 1,
+    Task = 3,
     
     /// <summary>
     /// Ошибка.
     /// </summary>
-    Error = 2,
+    Error = 1,
     
     /// <summary>
     /// История.
     /// </summary>
-    Story = 3,
+    Story = 2,
     
     /// <summary>
     /// Эпик.

@@ -10,7 +10,7 @@ namespace LeokaEstetica.Platform.Base.Filters;
 public class AuthFilter : Attribute, IAuthorizationFilter
 {
     /// <summary>
-    /// Список допустимых апи, котороые не надо проверять.
+    /// Список допустимых API, которые не надо проверять.
     /// </summary>
     private static readonly HashSet<string> _allowActions = new()
     {
@@ -27,7 +27,8 @@ public class AuthFilter : Attribute, IAuthorizationFilter
         "RestoreUserPassword", // Восстановление пароля.
         "SendCodeRestorePassword", // Восстановление пароля.
         "CheckRestorePassword", // Восстановление пароля.
-        "CheckConnectionIdCache"
+        "CheckConnectionIdCache",
+        "GetComponentRoles" // Получение компонентных ролей.
     };
     
     /// <summary>

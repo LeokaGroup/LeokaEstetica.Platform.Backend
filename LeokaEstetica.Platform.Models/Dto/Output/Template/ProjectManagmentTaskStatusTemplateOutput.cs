@@ -10,22 +10,23 @@ public class ProjectManagmentTaskStatusTemplateOutput
     /// <summary>
     /// PK.
     /// </summary>
-    public long StatusId { get; set; }
+    public int StatusId { get; set; }
 
     /// <summary>
     /// Название статуса.
     /// </summary>
-    public string StatusName { get; set; }
+    public string? StatusName { get; set; }
 
     /// <summary>
     /// Системное название статуса.
     /// </summary>
-    public string StatusSysName { get; set; }
+    public string? StatusSysName { get; set; }
 
     /// <summary>
     /// Id шаблона.
+    /// Может быть NULL, например, для системных статусов (они в любом шаблоне).
     /// </summary>
-    public int TemplateId { get; set; }
+    public long? TemplateId { get; set; }
     
     /// <summary>
     /// Id статуса, который маппится на статус задачи.
@@ -46,4 +47,9 @@ public class ProjectManagmentTaskStatusTemplateOutput
     /// Класс пагинатора.
     /// </summary>
     public Paginator? Paginator { get; set; }
+
+    /// <summary>
+    /// Признак системного статуса. У него TemplateId всегда NULL.
+    /// </summary>
+    public bool IsSystemStatus { get; set; }
 }

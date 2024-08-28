@@ -19,4 +19,9 @@ public class ProjectTaskTypeOutput
     /// Название статуса.
     /// </summary>
     public string? TaskStatusName { get; set; }
+
+    /// <summary>
+    /// Название типа задачи.
+    /// </summary>
+    public string? TaskTypeName { get; set; }
 }

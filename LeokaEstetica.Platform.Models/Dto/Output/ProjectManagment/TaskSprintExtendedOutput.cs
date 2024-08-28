@@ -10,12 +10,12 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     /// <summary>
     /// Дата начала спринта.
     /// </summary>
-    public DateTime? DateStart { get; set; }
+    public string? DateStart { get; set; }
 
     /// <summary>
     /// Дата окончания спринта.
     /// </summary>
-    public DateTime? DateEnd { get; set; }
+    public string? DateEnd { get; set; }
 
     /// <summary>
     /// Описание спринта.
@@ -36,11 +36,6 @@ public class TaskSprintExtendedOutput : TaskSprintOutput
     /// Id проекта.
     /// </summary>
     public long ProjectId { get; set; }
-
-    /// <summary>
-    /// Id спринта в рамках проекта.
-    /// </summary>
-    public long ProjectSprintId { get; set; }
 
     /// <summary>
     /// Задачи спринта, если они есть.

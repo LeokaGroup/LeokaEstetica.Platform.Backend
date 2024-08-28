@@ -115,13 +115,9 @@ internal sealed class UserService : IUserService
 
     #region Публичные методы.
 
-    /// <summary>
-    /// Метод создает нового пользователя.
-    /// </summary>
-    /// <param name="password">Пароль. Он не хранится в БД. Хранится только его хэш.</param>
-    /// <param name="email">Почта пользователя.</param>
-    /// <returns>Данные пользователя.</returns>
-    public async Task<UserSignUpOutput> CreateUserAsync(string password, string email)
+    /// <inheritdoc />
+    public async Task<UserSignUpOutput> CreateUserAsync(string? password, string? email,
+        IEnumerable<int>? componentRoles)
     {
         var tran = await _pgContext.Database
             .BeginTransactionAsync(IsolationLevel.ReadCommitted);
@@ -177,6 +173,9 @@ internal sealed class UserService : IUserService
             // Отправляем анкету на модерацию.
             await _resumeModerationRepository.AddResumeModerationAsync(profileInfoId);
             
+            // Добавляем пользователю компонентные роли, что он выбрал при регистрации.
+            await _userRepository.AddComponentUserRolesAsync(addedUser.UserId, componentRoles);
+            
             result = _mapper.Map<UserSignUpOutput>(addedUser);
             
             result.IsSuccess = true;
@@ -191,7 +190,6 @@ internal sealed class UserService : IUserService
 
         catch (Exception ex)
         {
-            await tran.RollbackAsync();
             _logger.LogError(ex, ex.Message);
             throw;
         }

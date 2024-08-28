@@ -32,9 +32,10 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
 
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
-
+        
         var query = "SELECT s.sprint_id," +
-                    " s.date_start, s.date_end," +
+                    " to_char(s.date_start, 'dd.MM.yyyy HH24:MI:SS') AS DateStart," +
+                    " to_char(s.date_end, 'dd.MM.yyyy HH24:MI:SS') AS DateEnd," +
                     " s.sprint_goal," +
                     " s.sprint_status_id," +
                     " s.project_id," +
@@ -60,7 +61,52 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
         var parameters = new DynamicParameters();
         parameters.Add("@projectSprintId", projectSprintId);
         parameters.Add("@projectId", projectId);
-        
+        parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
+
+        var query = "SELECT s.sprint_id," +
+                    " to_char(s.date_start, 'dd.MM.yyyy HH24:MI:SS') AS DateStart," +
+                    " to_char(s.date_end, 'dd.MM.yyyy HH24:MI:SS') AS DateEnd," +
+                    " s.sprint_goal," +
+                    " s.sprint_status_id," +
+                    " s.project_id," +
+                    " s.project_sprint_id," +
+                    " s.sprint_name," +
+                    " st.sprint_id," +
+                    " st.project_task_id," +
+                    " ss.status_name AS SprintStatusName," +
+                    " s.executor_id," +
+                    " s.watcher_ids," +
+                    " s.created_by," +
+                    " to_char(s.created_at, 'dd.MM.yyyy HH24:MI') AS CreatedAt," +
+                    " to_char(s.updated_at, 'dd.MM.yyyy HH24:MI') AS UpdatedAt," +
+                    " s.updated_by," +
+                    "(SELECT \"ParamValue\" " +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @projectId " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
+                    "FROM project_management.sprints AS s " +
+                    "INNER JOIN project_management.sprint_statuses AS ss " +
+                    "ON s.sprint_status_id = ss.status_id " +
+                    "LEFT JOIN project_management.sprint_tasks AS st " +
+                    "ON s.sprint_id = st.sprint_id " +
+                    "WHERE s.project_id = @projectId " +
+                    "AND s.project_sprint_id = @projectSprintId";
+
+        var result = await connection.QueryFirstOrDefaultAsync<TaskSprintExtendedOutput>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<TaskSprintExtendedOutput?> GetTaskSprintByProjectTaskIdAsync(long projectTaskId, long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectTaskId", projectTaskId);
+        parameters.Add("@projectId", projectId);
+        parameters.Add("@prefix", GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX);
+
         var query = "SELECT s.sprint_id," +
                     " s.date_start, s.date_end," +
                     " s.sprint_goal," +
@@ -76,14 +122,18 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     " s.created_by," +
                     " to_char(s.created_at, 'dd.MM.yyyy HH24:MI') AS CreatedAt," +
                     " to_char(s.updated_at, 'dd.MM.yyyy HH24:MI') AS UpdatedAt," +
-                    " s.updated_by " +
+                    " s.updated_by," +
+                    "(SELECT \"ParamValue\" " +
+                    "FROM \"Configs\".\"ProjectManagmentProjectSettings\" AS ps " +
+                    "WHERE ps.\"ProjectId\" = @projectId " +
+                    "AND ps.\"ParamKey\" = @prefix) AS TaskIdPrefix " +
                     "FROM project_management.sprints AS s " +
                     "INNER JOIN project_management.sprint_statuses AS ss " +
                     "ON s.sprint_status_id = ss.status_id " +
                     "LEFT JOIN project_management.sprint_tasks AS st " +
                     "ON s.sprint_id = st.sprint_id " +
                     "WHERE s.project_id = @projectId " +
-                    "AND s.project_sprint_id = @projectSprintId";
+                    "AND st.project_task_id = @projectTaskId";
 
         var result = await connection.QueryFirstOrDefaultAsync<TaskSprintExtendedOutput>(query, parameters);
 
@@ -529,7 +579,28 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
 
          return result;
      }
-     
+
+     /// <inheritdoc/>
+     public async Task<long?> GetSprintIdByProjectTaskIdProjectIdAsync(long projectTaskId, long projectId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@projectTaskId", projectTaskId);
+         parameters.Add("@projectId", projectId);
+
+         var query = "SELECT project_sprint_id " +
+                     "FROM project_management.sprints AS s " +
+                     "INNER JOIN project_management.sprint_tasks AS st " +
+                     "ON s.sprint_id = st.sprint_id " +
+                     "WHERE s.project_id = @projectId " +
+                     "AND st.project_task_id = @projectTaskId";
+
+         var result = await connection.QueryFirstOrDefaultAsync<long?>(query, parameters);
+
+         return result;
+     }
+
      /// <inheritdoc/>
      public async Task MoveNotCompletedSprintTasksToNextSprintAsync(IEnumerable<long> projectTaskIds,
          long nextProjectSprintId)
