@@ -52,7 +52,7 @@ public class VacancyController : BaseController
     /// Метод получает список вакансий для каталога.
     /// </summary>
     /// <returns>Список вакансий.</returns>
-    [HttpGet]
+    [HttpPost]
     [Route("catalog")]
     [ProducesResponseType(200, Type = typeof(CatalogVacancyResultOutput))]
     [ProducesResponseType(400)]
