@@ -624,7 +624,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
 			parameters.Add("@lastId", VacancyCatalogInput.LastId);
 
 			// Применяем пагинацию.
-			query += "AND cv.\"VacancyId\">@lastId ";
+			query += " AND cv.\"VacancyId\">@lastId ";
 		}
 
 		// TODO: Передавать с фронта будем кол-во строк, при настройке пагинации пользователем.
