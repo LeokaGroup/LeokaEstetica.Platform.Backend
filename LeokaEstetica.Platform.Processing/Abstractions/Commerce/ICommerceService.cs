@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Processing.Enums;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.Commerce;
@@ -86,4 +87,11 @@ public interface ICommerceService
     /// <returns>Выходная модель.</returns>
     Task<CalculateFareRulePriceOutput> CalculateFareRulePriceAsync(Guid publicId, int selectedMonth,
         int employeeCount, string account);
+
+    /// <summary>
+    /// Метод вычисляет цену за публикацию вакансии в соответствии с тарифом пользователя.
+    /// </summary>
+    /// <param name="account">Аккаунт.</param>
+    /// <returns>Выходная модель.</returns>
+    Task<CalculatePostVacancyPriceOutput> CalculatePricePostVacancyAsync(string account);
 }

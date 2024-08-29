@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
@@ -79,4 +80,11 @@ public interface ICommerceRepository
     /// <param name="orderId">Id заказа.</param>
     /// <returns>Признак результата проверки.</returns>
     Task<bool> IfExistsRefundAsync(string orderId);
+
+    /// <summary>
+    /// Метод получает услугу по Id тарифа.
+    /// </summary>
+    /// <param name="fareRuleId">Id тарифа.</param>
+    /// <returns>Данные услуги.</returns>
+    Task<FeesOutput?> GetFeesByFareRuleIdAsync(int fareRuleId);
 }

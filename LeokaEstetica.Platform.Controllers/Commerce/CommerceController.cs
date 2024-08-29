@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -212,6 +213,24 @@ public class CommerceController : BaseController
     {
         var result = await _commerceService.CalculateFareRulePriceAsync(publicId, selectedMonth, employeeCount,
             GetUserName());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод вычисляет цену за публикацию вакансии в соответствии с тарифом пользователя.
+    /// </summary>
+    /// <returns>Выходная модель.</returns>
+    [HttpGet]
+    [Route("calculate-price-vacancy")]
+    [ProducesResponseType(200, Type = typeof(CalculatePostVacancyPriceOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CalculatePostVacancyPriceOutput> CalculatePricePostVacancyAsync()
+    {
+        var result = await _commerceService.CalculatePricePostVacancyAsync(GetUserName());
 
         return result;
     }

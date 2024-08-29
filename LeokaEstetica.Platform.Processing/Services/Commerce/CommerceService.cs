@@ -16,13 +16,13 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
-using LeokaEstetica.Platform.Processing.BuilderData;
 using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
@@ -534,6 +534,53 @@ internal sealed class CommerceService : ICommerceService
             {
                 // Цена тарифа = минимальная цена тарифа * кол-во сотрудников * кол-во месяцев.
                 Price = Math.Round(fareRuleAttributeValues!.MinValue!.Value * employeeCount * selectedMonth),
+                IsNeedUserAction = true
+            };
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<CalculatePostVacancyPriceOutput> CalculatePricePostVacancyAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
+
+            if (userSubscription is null)
+            {
+                throw new InvalidOperationException("Ошибка получения подписки пользователя. " +
+                                                    $"UserId: {userId}.");
+            }
+            
+            // Получаем услугу по тарифу.
+            var fees = await _commerceRepository.GetFeesByFareRuleIdAsync(userSubscription.RuleId);
+            
+            if (fees is null)
+            {
+                throw new InvalidOperationException("Ошибка получения услуги. " +
+                                                    $"UserId: {userId}. " +
+                                                    $"RuleId: {userSubscription.RuleId}.");
+            }
+            
+            var result = new CalculatePostVacancyPriceOutput
+            {
+                Price = fees.FeesPrice,
                 IsNeedUserAction = true
             };
 
