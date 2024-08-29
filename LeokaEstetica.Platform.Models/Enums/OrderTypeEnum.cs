@@ -6,22 +6,12 @@
 public enum OrderTypeEnum
 {
     /// <summary>
-    /// Неизвестный тип.
+    /// Создание вакансии.
     /// </summary>
-    Undefined = 0,
+    CreateVacancy = 1,
     
     /// <summary>
-    /// Оформление тарифа.
+    /// Тариф.
     /// </summary>
-    FareRule = 1,
-    
-    /// <summary>
-    /// Оплата публикации вакансии.
-    /// </summary>
-    CreateVacancy = 2,
-    
-    /// <summary>
-    /// Оплата открытия контакта в базе резюме.
-    /// </summary>
-    OpenResume = 3
+    FareRule = 2
 }

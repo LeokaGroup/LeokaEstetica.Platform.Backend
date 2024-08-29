@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Enums;
 using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Models.Dto.Base.Commerce;
@@ -12,7 +13,7 @@ public class Amount
     /// </summary>
     /// <param name="value"></param>
     /// <param name="currency"></param>
-    public Amount(decimal value, string currency)
+    public Amount(decimal value, string? currency)
     {
         Value = value;
         Currency = currency;
@@ -28,5 +29,5 @@ public class Amount
     /// Валюта.
     /// </summary>
     [JsonProperty("currency")]
-    public string Currency { get; set; }
+    public string? Currency { get; set; }
 }

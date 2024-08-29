@@ -216,7 +216,7 @@ internal sealed class OrdersJob : IJob
                         if (newOrderStatus == PaymentStatusEnum.WaitingForCapture)
                         {
                             await _commerceService.ConfirmPaymentAsync(orderEvent.PaymentId,
-                                new Amount(orderEvent.Price, orderEvent.Currency));
+                                new Amount(orderEvent.Price, orderEvent.Currency.ToString()));
                         }
                     }
                 

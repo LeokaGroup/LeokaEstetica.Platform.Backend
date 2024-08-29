@@ -1,3 +1,5 @@
+using LeokaEstetica.Platform.Models.Enums;
+
 namespace LeokaEstetica.Platform.Base.Models.Input.Processing;
 
 /// <summary>
@@ -51,9 +53,14 @@ public class CreatePaymentOrderInput
     public DateTime Created { get; set; }
 
     /// <summary>
-    /// Валюта.
+    /// Тип валюты.
     /// </summary>
-    public string? Currency { get; set; }
+    public CurrencyTypeEnum CurrencyType { get; set; }
+
+    /// <summary>
+    /// Тип заказа.
+    /// </summary>
+    public OrderTypeEnum OrderType { get; set; }
 
     /// <summary>
     /// Ставка НДС в %.

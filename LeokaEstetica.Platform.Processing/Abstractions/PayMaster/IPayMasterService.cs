@@ -2,6 +2,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Refunds;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Processing.Enums;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
@@ -34,7 +35,7 @@ public interface IPayMasterService
     /// <param name="price">Сумма возврата.</param>
     /// <param name="currency">Валюта.</param>
     /// <returns>Выходная модель.</returns>
-    Task<CreateRefundOutput> CreateRefundAsync(string paymentId, decimal price, string currency);
+    Task<CreateRefundOutput> CreateRefundAsync(string paymentId, decimal price, string? currency);
     
     /// <summary>
     /// Метод проверяет статус возврата в ПС.

@@ -216,7 +216,7 @@ internal sealed class RefundsService : IRefundsService
                 /// TODO: Доработать этот метод для работы с разными ПС через стратегию, по аналогии как работают платежи.
                 // Создаем возврат в ПС.
                 refund = await _payMasterService.CreateRefundAsync(order.PaymentId, price,
-                    PaymentCurrencyEnum.RUB.ToString());
+                    CurrencyTypeEnum.RUB.ToString());
                 
                 // Создаем модель запроса к ПС для создания чека возврата.
                 var requestReceiptRefund = await CreateReceiptRefundRequestAsync(order, account, refund.RefundId,
@@ -303,7 +303,7 @@ internal sealed class RefundsService : IRefundsService
         long refundId, string refundOrderId)
     {
         var price = order.Price;
-        var amount = new Amount(price, PaymentCurrencyEnum.RUB.ToString());
+        var amount = new Amount(price, CurrencyTypeEnum.RUB.ToString());
         var client = new ClientInput(account);
 
         // Создаем позиции чека.

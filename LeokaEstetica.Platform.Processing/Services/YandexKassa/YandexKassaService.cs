@@ -335,7 +335,7 @@ internal sealed class YandexKassaService : IYandexKassaService
             {
                 TestMode = isTestMode,
                 Description = "Оплата тарифа: " + fareRuleName + $" (на {month} мес.)",
-                Amount = new Amount(price, PaymentCurrencyEnum.RUB.ToString()),
+                Amount = new Amount(price, CurrencyTypeEnum.RUB.ToString()),
                 PaymentMethodData = new PaymentMethodData("bank_card"),
                 Confirmation = new Confirmation("redirect", "https://leoka-estetica.ru/return_url"),
                 Metadata = new { FareRuleId = ruleId }

@@ -46,8 +46,8 @@ public class OrderEvent : BaseEventMessage
     /// <summary>
     /// Валюта.
     /// </summary>
-    public string? Currency { get; set; }
-    
+    public CurrencyTypeEnum Currency { get; set; }
+
     /// <summary>
     /// Тип заказа.
     /// </summary>

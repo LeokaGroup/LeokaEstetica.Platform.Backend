@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Models.Enums;
+using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.Orders;
 
@@ -36,6 +37,25 @@ public class OrderOutput
     /// Сумма заказа.
     /// </summary>
     public decimal Price { get; set; }
+
+    /// <summary>
+    /// Значение енамки типа валюты.
+    /// </summary>
+    public CurrencyTypeEnum CurrencyValue { get; set; }
+
+    /// <summary>
+    /// Тип валюты.
+    /// </summary>
+    public IEnum CurrencyType
+    {
+        get => new Enum(CurrencyValue);
+        set => CurrencyValue = Enum.FromString<CurrencyTypeEnum>(value.Value);
+    }
+
+    /// <summary>
+    /// Системное название статуса заказа.
+    /// </summary>
+    public string? StatusSysName { get; set; }
     
     /// <summary>
     /// Тип заказа.

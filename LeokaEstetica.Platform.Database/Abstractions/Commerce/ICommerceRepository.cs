@@ -16,7 +16,7 @@ public interface ICommerceRepository
     /// </summary>
     /// <param name="createPaymentOrderInput">Входная модель.</param>
     /// <returns>Данные заказа.</returns>
-    Task<OrderOutput?> CreateOrderAsync(CreatePaymentOrderInput createPaymentOrderInput);
+    Task<OrderOutput> CreateOrderAsync(CreatePaymentOrderInput createPaymentOrderInput);
 
     /// <summary>
     /// Метод получает скидку на услугу по ее типу и кол-ву месяцев.

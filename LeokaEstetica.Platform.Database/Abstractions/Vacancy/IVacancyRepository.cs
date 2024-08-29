@@ -131,10 +131,10 @@ public interface IVacancyRepository
     /// <returns>Список архивированных вакансий.</returns>
     Task<IEnumerable<ArchivedVacancyEntity>> GetUserVacanciesArchiveAsync(long userId);
 
-    /// <summary>
-    /// Метод фильтрует вакансии в соответствии с фильтрами.
-    /// </summary>
-    /// <param name="filters">Фильтры.</param>
-    /// <returns>Список вакансий после фильтрации.</returns>
-    Task<IEnumerable<CatalogVacancyOutput>> FilterVacanciesAsync(FilterVacancyInput filters);
+	/// <summary>
+	/// Метод получает каталог вакансий после фильтрации и пагинации.
+	/// </summary>
+	/// <param name="VacancyCatalogInput">Фильтры с пагинацией.</param>
+	/// <returns>Каталог вакансий после фильтрации и пагинации.</returns>
+	Task<IEnumerable<CatalogVacancyOutput>> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput);
 }

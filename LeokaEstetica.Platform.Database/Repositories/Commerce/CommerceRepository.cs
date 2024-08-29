@@ -1,7 +1,6 @@
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
-using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
@@ -9,9 +8,9 @@ using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
+using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using IsolationLevel = System.Data.IsolationLevel;
+using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Commerce;
 
@@ -21,7 +20,6 @@ namespace LeokaEstetica.Platform.Database.Repositories.Commerce;
 internal sealed class CommerceRepository : BaseRepository, ICommerceRepository
 {
     private readonly PgContext _pgContext;
-    private readonly IConfiguration _configuration;
 
     /// <summary>
     /// Конструктор.
@@ -29,11 +27,9 @@ internal sealed class CommerceRepository : BaseRepository, ICommerceRepository
     /// <param name="pgContext">Датаконтекст.</param>
     /// <param name="connectionProvider">Провайдер к БД.</param>
     public CommerceRepository(PgContext pgContext,
-        IConfiguration configuration,
         IConnectionProvider connectionProvider) : base(connectionProvider)
     {
         _pgContext = pgContext;
-        _configuration = configuration;
     }
 
     #region Публичные методы.
@@ -43,52 +39,74 @@ internal sealed class CommerceRepository : BaseRepository, ICommerceRepository
     /// </summary>
     /// <param name="createPaymentOrderInput">Входная модель.</param>
     /// <returns>Данные заказа.</returns>
-    public async Task<OrderOutput?> CreateOrderAsync(CreatePaymentOrderInput createPaymentOrderInput)
+    public async Task<OrderOutput> CreateOrderAsync(CreatePaymentOrderInput createPaymentOrderInput)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
-        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
-        try
-        {
-            var orderParameters = new DynamicParameters();
-            orderParameters.Add("@createdBy", createPaymentOrderInput.UserId);
-            orderParameters.Add("@paymentId", createPaymentOrderInput.PaymentId);
-            orderParameters.Add("@orderName", createPaymentOrderInput.Name);
-            orderParameters.Add("@orderDetails", createPaymentOrderInput.Description);
-            orderParameters.Add("@price", createPaymentOrderInput.Price);
-            orderParameters.Add("@currency", createPaymentOrderInput.Currency);
-            orderParameters.Add("@createdAt", createPaymentOrderInput.Created);
-            orderParameters.Add("@paymentMonth", createPaymentOrderInput.PaymentMonth);
-            orderParameters.Add("@statusName", createPaymentOrderInput.PaymentStatusName);
-            orderParameters.Add("@statusSysName", createPaymentOrderInput.PaymentStatusSysName);
-
-            var orderQuery = "INSERT INTO commerce.orders (order_name, order_details, created_at, created_by," +
-                             " status_name, status_sys_name, price, currency, payment_month) " +
-                             "VALUES (@orderName, @orderDetails, @createdAt, @createdBy, @statusName," +
-                             " @statusSysName, @price, @currency, @paymentMonth) " +
-                             "RETURNING order_id";
-
-            var orderId = await connection.ExecuteScalarAsync<long>(orderQuery, orderParameters);
-
-            var resultParameters = new DynamicParameters();
-            resultParameters.Add("@orderId", orderId);
-
-            var resultQuery = "SELECT order_id, order_name, order_details, created_at, created_by, status_name," +
-                              " status_sys_name, price, vat_rate, price_vat, discount, discount_price, total_price," +
-                              " currency, payment_month, payment_id, order_type " +
-                              "FROM commerce.orders " +
-                              "WHERE order_id = @orderId";
-
-            var result = await connection.QueryFirstOrDefaultAsync<OrderOutput?>(resultQuery, resultParameters);
-
-            return result;
-        }
+        var parameters = new DynamicParameters();
+        parameters.Add("@createdBy", createPaymentOrderInput.UserId);
+        parameters.Add("@orderName", createPaymentOrderInput.Name);
+        parameters.Add("@orderDetails", createPaymentOrderInput.Description);
+        parameters.Add("@paymentId", createPaymentOrderInput.PaymentId);
+        parameters.Add("@statusName", createPaymentOrderInput.PaymentStatusName);
+        parameters.Add("@statusSysName", createPaymentOrderInput.PaymentStatusSysName);
+        parameters.Add("@currency", new Enum(CurrencyTypeEnum.RUB));
+        parameters.Add("@price", createPaymentOrderInput.Price);
+        parameters.Add("@paymentMonth", createPaymentOrderInput.Price);
+        parameters.Add("@totalPrice", createPaymentOrderInput.Price);
         
-        catch
-        {
-            transaction.Rollback();
-            throw;
-        }
+        //TODO: Передавать в этот метод тип заказа, не хардкодить.
+        parameters.Add("@orderType", new Enum(OrderTypeEnum.FareRule));
+
+        var query = "INSERT INTO commerce.orders (" +
+                    "order_name, " +
+                    "order_details, " +
+                    "created_by, " +
+                    "status_name, " +
+                    "status_sys_name, " +
+                    "price, " +
+                    "total_price, " +
+                    "currency, " +
+                    "payment_month, " +
+                    "payment_id, " +
+                    "order_type) " +
+                    "VALUES (" +
+                    "@orderName, " +
+                    "@orderDetails, " +
+                    "@createdBy, " +
+                    "@statusName, " +
+                    "@statusSysName, " +
+                    "@price, " +
+                    "@totalPrice, " +
+                    "@currency, " +
+                    "@paymentMonth, " +
+                    "@paymentId, " +
+                    "@orderType) " +
+                    "RETURNING order_id";
+
+        var orderId = await connection.QuerySingleOrDefaultAsync<long>(query, parameters);
+
+        var orderParameters = new DynamicParameters();
+        orderParameters.Add("@orderId", orderId);
+
+        var orderQuery = "SELECT order_id, " +
+                         "order_name, " +
+                         "order_details, " +
+                         "created_by, " +
+                         "status_name, " +
+                         "status_sys_name, " +
+                         "price, " +
+                         "total_price, " +
+                         "currency, " +
+                         "payment_month, " +
+                         "payment_id, " +
+                         "order_type " +
+                         "FROM commerce.orders " +
+                         "WHERE order_id = @orderId";
+        
+        var result = await connection.QuerySingleOrDefaultAsync<OrderOutput>(orderQuery, orderParameters);
+
+        return result;
     }
 
     /// <summary>
@@ -118,44 +136,37 @@ internal sealed class CommerceRepository : BaseRepository, ICommerceRepository
     public async Task<bool> UpdateOrderStatusAsync(string paymentStatusSysName, string paymentStatusName,
         string paymentId, long orderId)
     {
-        OrderEntity updateOrder;
-        var isNew = false;
-        PgContext pgContext = null;
+        using var connection = await ConnectionProvider.GetConnectionAsync();
 
-        try
-        {
-            updateOrder = await _pgContext.Orders
-                .FirstOrDefaultAsync(o => o.OrderId == orderId 
-                                          && o.PaymentId.Equals(paymentId));
-        }
-        
-        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
-        catch (ObjectDisposedException _)
-        {
-            pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
-            updateOrder = await pgContext.Orders
-                .FirstOrDefaultAsync(o => o.OrderId == orderId 
-                                          && o.PaymentId.Equals(paymentId));
-            isNew = true;
-        }
-        
-        if (updateOrder is null)
+        var checkExistsParameters = new DynamicParameters();
+        checkExistsParameters.Add("@paymentId", paymentId);
+        checkExistsParameters.Add("@orderId", orderId);
+
+        var checkExistsQuery = "SELECT EXISTS (" +
+                               "SELECT order_id " +
+                               "FROM commerce.orders " +
+                               "WHERE order_id = @orderId " +
+                               "AND payment_id = @paymentId)";
+
+        var ifExists = await connection.ExecuteScalarAsync<bool>(checkExistsQuery, checkExistsParameters);
+
+        if (!ifExists)
         {
             return false;
         }
 
-        updateOrder.StatusSysName = paymentStatusSysName;
-        updateOrder.StatusName = paymentStatusName;
+        var updateOrderParameters = new DynamicParameters();
+        updateOrderParameters.Add("@paymentStatusSysName", paymentStatusSysName);
+        updateOrderParameters.Add("@paymentStatusName", paymentStatusName);
+        updateOrderParameters.Add("@paymentId", paymentId);
+        updateOrderParameters.Add("@orderId", orderId);
 
-        if (isNew)
-        {
-            await pgContext.SaveChangesAsync();
-        }
+        var updateOrderQuery = "UPDATE commerce.orders " +
+                               "SET status_name = @paymentStatusName, " +
+                               "status_sys_name = @paymentStatusSysName " +
+                               "WHERE order_id = @orderId";
 
-        else
-        {
-            await _pgContext.SaveChangesAsync();
-        }
+        await connection.ExecuteAsync(updateOrderQuery, updateOrderParameters);
 
         return true;
     }
@@ -169,40 +180,19 @@ internal sealed class CommerceRepository : BaseRepository, ICommerceRepository
     public async Task SetStatusConfirmByPaymentIdAsync(string paymentId, string paymentStatusSysName,
         string paymentStatusName)
     {
-        OrderEntity order;
-        var isNew = false;
-        PgContext pgContext = null;
+        using var connection = await ConnectionProvider.GetConnectionAsync();
         
-        try
-        {
-            order = await _pgContext.Orders.FirstOrDefaultAsync(o => o.PaymentId.Equals(paymentId));
-        }
-        
-        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
-        catch (ObjectDisposedException _)
-        {
-            pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
-            order = await pgContext.Orders.FirstOrDefaultAsync(o => o.PaymentId.Equals(paymentId));
-            isNew = true;
-        }
+        var parameters = new DynamicParameters();
+        parameters.Add("@paymentId", paymentId);
+        parameters.Add("@paymentStatusSysName", paymentStatusSysName);
+        parameters.Add("@paymentStatusName", paymentStatusName);
 
-        if (order is null)
-        {
-            throw new InvalidOperationException($"Не удалось получить заказ по PaymentId: {paymentId}");
-        }
+        var query = "UPDATE commerce.orders " +
+                    "SET status_name = @paymentStatusName, " +
+                    "status_sys_name = @paymentStatusSysName " +
+                    "WHERE payment_id = @paymentId";
 
-        order.StatusName = paymentStatusName;
-        order.StatusSysName = paymentStatusSysName;
-
-        if (isNew)
-        {
-            await pgContext.SaveChangesAsync();
-        }
-
-        else
-        {
-            await _pgContext.SaveChangesAsync();   
-        }
+        await connection.ExecuteAsync(query, parameters);
     }
 
     /// <summary>

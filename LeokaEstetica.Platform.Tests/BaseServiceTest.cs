@@ -103,7 +103,6 @@ internal class BaseServiceTest
     protected readonly VacancyFinderService VacancyFinderService;
     protected readonly Finder.Services.Project.ProjectFinderService FinderProjectService;
     protected readonly ResumeFinderService ResumeFinderService;
-    protected readonly VacancyPaginationService VacancyPaginationService;
     protected readonly ProjectPaginationService ProjectPaginationService;
     protected readonly FareRuleService FareRuleService;
     protected readonly PayMasterService PayMasterService;
@@ -233,7 +232,8 @@ internal class BaseServiceTest
             projectManagementNotificationsRepository, projectRepository, null, globalConfigRepository,
             vacancyRepository, projectManagementRepository,
             new Lazy<IProjectManagementSettingsRepository>(projectManagementSettingsRepository), null);
-        ProjectFinderService = new ProjectFinderService(null, userRepository, ProjectNotificationsService, ResumeModerationService);
+        ProjectFinderService = new ProjectFinderService(null, userRepository, ProjectNotificationsService,
+            ResumeModerationService);
 
         var resumeRepository = new ResumeRepository(pgContext, connectionProvider);
         var wikiRepository = new WikiTreeRepository(connectionProvider);
@@ -244,7 +244,7 @@ internal class BaseServiceTest
             globalConfigRepository, projectManagementRepository, wikiRepository, null, null, null);
         
         var ordersRepository = new OrdersRepository(pgContext);
-        var commerceRepository = new CommerceRepository(pgContext, AppConfiguration, connectionProvider);
+        var commerceRepository = new CommerceRepository(pgContext, connectionProvider);
         var commerceRedisService = new CommerceRedisService(distributedCache);
         var rabbitMqService = new RabbitMqService();
         
@@ -264,7 +264,6 @@ internal class BaseServiceTest
         VacancyFinderService = new VacancyFinderService(vacancyRepository, null);
         FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, null);
         ResumeFinderService = new ResumeFinderService(null, resumeRepository);
-        VacancyPaginationService = new VacancyPaginationService(vacancyRepository, null);
         ProjectPaginationService = new ProjectPaginationService(projectRepository, null);
         FareRuleService = new FareRuleService(FareRuleRepository, null);
 
