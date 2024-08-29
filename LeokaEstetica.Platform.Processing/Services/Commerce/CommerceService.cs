@@ -581,7 +581,8 @@ internal sealed class CommerceService : ICommerceService
             var result = new CalculatePostVacancyPriceOutput
             {
                 Price = fees.FeesPrice,
-                IsNeedUserAction = true
+                IsNeedUserAction = true,
+                Fees = fees
             };
 
             return result;
