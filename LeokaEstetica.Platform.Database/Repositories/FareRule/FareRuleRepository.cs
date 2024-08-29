@@ -223,56 +223,56 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
         (FareRuleCompositeOutput? FareRule, IEnumerable<FareRuleAttributeOutput>? FareRuleAttributes,
             IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues) result = (null, null, null);
         
-        using var connection = await ConnectionProvider.GetConnectionAsync();
-
-        var fareRulesParameters = new DynamicParameters();
-        fareRulesParameters.Add("@publicId", publicId);
-
-        var fareRulesQuery = "SELECT rule_id, " +
-                             "rule_name, " +
-                             "is_free, " +
-                             "public_id " +
-                             "FROM rules.fare_rules " +
-                             "WHERE public_id = @publicId";
-
-        // Получаем тариф.
-        result.FareRule = await connection.QueryFirstOrDefaultAsync<FareRuleCompositeOutput>(fareRulesQuery,
-            fareRulesParameters);
-
-        if (result.FareRule is null)
-        {
-            throw new InvalidOperationException($"Ошибка получения тарифа. PublicId: {publicId}.");
-        }
-
-        var fareRuleAttributesQuery = "SELECT attribute_id, " +
-                                      "attribute_name, " +
-                                      "attribute_details " +
-                                      "FROM rules.fare_rule_attributes " +
-                                      "ORDER BY position";
-                                      
-        // Получаем атрибуты тарифа.
-        result.FareRuleAttributes = await connection.QueryAsync<FareRuleAttributeOutput>(fareRuleAttributesQuery);
-
-        var fareRuleAttributeValuesParameters = new DynamicParameters();
-        fareRuleAttributeValuesParameters.Add("@ruleId", result.FareRule.RuleId);
-
-        var fareRuleAttributeValuesQuery = "SELECT value_id, " +
-                                           "rule_id, " +
-                                           "is_price, " +
-                                           "attribute_id, " +
-                                           "measure, " +
-                                           "min_value, " +
-                                           "max_value, " +
-                                           "is_range, " +
-                                           "content_tooltip, " +
-                                           "content " +
-                                           "FROM rules.fare_rule_attribute_values " +
-                                           "WHERE rule_id = @ruleId " +
-                                           "ORDER BY position";
-
-        // Получаем значения атрибутов тарифа.
-        result.FareRuleAttributeValues = await connection.QueryAsync<FareRuleAttributeValueOutput>(
-            fareRuleAttributeValuesQuery, fareRuleAttributeValuesParameters);
+        // using var connection = await ConnectionProvider.GetConnectionAsync();
+        //
+        // var fareRulesParameters = new DynamicParameters();
+        // fareRulesParameters.Add("@publicId", publicId);
+        //
+        // var fareRulesQuery = "SELECT rule_id, " +
+        //                      "rule_name, " +
+        //                      "is_free, " +
+        //                      "public_id " +
+        //                      "FROM rules.fare_rules " +
+        //                      "WHERE public_id = @publicId";
+        //
+        // // Получаем тариф.
+        // result.FareRule = await connection.QueryFirstOrDefaultAsync<FareRuleCompositeOutput>(fareRulesQuery,
+        //     fareRulesParameters);
+        //
+        // if (result.FareRule is null)
+        // {
+        //     throw new InvalidOperationException($"Ошибка получения тарифа. PublicId: {publicId}.");
+        // }
+        //
+        // var fareRuleAttributesQuery = "SELECT attribute_id, " +
+        //                               "attribute_name, " +
+        //                               "attribute_details " +
+        //                               "FROM rules.fare_rule_attributes " +
+        //                               "ORDER BY position";
+        //                               
+        // // Получаем атрибуты тарифа.
+        // result.FareRuleAttributes = await connection.QueryAsync<FareRuleAttributeOutput>(fareRuleAttributesQuery);
+        //
+        // var fareRuleAttributeValuesParameters = new DynamicParameters();
+        // fareRuleAttributeValuesParameters.Add("@ruleId", result.FareRule.RuleId);
+        //
+        // var fareRuleAttributeValuesQuery = "SELECT value_id, " +
+        //                                    "rule_id, " +
+        //                                    "is_price, " +
+        //                                    "attribute_id, " +
+        //                                    "measure, " +
+        //                                    "min_value, " +
+        //                                    "max_value, " +
+        //                                    "is_range, " +
+        //                                    "content_tooltip, " +
+        //                                    "content " +
+        //                                    "FROM rules.fare_rule_attribute_values " +
+        //                                    "WHERE rule_id = @ruleId " +
+        //                                    "ORDER BY position";
+        //
+        // // Получаем значения атрибутов тарифа.
+        // result.FareRuleAttributeValues = await connection.QueryAsync<FareRuleAttributeValueOutput>(
+        //     fareRuleAttributeValuesQuery, fareRuleAttributeValuesParameters);
 
         return result;
     }

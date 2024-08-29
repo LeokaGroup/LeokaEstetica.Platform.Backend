@@ -22,4 +22,14 @@ public class CreateOrderCacheInput
     /// Входная модель заказа на платное размещение вакансии.
     /// </summary>
     public OrderVacancyCacheInput? VacancyCache { get; set; }
+
+    /// <summary>
+    /// Публичный ключ.
+    /// </summary>
+    public Guid PublicId { get; set; }
+
+    /// <summary>
+    /// Кол-во мес. подписки.
+    /// </summary>
+    public short? PaymentMonth { get; set; }
 }

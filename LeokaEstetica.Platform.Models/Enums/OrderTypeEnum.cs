@@ -6,6 +6,11 @@
 public enum OrderTypeEnum
 {
     /// <summary>
+    /// Неизвестный тип.
+    /// </summary>
+    Undefined = 0,
+    
+    /// <summary>
     /// Создание вакансии.
     /// </summary>
     CreateVacancy = 1,

@@ -253,7 +253,7 @@ internal class BaseServiceTest
 
         CommerceService = new CommerceService(commerceRedisService, null, userRepository, FareRuleRepository,
             commerceRepository, ordersRepository, subscriptionRepository, accessUserService,
-            null, null, mapper, null, new Lazy<IDiscordService>(discordService), null);
+            null, null, null, null, null);
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
             FareRuleRepository);

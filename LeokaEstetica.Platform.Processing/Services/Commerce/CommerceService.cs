@@ -122,12 +122,12 @@ internal sealed class CommerceService : ICommerceService
                 throw ex;
             }
             
-            var fareRule = await _fareRuleRepository.get
+            // var fareRule = await _fareRuleRepository.get
 
             // var fareRule = await GetFareRuleAsync(userId, createOrderCacheInput.FareRuleCache.EmployeesCount,
             //     createOrderCacheInput.FareRuleCache.PublicId);
             
-            var fareRuleAttributeValues = fareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
+            // var fareRuleAttributeValues = fareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
 
             var orderBuilder = new OrderBuilder();
             BaseOrderBuilder? builder = null;
@@ -140,29 +140,26 @@ internal sealed class CommerceService : ICommerceService
                         $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
 
                 // Создаем заказ на подписку тарифа.
-                case OrderTypeEnum.FareRule:
-                    builder = new FareRuleOrderBuilder
-                    {
-                        OrderData = new OrderData
-                        {
-                            FareRuleAttributeValues = fareRuleAttributeValues,
-                            FareRuleName = fareRule.FareRule!.RuleName,
-                            CreatedBy = userId,
-                            RuleId = fareRule.FareRule.RuleId,
-                            OrderType = createOrderCacheInput.OrderType,
-                            Month = createOrderCacheInput.PaymentMonth
-                        }
-                    };
+                // case OrderTypeEnum.FareRule:
+                //     builder = new FareRuleOrderBuilder
+                //     {
+                //         OrderData = new OrderData
+                //         {
+                //             FareRuleAttributeValues = fareRuleAttributeValues,
+                //             FareRuleName = fareRule.FareRule!.RuleName,
+                //             CreatedBy = userId,
+                //             RuleId = fareRule.FareRule.RuleId,
+                //             OrderType = createOrderCacheInput.OrderType,
+                //             Month = createOrderCacheInput.PaymentMonth
+                //         }
+                //     };
                     
                     await orderBuilder.BuildAsync(builder);
                     break;
                 
                 case OrderTypeEnum.CreateVacancy:
                     break;
-                
-                case OrderTypeEnum.OpenResume:
-                    break;
-                
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -182,8 +179,8 @@ internal sealed class CommerceService : ICommerceService
             }
 
             // Сохраняем заказ в кэш сроком на 4 часа.
-            var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, createOrderCacheInput.PublicId);
-            await _commerceRedisService.CreateOrderCacheAsync(key, builder.OrderCache);
+            // var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, createOrderCacheInput.PublicId);
+            // await _commerceRedisService.CreateOrderCacheAsync(key, builder.OrderCache);
 
             return builder.OrderCache;
         }
