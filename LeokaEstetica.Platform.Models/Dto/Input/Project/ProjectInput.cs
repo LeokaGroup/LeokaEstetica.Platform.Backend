@@ -16,7 +16,8 @@ public class ProjectInput
     /// <param name="projectId">Id проекта.</param>
     /// <param name="projectStage">Стадия проекта.</param>
     /// <param name="userId">Id пользователя.</param>
-    public ProjectInput(string projectName, string projectDetails, long? projectId, string projectStage, long? userId)
+    public ProjectInput(string projectName, string projectDetails, long? projectId, string projectStage, 
+        long? userId,bool isPublic)
     {
         if (projectId.HasValue)
         {
@@ -31,6 +32,7 @@ public class ProjectInput
         ProjectName = projectName;
         ProjectDetails = projectDetails;
         ProjectStage = projectStage;
+        IsPublic = isPublic;
     }
 
     /// <summary>
@@ -82,4 +84,9 @@ public class ProjectInput
     /// Id пользователя.
     /// </summary>
     public long UserId { get; set; }
+
+	/// <summary>
+	/// Видимость проекта
+	/// </summary>
+	public bool IsPublic { get; set; }
 }

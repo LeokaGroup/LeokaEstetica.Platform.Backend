@@ -22,8 +22,8 @@ public class UpdateProjectInput : ProjectInput, IFrontError
     /// <param name="projectStage">Стадия проекта.</param>
     /// <param name="userId">Id пользователя.</param>
     public UpdateProjectInput(string projectName, string projectDetails, long projectId, string projectStage,
-        long? userId)
-        : base(projectName, projectDetails, projectId, projectStage, userId)
+        long? userId, bool isPublic)
+        : base(projectName, projectDetails, projectId, projectStage, userId, isPublic)
     {
     }
 }
