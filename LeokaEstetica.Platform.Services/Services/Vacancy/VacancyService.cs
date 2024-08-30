@@ -30,6 +30,8 @@ using Microsoft.Extensions.Logging;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Finder.Services.Vacancy;
+using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -57,19 +59,20 @@ internal sealed class VacancyService : IVacancyService
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
     private readonly IDiscordService _discordService;
     private readonly Lazy<IHubNotificationService> _hubNotificationService;
+    private readonly IVacancyFinderService _vacancyFinderService;
 
-    /// <summary>
-    /// Конструктор.
-    /// </summary>
-    /// <param name="logger">Сервис логера.</param>
-    /// <param name="vacancyRepository">Репозиторий вакансий.</param>
-    /// <param name="mapper">Автомаппер.</param>
-    /// <param name="vacancyRedisService">Сервис вакансий кэша.</param>
-    /// <param name="userRepository">Репозиторий пользователя.</param>
-    /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
-    /// <param name="discordService">Сервис уведомления дискорда.</param>
-    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
-    public VacancyService(ILogger<VacancyService> logger,
+	/// <summary>
+	/// Конструктор.
+	/// </summary>
+	/// <param name="logger">Сервис логера.</param>
+	/// <param name="vacancyRepository">Репозиторий вакансий.</param>
+	/// <param name="mapper">Автомаппер.</param>
+	/// <param name="vacancyRedisService">Сервис вакансий кэша.</param>
+	/// <param name="userRepository">Репозиторий пользователя.</param>
+	/// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
+	/// <param name="discordService">Сервис уведомления дискорда.</param>
+	/// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
+	public VacancyService(ILogger<VacancyService> logger,
         IVacancyRepository vacancyRepository,
         IMapper mapper,
         IVacancyRedisService vacancyRedisService,
@@ -80,7 +83,8 @@ internal sealed class VacancyService : IVacancyService
         IMailingsService mailingsService, 
         IVacancyModerationRepository vacancyModerationRepository,
         IDiscordService discordService,
-         Lazy<IHubNotificationService> hubNotificationService)
+         Lazy<IHubNotificationService> hubNotificationService,
+         IVacancyFinderService vacancyFinderService)
     {
         _logger = logger;
         _vacancyRepository = vacancyRepository;
@@ -95,6 +99,7 @@ internal sealed class VacancyService : IVacancyService
         _vacancyModerationRepository = vacancyModerationRepository;
         _discordService = discordService;
         _hubNotificationService = hubNotificationService;
+        _vacancyFinderService = vacancyFinderService;
     }
 
     #region Публичные методы.
@@ -399,10 +404,21 @@ internal sealed class VacancyService : IVacancyService
                 CatalogVacancies = new List<CatalogVacancyOutput>()
             };
 
-			// Разбиваем строку занятости, так как там может приходить несколько значений в строке.
-			vacancyCatalogInput.Filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(vacancyCatalogInput.Filters.EmploymentsValues);
+			// Метод находит вакансии по поисковому запросу,
+            // если запроса нет, то выводим каталог
+			if (vacancyCatalogInput.searchText is not null)
+            {
+                return await _vacancyFinderService.SearchVacanciesAsync(vacancyCatalogInput.searchText);
 
-            result.CatalogVacancies = await _vacancyRepository.GetCatalogVacanciesAsync(vacancyCatalogInput);
+			}
+            else
+            {
+			    // Разбиваем строку занятости, так как там может приходить несколько значений в строке.
+			    vacancyCatalogInput.Filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(vacancyCatalogInput.Filters.EmploymentsValues);
+
+                result.CatalogVacancies = await _vacancyRepository.GetCatalogVacanciesAsync(vacancyCatalogInput);
+
+            }
 
             return result;
         }
