@@ -8,15 +8,16 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
 /// </summary>
 public class ProjectInput
 {
-    /// <summary>
-    /// Конструктор.
-    /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    public ProjectInput(string projectName, string projectDetails, long? projectId, string projectStage, 
+	/// <summary>
+	/// Конструктор.
+	/// </summary>
+	/// <param name="projectName">Название проекта.</param>
+	/// <param name="projectDetails">Описание проекта.</param>
+	/// <param name="projectId">Id проекта.</param>
+	/// <param name="projectStage">Стадия проекта.</param>
+	/// <param name="userId">Id пользователя.</param>
+	/// <param name="isPublic">Видимость проекта.</param>
+	public ProjectInput(string projectName, string projectDetails, long? projectId, string projectStage, 
         long? userId,bool isPublic)
     {
         if (projectId.HasValue)
