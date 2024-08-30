@@ -94,18 +94,18 @@ public class CommerceController : BaseController
     }
 
     /// <summary>
-    /// Метод создает заказ в кэше и хранит его 2 часа.
+    /// Метод создает заказ в кэше или в кролике (зависит от тарифа, услуг).
     /// </summary>
     /// <param name="createOrderCacheInput">Входная модель.</param>
     /// <returns>Данные заказа, которые хранятся в кэше.</returns>
     [HttpPost]
-    [Route("fare-rule/order-form/pre")]
+    [Route("order/order-form/pre")]
     [ProducesResponseType(200, Type = typeof(OrderCacheOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<OrderCacheOutput> CreateOrderCacheAsync(
+    public async Task<OrderCacheOutput> CreateOrderCacheOrRabbitMqAsync(
         [FromBody] CreateOrderCacheInput createOrderCacheInput)
     {
         var validator = await new CreateOrderCacheValidator().ValidateAsync(createOrderCacheInput);
@@ -123,7 +123,8 @@ public class CommerceController : BaseController
             throw ex;
         }
 
-        var orderFromCache = await _commerceService.CreateOrderCacheAsync(createOrderCacheInput, GetUserName());
+        var orderFromCache = await _commerceService.CreateOrderCacheOrRabbitMqAsync(createOrderCacheInput,
+            GetUserName());
         
         var result = _mapper.Map<OrderCacheOutput>(orderFromCache);
 

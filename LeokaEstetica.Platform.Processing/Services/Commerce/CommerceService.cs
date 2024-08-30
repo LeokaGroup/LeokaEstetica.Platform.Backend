@@ -23,6 +23,7 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
+using LeokaEstetica.Platform.Processing.BuilderData;
 using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
@@ -109,7 +110,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="createOrderCache">Модель заказа для хранения в кэше.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные заказа добавленного в кэш.</returns>
-    public async Task<CreateOrderCache> CreateOrderCacheAsync(CreateOrderCacheInput createOrderCacheInput,
+    public async Task<CreateOrderCache> CreateOrderCacheOrRabbitMqAsync(CreateOrderCacheInput createOrderCacheInput,
         string account)
     {
         try
@@ -121,13 +122,6 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
-            // var fareRule = await _fareRuleRepository.get
-
-            // var fareRule = await GetFareRuleAsync(userId, createOrderCacheInput.FareRuleCache.EmployeesCount,
-            //     createOrderCacheInput.FareRuleCache.PublicId);
-            
-            // var fareRuleAttributeValues = fareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
 
             var orderBuilder = new OrderBuilder();
             BaseOrderBuilder? builder = null;
@@ -140,19 +134,23 @@ internal sealed class CommerceService : ICommerceService
                         $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
 
                 // Создаем заказ на подписку тарифа.
-                // case OrderTypeEnum.FareRule:
-                //     builder = new FareRuleOrderBuilder
-                //     {
-                //         OrderData = new OrderData
-                //         {
-                //             FareRuleAttributeValues = fareRuleAttributeValues,
-                //             FareRuleName = fareRule.FareRule!.RuleName,
-                //             CreatedBy = userId,
-                //             RuleId = fareRule.FareRule.RuleId,
-                //             OrderType = createOrderCacheInput.OrderType,
-                //             Month = createOrderCacheInput.PaymentMonth
-                //         }
-                //     };
+                case OrderTypeEnum.FareRule:
+                    var fareRule = await GetFareRuleAsync(userId, createOrderCacheInput.PublicId);
+                    var fareRuleAttributeValues = fareRule.FareRuleAttributeValues
+                        ?.FirstOrDefault(x => x.AttributeId == 4);
+                    
+                    builder = new FareRuleOrderBuilder
+                    {
+                        OrderData = new OrderData
+                        {
+                            FareRuleAttributeValues = fareRuleAttributeValues,
+                            FareRuleName = fareRule.FareRule!.RuleName,
+                            CreatedBy = userId,
+                            RuleId = fareRule.FareRule.RuleId,
+                            OrderType = createOrderCacheInput.OrderType,
+                            Month = createOrderCacheInput.PaymentMonth
+                        }
+                    };
                     
                     await orderBuilder.BuildAsync(builder);
                     break;
@@ -161,13 +159,14 @@ internal sealed class CommerceService : ICommerceService
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new InvalidOperationException("Неизвестный кейс создания заказа. " +
+                                                        $"OrderType: {createOrderCacheInput.OrderType}.");
             }
 
             if (builder is null)
             {
                 throw new InvalidOperationException(
-                    "Ошибка создания билдера заказов. " +
+                    "Ошибка создания билдера заказа. " +
                     $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
             }
 
@@ -178,9 +177,19 @@ internal sealed class CommerceService : ICommerceService
                     $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
             }
 
-            // Сохраняем заказ в кэш сроком на 4 часа.
-            // var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, createOrderCacheInput.PublicId);
-            // await _commerceRedisService.CreateOrderCacheAsync(key, builder.OrderCache);
+            // Если оформляют тариф, то добавляем в кэш.
+            if (createOrderCacheInput.OrderType == OrderTypeEnum.FareRule)
+            {
+                // Сохраняем заказ в кэш сроком на 4 часа.
+                var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, createOrderCacheInput.PublicId);
+                await _commerceRedisService.CreateOrderCacheAsync(key, builder.OrderCache);
+            }
+
+            // Если оформляют платную публикацию вакансии, то в кэш не добавляем, а закидываем в кролика.
+            if (createOrderCacheInput.OrderType == OrderTypeEnum.CreateVacancy)
+            {
+                
+            }
 
             return builder.OrderCache;
         }

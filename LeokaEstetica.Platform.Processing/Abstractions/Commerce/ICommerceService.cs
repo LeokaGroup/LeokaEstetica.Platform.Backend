@@ -15,12 +15,13 @@ namespace LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 public interface ICommerceService
 {
     /// <summary>
-    /// Метод создает заказ в кэше.
+    /// Метод создает заказ в кэше или в кролике (зависит от тарифа, услуг).
     /// </summary>
     /// <param name="createOrderCache">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <returns>Данные заказа добавленного в кэш.</returns>
-    Task<CreateOrderCache> CreateOrderCacheAsync(CreateOrderCacheInput createOrderCacheInput, string account);
+    /// <returns>Данные заказа.</returns>
+    Task<CreateOrderCache> CreateOrderCacheOrRabbitMqAsync(CreateOrderCacheInput createOrderCacheInput,
+        string account);
 
     /// <summary>
     /// Метод получает услуги и сервисы заказа из кэша.
