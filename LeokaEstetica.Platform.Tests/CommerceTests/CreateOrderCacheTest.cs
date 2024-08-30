@@ -10,7 +10,7 @@ internal class CreateOrderCacheTest : BaseServiceTest
     public Task CreateOrderCacheAsyncTest()
     {
         Assert.DoesNotThrowAsync(async () => await CommerceService.CreateOrderCacheOrRabbitMqAsync(
-            new CreateOrderCacheInput
+            new CreateOrderInput
             {
                 PublicId = new Guid("0f9e23c8-338d-47fc-8a0f-3e539d98615c"),
                 PaymentMonth = 2

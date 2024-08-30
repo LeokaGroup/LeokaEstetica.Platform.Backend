@@ -10,12 +10,14 @@ internal class UpdateVacancyTest : BaseServiceTest
     public async Task UpdateVacancyAsyncTest()
     {
         var result = await VacancyService.UpdateVacancyAsync(
-            new VacancyInput("Тестовая вакансия", "Тестовое описание вакансии", null, 60, null)
+            new VacancyInput
             {
                 WorkExperience = "Без опыта",
                 Payment = "Без оплаты",
                 Account = "sierra_93@mail.ru",
-                Employment = "Свободная"
+                Employment = "Свободная",
+                VacancyName = "Тестовая вакансия",
+                VacancyText = "Тестовое описание вакансии"
             });
 
         Assert.IsNotNull(result);

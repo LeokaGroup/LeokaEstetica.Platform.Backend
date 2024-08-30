@@ -56,5 +56,12 @@ public class ProcessingModule : Module
         builder.RegisterType<FareRuleOrderBuilder>()
             .As<BaseOrderBuilder>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterType<PostVacancyOrderBuilder>()
+            .Named<BaseOrderBuilder>("PostVacancyOrderBuilder")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<PostVacancyOrderBuilder>()
+            .As<BaseOrderBuilder>()
+            .InstancePerLifetimeScope();
     }
 }

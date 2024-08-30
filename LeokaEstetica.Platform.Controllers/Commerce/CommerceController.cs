@@ -106,7 +106,7 @@ public class CommerceController : BaseController
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<OrderCacheOutput> CreateOrderCacheOrRabbitMqAsync(
-        [FromBody] CreateOrderCacheInput createOrderCacheInput)
+        [FromBody] CreateOrderInput createOrderCacheInput)
     {
         var validator = await new CreateOrderCacheValidator().ValidateAsync(createOrderCacheInput);
         

@@ -13,6 +13,7 @@ using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Input.Commerce.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
@@ -110,7 +111,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="createOrderCache">Модель заказа для хранения в кэше.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные заказа добавленного в кэш.</returns>
-    public async Task<CreateOrderCache> CreateOrderCacheOrRabbitMqAsync(CreateOrderCacheInput createOrderCacheInput,
+    public async Task<CreateOrderCache> CreateOrderCacheOrRabbitMqAsync(CreateOrderInput createOrderCacheInput,
         string account)
     {
         try
@@ -122,9 +123,13 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-
+            
             var orderBuilder = new OrderBuilder();
-            BaseOrderBuilder? builder = null;
+            BaseOrderBuilder? builder;
+
+            var fareRule = await GetFareRuleAsync(userId, createOrderCacheInput.PublicId);
+            var fareRuleAttributeValues = fareRule.FareRuleAttributeValues
+                ?.FirstOrDefault(x => x.AttributeId == 4);
 
             switch (createOrderCacheInput.OrderType)
             {
@@ -135,10 +140,6 @@ internal sealed class CommerceService : ICommerceService
 
                 // Создаем заказ на подписку тарифа.
                 case OrderTypeEnum.FareRule:
-                    var fareRule = await GetFareRuleAsync(userId, createOrderCacheInput.PublicId);
-                    var fareRuleAttributeValues = fareRule.FareRuleAttributeValues
-                        ?.FirstOrDefault(x => x.AttributeId == 4);
-                    
                     builder = new FareRuleOrderBuilder
                     {
                         OrderData = new OrderData
@@ -149,13 +150,72 @@ internal sealed class CommerceService : ICommerceService
                             RuleId = fareRule.FareRule.RuleId,
                             OrderType = createOrderCacheInput.OrderType,
                             Month = createOrderCacheInput.PaymentMonth
-                        }
+                        },
                     };
-                    
+
                     await orderBuilder.BuildAsync(builder);
-                    break;
-                
+
+                    if (builder is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания билдера заказа. " +
+                            $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
+                    }
+
+                    var ruleBuilder = builder as FareRuleOrderBuilder ??
+                                      throw new InvalidCastException($"Ошибка каста к {nameof(FareRuleOrderBuilder)}");
+
+                    if (ruleBuilder.OrderCache is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания модели заказа для сохранения его в кэше. " +
+                            $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
+                    }
+
+                    // Сохраняем заказ в кэш сроком на 4 часа.
+                    var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId,
+                        createOrderCacheInput.PublicId);
+                    await _commerceRedisService.CreateOrderCacheAsync(key, ruleBuilder.OrderCache);
+
+                    return ruleBuilder.OrderCache;
+
+                // Добавляем в очередь кролика заказ на платную публикацию вакансии.
+                // В этом кейсе не добавляем в кэш.
                 case OrderTypeEnum.CreateVacancy:
+                    builder = new PostVacancyOrderBuilder
+                    {
+                        OrderData = new OrderData
+                        {
+                            FareRuleAttributeValues = fareRuleAttributeValues,
+                            FareRuleName = fareRule.FareRule!.RuleName,
+                            CreatedBy = userId,
+                            RuleId = fareRule.FareRule.RuleId,
+                            OrderType = createOrderCacheInput.OrderType,
+                            Month = createOrderCacheInput.PaymentMonth
+                        },
+                        VacancyOrderData = createOrderCacheInput.VacancyOrderData
+                    };
+
+                    await orderBuilder.BuildAsync(builder);
+
+                    if (builder is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания билдера заказа. " +
+                            $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
+                    }
+
+                    var postVacancyBuilder = builder as PostVacancyOrderBuilder ??
+                                             throw new InvalidCastException(
+                                                 $"Ошибка каста к {nameof(PostVacancyOrderBuilder)}");
+
+                    if (postVacancyBuilder.VacancyOrderData is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания модели вакансии для сохранения ее в очередь кролика. " +
+                            "VacancyOrderData: " +
+                            $"{JsonConvert.SerializeObject(createOrderCacheInput.VacancyOrderData)}.");
+                    }
                     break;
 
                 default:
@@ -163,35 +223,9 @@ internal sealed class CommerceService : ICommerceService
                                                         $"OrderType: {createOrderCacheInput.OrderType}.");
             }
 
-            if (builder is null)
-            {
-                throw new InvalidOperationException(
-                    "Ошибка создания билдера заказа. " +
-                    $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
-            }
-
-            if (builder.OrderCache is null)
-            {
-                throw new InvalidOperationException(
-                    "Ошибка создания модели заказа для сохранения его в кэше. " +
-                    $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderCacheInput)}.");
-            }
-
-            // Если оформляют тариф, то добавляем в кэш.
-            if (createOrderCacheInput.OrderType == OrderTypeEnum.FareRule)
-            {
-                // Сохраняем заказ в кэш сроком на 4 часа.
-                var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, createOrderCacheInput.PublicId);
-                await _commerceRedisService.CreateOrderCacheAsync(key, builder.OrderCache);
-            }
-
-            // Если оформляют платную публикацию вакансии, то в кэш не добавляем, а закидываем в кролика.
-            if (createOrderCacheInput.OrderType == OrderTypeEnum.CreateVacancy)
-            {
-                
-            }
-
-            return builder.OrderCache;
+            throw new InvalidOperationException("Результат создания заказа должен был быть возвращен выше. " +
+                                                "Заказ нужного типа должен был быть обработан выше. " +
+                                                $"OrderType: {createOrderCacheInput.OrderType}.");
         }
 
         catch (Exception ex)
@@ -260,7 +294,7 @@ internal sealed class CommerceService : ICommerceService
 
         // Узнаем цену подписки за день.
         var priceDay = Math.Round(orderPrice / referenceUsedDays);
-        
+
         // Вычисляем сумму остатка (цена всей подписки - цена за день).
         var resultRefundPrice = Math.Round(orderPrice - priceDay);
 
@@ -428,13 +462,13 @@ internal sealed class CommerceService : ICommerceService
             // Через какую ПС будем проводить оплату.
             var paymentSystemType = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys
                 .Integrations.PaymentSystem.COMMERCE_PAYMENT_SYSTEM_TYPE_MODE);
-            
+
             _logger.LogInformation($"Заказ будет создан в ПС: {paymentSystemType}.");
 
             var systemType = Enum.Parse<PaymentSystemEnum>(paymentSystemType);
-            
+
             var paymentSystemJob = new PaymentSystemJob();
-            
+
             _logger.LogInformation("Начали создание заказа в ПС.");
 
             // Создаем заказ в ПС, которая выбрана в конфиг таблице.
@@ -527,7 +561,7 @@ internal sealed class CommerceService : ICommerceService
     {
         try
         {
-             var userId = await _userRepository.GetUserByEmailAsync(account);
+            var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
             {
@@ -536,9 +570,9 @@ internal sealed class CommerceService : ICommerceService
             }
 
             var fareRule = await GetFareRuleAsync(userId, publicId);
-            
+
             var fareRuleAttributeValues = fareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
-            
+
             var result = new CalculateFareRulePriceOutput
             {
                 // Цена тарифа = минимальная цена тарифа * кол-во сотрудников * кол-во месяцев.
@@ -548,7 +582,7 @@ internal sealed class CommerceService : ICommerceService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -576,17 +610,17 @@ internal sealed class CommerceService : ICommerceService
                 throw new InvalidOperationException("Ошибка получения подписки пользователя. " +
                                                     $"UserId: {userId}.");
             }
-            
+
             // Получаем услугу по тарифу.
             var fees = await _commerceRepository.GetFeesByFareRuleIdAsync(userSubscription.RuleId);
-            
+
             if (fees is null)
             {
                 throw new InvalidOperationException("Ошибка получения услуги. " +
                                                     $"UserId: {userId}. " +
                                                     $"RuleId: {userSubscription.RuleId}.");
             }
-            
+
             var result = new CalculatePostVacancyPriceOutput
             {
                 Price = fees.FeesPrice,
@@ -596,7 +630,7 @@ internal sealed class CommerceService : ICommerceService
 
             return result;
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);

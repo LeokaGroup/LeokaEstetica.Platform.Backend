@@ -6,7 +6,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 /// <summary>
 /// Класс входной модели создания заказа в кэше.
 /// </summary>
-public class CreateOrderCacheInput
+public class CreateOrderInput
 {
     /// <summary>
     /// Тип заказа.
@@ -21,7 +21,7 @@ public class CreateOrderCacheInput
     /// <summary>
     /// Входная модель заказа на платное размещение вакансии.
     /// </summary>
-    public OrderVacancyCacheInput? VacancyCache { get; set; }
+    public OrderVacancyCacheInput? VacancyOrderData { get; set; }
 
     /// <summary>
     /// Публичный ключ.

@@ -20,7 +20,7 @@ public interface ICommerceService
     /// <param name="createOrderCache">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные заказа.</returns>
-    Task<CreateOrderCache> CreateOrderCacheOrRabbitMqAsync(CreateOrderCacheInput createOrderCacheInput,
+    Task<CreateOrderCache> CreateOrderCacheOrRabbitMqAsync(CreateOrderInput createOrderCacheInput,
         string account);
 
     /// <summary>

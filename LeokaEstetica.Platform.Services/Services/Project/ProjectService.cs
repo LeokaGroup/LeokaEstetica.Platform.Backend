@@ -656,13 +656,19 @@ internal sealed class ProjectService : IProjectService
 
             // Создаем вакансию и привязываем ее к проекту.
             var createdVacancy = await _vacancyService.CreateVacancyAsync(
-                new VacancyInput(createProjectVacancyInput.VacancyName, createProjectVacancyInput.VacancyText, null,
-                    createProjectVacancyInput.ProjectId, null)
+                new VacancyInput
                 {
                     WorkExperience = createProjectVacancyInput.WorkExperience,
                     Employment = createProjectVacancyInput.Employment,
                     Payment = createProjectVacancyInput.Payment,
-                    Account = createProjectVacancyInput.Account
+                    Account = createProjectVacancyInput.Account,
+                    VacancyName = createProjectVacancyInput.VacancyName,
+                    VacancyText = createProjectVacancyInput.VacancyText,
+                    VacancyId = createProjectVacancyInput.VacancyId,
+                    ProjectId = createProjectVacancyInput.ProjectId,
+                    Demands = createProjectVacancyInput.Demands,
+                    Conditions = createProjectVacancyInput.Conditions,
+                    UserId = createProjectVacancyInput.UserId
                 });
 
             return createdVacancy;

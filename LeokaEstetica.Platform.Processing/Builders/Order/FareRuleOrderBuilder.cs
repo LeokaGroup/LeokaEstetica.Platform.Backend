@@ -8,6 +8,11 @@ namespace LeokaEstetica.Platform.Processing.Builders.Order;
 internal class FareRuleOrderBuilder : BaseOrderBuilder
 {
     /// <summary>
+    /// Данные заказа для кэша.
+    /// </summary>
+    public CreateOrderCache OrderCache { get; set; }
+    
+    /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="orderCacheInput">Модель заказа для заполнения ее полей.</param>
