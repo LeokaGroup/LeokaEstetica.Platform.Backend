@@ -1,4 +1,4 @@
-using LeokaEstetica.Platform.Models.Dto.Input.Commerce.Vacancy;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Models.Dto.Input.Commerce;
@@ -21,7 +21,7 @@ public class CreateOrderInput
     /// <summary>
     /// Входная модель заказа на платное размещение вакансии.
     /// </summary>
-    public OrderVacancyCacheInput? VacancyOrderData { get; set; }
+    public VacancyInput? VacancyOrderData { get; set; }
 
     /// <summary>
     /// Публичный ключ.

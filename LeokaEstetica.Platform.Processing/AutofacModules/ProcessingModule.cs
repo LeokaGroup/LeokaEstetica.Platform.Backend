@@ -37,10 +37,11 @@ public class ProcessingModule : Module
             .Named<BasePaymentSystemStrategy>("YandexKassaStrategy")
             .InstancePerLifetimeScope();
 
+        // TODO: Не используется (в будущем возможно будет).
         // Класс стратегии платежной системы PayMaster.
-        builder.RegisterType<PayMasterStrategy>()
-            .Named<BasePaymentSystemStrategy>("PayMasterStrategy")
-            .InstancePerLifetimeScope();
+        // builder.RegisterType<PayMasterStrategy>()
+        //     .Named<BasePaymentSystemStrategy>("PayMasterStrategy")
+        //     .InstancePerLifetimeScope();
 
         // Сервис платежной системы ЮKassa.
         builder.RegisterType<YandexKassaService>()

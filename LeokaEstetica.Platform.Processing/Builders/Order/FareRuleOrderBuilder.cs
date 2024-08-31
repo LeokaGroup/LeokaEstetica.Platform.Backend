@@ -1,4 +1,12 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Common.Cache;
+﻿using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
+using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+using LeokaEstetica.Platform.Models.Dto.Common.Cache;
+using LeokaEstetica.Platform.Processing.BuilderData;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Processing")]
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Controllers")]
 
 namespace LeokaEstetica.Platform.Processing.Builders.Order;
 
@@ -11,39 +19,50 @@ internal class FareRuleOrderBuilder : BaseOrderBuilder
     /// Данные заказа для кэша.
     /// </summary>
     public CreateOrderCache OrderCache { get; set; }
-    
+
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="orderCacheInput">Модель заказа для заполнения ее полей.</param>
-    public FareRuleOrderBuilder()
+    /// <param name="subscriptionRepository">Репозиторий подписок.</param>
+    /// <param name="commerceRepository">Репозиторий коммерции.</param>
+    public FareRuleOrderBuilder(ISubscriptionRepository subscriptionRepository,
+        ICommerceRepository commerceRepository)
+        : base(subscriptionRepository, commerceRepository)
     {
-        OrderCache = new CreateOrderCache();
+        OrderCache ??= new CreateOrderCache();
+        OrderData ??= new OrderData();
     }
 
     /// <inheritdoc />
-    public override Task FillMonthAsync()
+    protected internal override Task FillMonthAsync()
     {
-        OrderCache!.Month = OrderCache.Month;
+        OrderCache.Month = OrderCache.Month;
 
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public override Task FillFareRuleNameAsync()
+    protected internal override Task FillFareRuleNameAsync()
     {
-        OrderCache!.FareRuleName = "";
-        
+        OrderCache.FareRuleName = "Оплата тарифа: " + OrderData!.fareRuleNameFromCache
+                                                    + $" (на {OrderCache.Month} мес.)";
+
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public override Task CalculateFareRulePriceAsync()
+    protected internal override Task CalculateFareRulePriceAsync()
     {
         // Цена тарифа = минимальная цена тарифа * кол-во сотрудников * кол-во месяцев.
-        OrderCache!.Price = OrderData!.FareRuleAttributeValues!.MinValue!.Value * OrderData.EmployeesCount!.Value *
+        OrderCache.Price = OrderData!.FareRuleAttributeValues!.MinValue!.Value * OrderData.EmployeesCount!.Value *
                             OrderData.Month!.Value;
 
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    protected internal override Task<OrderEvent> CreateOrderEventAsync()
+    {
+        throw new NotImplementedException("При оформлении заказа на тариф, кролик не задействуется в билдере.");
     }
 }

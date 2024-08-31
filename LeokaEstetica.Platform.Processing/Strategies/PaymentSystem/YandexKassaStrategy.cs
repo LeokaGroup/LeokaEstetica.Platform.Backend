@@ -1,6 +1,6 @@
-using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
+using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
 
 namespace LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
@@ -23,39 +23,26 @@ internal class YandexKassaStrategy : BasePaymentSystemStrategy
 
     #region Публичные методы.
 
-    /// <summary>
-    /// Метод создает заказ.
-    /// </summary>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <returns>Данные платежа.</returns>
-    public override async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account)
+    /// <inheritdoc />
+    protected internal override async Task<ICreateOrderOutput> CreateOrderAsync(BaseOrderBuilder orderBuilder)
     {
-        var result = await _yandexKassaService.CreateOrderAsync(publicId, account);
+        var result = await _yandexKassaService.CreateOrderAsync(orderBuilder);
 
         return result;
     }
 
-    /// <summary>
-    /// Метод проверяет статус платежа в ПС.
-    /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
-    /// <returns>Статус платежа.</returns>
-    public override async Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId)
+    /// <inheritdoc />
+    protected internal override async Task<PaymentStatusEnum> CheckOrderStatusAsync(BaseOrderBuilder orderBuilder)
     {
-        var result = await _yandexKassaService.CheckOrderStatusAsync(paymentId);
+        var result = await _yandexKassaService.CheckOrderStatusAsync(orderBuilder);
 
         return result;
     }
 
-    /// <summary>
-    /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
-    /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
-    /// <param name="amount">Данные о цене.</param>
-    public override async Task ConfirmPaymentAsync(string paymentId, Amount amount)
+    /// <inheritdoc />
+    protected internal override async Task ConfirmPaymentAsync(BaseOrderBuilder orderBuilder)
     {
-        await _yandexKassaService.ConfirmPaymentAsync(paymentId, amount);
+        await _yandexKassaService.ConfirmPaymentAsync(orderBuilder);
     }
 
     #endregion

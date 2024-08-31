@@ -1,10 +1,10 @@
-using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.Commerce;
@@ -26,10 +26,9 @@ public interface ICommerceService
     /// <summary>
     /// Метод получает услуги и сервисы заказа из кэша.
     /// </summary>
-    /// <param name="publicId">Публичный код тарифа.</param>
-    /// <param name="account">Аккаунт.</param>
+    /// <param name="orderBuilder">Билдер заказа.</param>
     /// <returns>Услуги и сервисы заказа.</returns>
-    Task<CreateOrderCache> GetOrderProductsCacheAsync(Guid publicId, string account);
+    Task<CreateOrderCache> GetOrderProductsCacheAsync(BaseOrderBuilder orderBuilder);
 
     /// <summary>
     /// Метод вычисляет сумму с оставшихся дней подписки пользователя.
@@ -43,10 +42,9 @@ public interface ICommerceService
     /// TODO: Выпилим, если будет не нужен.
     /// Метод вычисляет, есть ли остаток с прошлой подписки пользователя для учета ее как скидку при оформлении новой подписки.
     /// </summary>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <param name="month">Кол-во месяцев подписки.</param>
+    /// <param name="orderBuilder">Билдер заказа.</param>
     /// <returns>Сумма остатка, если она есть.</returns>
-    Task<OrderFreeOutput> CheckFreePriceAsync(string account, Guid publicId, short month);
+    Task<OrderFreeOutput> CheckFreePriceAsync(BaseOrderBuilder orderBuilder);
 
     /// <summary>
     /// Метод проверяет заполнение анкеты пользователя.
@@ -59,24 +57,22 @@ public interface ICommerceService
     /// <summary>
     /// Метод создает заказ.
     /// </summary>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <param name="account">Аккаунт.</param>
+    /// <param name="orderBuilder">Билдер заказа.</param>
     /// <returns>Данные платежа.</returns>
-    Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account);
+    Task<ICreateOrderOutput> CreateOrderAsync(BaseOrderBuilder orderBuilder);
     
     /// <summary>
     /// Метод проверяет статус платежа в ПС.
     /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
+    /// <param name="orderBuilder">Билдер заказа.</param>
     /// <returns>Статус платежа.</returns>
-    Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId);
+    Task<PaymentStatusEnum> CheckOrderStatusAsync(BaseOrderBuilder orderBuilder);
 
     /// <summary>
     /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
     /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
-    /// <param name="amount">Данные о цене.</param>
-    Task ConfirmPaymentAsync(string paymentId, Amount amount);
+    /// <param name="orderBuilder">Билдер заказа.</param>
+    Task ConfirmPaymentAsync(BaseOrderBuilder orderBuilder);
 
     /// <summary>
     /// Метод вычисляет цену тарифа исходя из параметров.

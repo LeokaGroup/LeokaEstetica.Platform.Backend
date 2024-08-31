@@ -1,5 +1,5 @@
-using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
+using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
 
 namespace LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
@@ -12,22 +12,20 @@ public interface IYandexKassaService
     /// <summary>
     /// Метод создает заказ.
     /// </summary>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <param name="account">Аккаунт.</param>
+    /// <param name="orderBuilder">Билдер заказа.</param>
     /// <returns>Данные платежа.</returns>
-    Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account);
+    Task<ICreateOrderOutput> CreateOrderAsync(BaseOrderBuilder orderBuilder);
     
     /// <summary>
     /// Метод проверяет статус платежа в ПС.
     /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
+    /// <param name="orderBuilder">Билдер заказа.</param>
     /// <returns>Статус платежа.</returns>
-    Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId);
+    Task<PaymentStatusEnum> CheckOrderStatusAsync(BaseOrderBuilder orderBuilder);
     
     /// <summary>
     /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
     /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
-    /// <param name="amount">Данные о цене.</param>
-    Task ConfirmPaymentAsync(string paymentId, Amount amount);
+    /// <param name="orderBuilder">Билдер заказа.</param>
+    Task ConfirmPaymentAsync(BaseOrderBuilder orderBuilder);
 }

@@ -11,6 +11,8 @@ using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
+using LeokaEstetica.Platform.Processing.BuilderData;
+using LeokaEstetica.Platform.Processing.Builders.Order;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -86,7 +88,13 @@ public class CommerceController : BaseController
             throw ex;
         }
 
-        var result = await _commerceService.CreateOrderAsync(createOrderInput.PublicId, GetUserName())
+        // Здесь NULL, чтобы не тащить азвисимости в контроллер лишние, внутри сервиса заполним.
+        BaseOrderBuilder builder = new FareRuleOrderBuilder(null, null);
+        builder.OrderData ??= new OrderData();
+        builder.OrderData.PublicId = createOrderInput.PublicId;
+        builder.OrderData.Account = GetUserName();
+        
+        var result = await _commerceService.CreateOrderAsync(builder as FareRuleOrderBuilder)
             as CreateOrderYandexKassaOutput;
 
         return result ??
@@ -169,7 +177,14 @@ public class CommerceController : BaseController
     [ProducesResponseType(404)]
     public async Task<OrderFreeOutput> CheckFreePriceAsync([FromQuery] Guid publicId, [FromQuery] short month)
     {
-        var result = await _commerceService.CheckFreePriceAsync(GetUserName(), publicId, month);
+        // Здесь NULL, чтобы не тащить азвисимости в контроллер лишние, внутри сервиса заполним.
+        BaseOrderBuilder builder = new FareRuleOrderBuilder(null, null);
+        builder.OrderData ??= new OrderData();
+        builder.OrderData.PublicId = publicId;
+        builder.OrderData.Account = GetUserName();
+        builder.OrderData.Month = month;
+        
+        var result = await _commerceService.CheckFreePriceAsync(builder as FareRuleOrderBuilder);
 
         return result;
     }

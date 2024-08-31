@@ -19,6 +19,7 @@ using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
+using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Factors;
@@ -89,17 +90,17 @@ internal sealed class YandexKassaService : IYandexKassaService
 
     #region Публичные методы.
 
-    /// <summary>
-    /// Метод создает заказ.
-    /// </summary>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <returns>Данные платежа.</returns>
-    public async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account)
+    /// <inheritdoc />
+    public async Task<ICreateOrderOutput> CreateOrderAsync(BaseOrderBuilder orderBuilder)
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+            if (orderBuilder.OrderData is null)
+            {
+                throw new InvalidOperationException("Данные заказа не были подготовлены для оплаты заказа.");
+            }
+            
+            var userId = await _userRepository.GetUserByEmailAsync(orderBuilder.OrderData.Account!);
             
             // Проверяем заполнение анкеты и даем доступ либо нет.
             var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
@@ -120,8 +121,9 @@ internal sealed class YandexKassaService : IYandexKassaService
             
             using var scope = _transactionScopeFactory.CreateTransactionScope();
 
+            // TODO: Получать все нужное из билдера через каст к нужному билдеру.
             // Получаем заказ из кэша.
-            var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, publicId);
+            var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, orderBuilder.OrderData.PublicId);
             var orderCache = await _commerceRedisService.GetOrderCacheAsync(key);
             
             // Заполняем модель для запроса в ПС.
@@ -139,9 +141,10 @@ internal sealed class YandexKassaService : IYandexKassaService
                 orderCache.Price = testPayPrice;
             }
             
+            // TODO: Адаптировать подготовку модели в ПС исходя из типа заказа.
             // Готовим запрос в ПС.
             var createOrderInput = await CreateOrderRequestAsync(fareRuleName, orderCache.Price,
-                orderCache.RuleId, publicId, month);
+                orderCache.RuleId, orderBuilder.OrderData.PublicId, month);
 
             _logger.LogInformation("Начало создания заказа.");
 
@@ -181,7 +184,8 @@ internal sealed class YandexKassaService : IYandexKassaService
 
             // TODO: Зачем несколько факторок нам, надо бы как то отрефачить поудобнее все это.
             var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache,
-                createOrderInput, userId, publicId, fareRuleName, account, month);
+                createOrderInput, userId, orderBuilder.OrderData.PublicId, fareRuleName,
+                orderBuilder.OrderData.Account!, month);
 
             // TODO: Разобрать бардак, который в этой факторке. Факторка не должна выполнять логики процессинга.
             // TODO: Ее задача формирование моделей и валидации не более.
@@ -204,28 +208,29 @@ internal sealed class YandexKassaService : IYandexKassaService
         }
     }
 
-    /// <summary>
-    /// Метод проверяет статус платежа в ПС.
-    /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
-    /// <returns>Статус платежа.</returns>
-    public async Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId)
+    /// <inheritdoc />
+    public async Task<PaymentStatusEnum> CheckOrderStatusAsync(BaseOrderBuilder orderBuilder)
     {
         try
         {
-            _logger.LogInformation($"Начало проверки статуса заказа {paymentId}.");
+            if (orderBuilder.OrderData is null)
+            {
+                throw new InvalidOperationException("Данные заказа не были подготовлены для проверки статуса заказа.");
+            }
+            
+            _logger.LogInformation($"Начало проверки статуса заказа {orderBuilder.OrderData.PaymentId}.");
             
             using var scope = _transactionScopeFactory.CreateTransactionScope();
             using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
 
-            var responseCreateOrder = await httpClient.GetAsync(string.Concat(ApiConsts.YandexKassa.CHECK_PAYMENT_STATUS,
-                paymentId));
+            var responseCreateOrder = await httpClient.GetAsync(string.Concat(
+                ApiConsts.YandexKassa.CHECK_PAYMENT_STATUS, orderBuilder.OrderData.PaymentId));
             
             // Если ошибка при создании платежа в ПС.
             if (!responseCreateOrder.IsSuccessStatusCode)
             {
                 var ex = new InvalidOperationException("Ошибка проверки статуса платежа в ПС. " +
-                                                       $"PaymentId платежа: {paymentId}");
+                                                       $"PaymentId платежа: {orderBuilder.OrderData.PaymentId}");
                 throw ex;
             }
 
@@ -236,7 +241,7 @@ internal sealed class YandexKassaService : IYandexKassaService
             if (string.IsNullOrEmpty(order?.PaymentId))
             {
                 var ex = new InvalidOperationException("Ошибка парсинга данных из ПС. " +
-                                                       $"PaymentId платежа: {paymentId}");
+                                                       $"PaymentId платежа: {orderBuilder.OrderData.PaymentId}");
                 throw ex;
             }
 
@@ -252,7 +257,7 @@ internal sealed class YandexKassaService : IYandexKassaService
             
             scope.Complete();
             
-            _logger.LogInformation($"Закончили проверку статуса заказа {paymentId}.");
+            _logger.LogInformation($"Закончили проверку статуса заказа {orderBuilder.OrderData.PaymentId}.");
 
             return result;
         }
@@ -264,25 +269,28 @@ internal sealed class YandexKassaService : IYandexKassaService
         }
     }
 
-    /// <summary>
-    /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
-    /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
-    /// <param name="amount">Данные о цене.</param>
-    public async Task ConfirmPaymentAsync(string paymentId, Amount amount)
+    /// <inheritdoc />
+    public async Task ConfirmPaymentAsync(BaseOrderBuilder orderBuilder)
     {
         try
         {
+            if (orderBuilder.OrderData is null)
+            {
+                throw new InvalidOperationException("Данные заказа не были подготовлены для подтверждения заказа.");
+            }
+            
             _logger.LogInformation("Начало подтверждения заказа.");
 
             using var scope = _transactionScopeFactory.CreateTransactionScope();
             using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
 
             // Подтверждаем платеж в ПС и списываем ДС у пользователя.
-            var httpContent = new StringContent(JsonConvert.SerializeObject(amount),
+            var httpContent = new StringContent(JsonConvert.SerializeObject(orderBuilder.OrderData.Amount),
                 Encoding.UTF8, "application/json");
+            
             var responseConfirmOrder = await httpClient.PostAsync(
-                new Uri($"{ApiConsts.YandexKassa.CONFIRM_PAYMENT}{paymentId}/capture"), httpContent);
+                new Uri($"{ApiConsts.YandexKassa.CONFIRM_PAYMENT}{orderBuilder.OrderData.PaymentId}/capture"),
+                httpContent);
 
             // Если ошибка при подтверждении заказа в ПС.
             if (!responseConfirmOrder.IsSuccessStatusCode)
@@ -290,12 +298,19 @@ internal sealed class YandexKassaService : IYandexKassaService
                 var responseErrorDetails = responseConfirmOrder.Content.ReadAsStringAsync().Result;
                 var ex = new InvalidOperationException(
                     "Ошибка подтверждения заказа в ПС." +
-                    $" Данные заказа: {JsonConvert.SerializeObject(amount)}." +
+                    $" Данные заказа: {JsonConvert.SerializeObject(orderBuilder.OrderData.Amount)}." +
                     $" Ответ от ПС: {responseErrorDetails}");
                 throw ex;
             }
 
-            await _commerceRepository.SetStatusConfirmByPaymentIdAsync(paymentId,
+            if (string.IsNullOrWhiteSpace(orderBuilder.OrderData.PaymentId))
+            {
+                throw new InvalidOperationException(
+                    "PaymentId не был заполнен. " +
+                    $"OrderData: {JsonConvert.SerializeObject(orderBuilder.OrderData)}.");
+            }
+
+            await _commerceRepository.SetStatusConfirmByPaymentIdAsync(orderBuilder.OrderData.PaymentId,
                 PaymentStatusEnum.Succeeded.ToString(), PaymentStatusEnum.Succeeded.GetEnumDescription());
             
             scope.Complete();
