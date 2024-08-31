@@ -18,11 +18,11 @@ using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
+using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
 using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Consts;
 using LeokaEstetica.Platform.Processing.Enums;
-using LeokaEstetica.Platform.Processing.Factors;
 using LeokaEstetica.Platform.Processing.Models.Input;
 using LeokaEstetica.Platform.RabbitMq.Abstractions;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
@@ -48,6 +48,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     private readonly IMailingsService _mailingsService;
     private readonly ITransactionScopeFactory _transactionScopeFactory;
     private readonly Lazy<IHubNotificationService> _hubNotificationService;
+    private readonly IOrdersService _ordersService;
 
     /// <summary>
     /// Конструктор.
@@ -62,7 +63,8 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <param name="rabbitMqService">Сервис кролика.</param>
     /// <param name="mailingsService">Сервис email.</param>
     /// <param name="transactionScopeFactory">Факторка транзакций.</param>
-    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param> 
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
+    /// <param name="ordersService">Сервис заказов.</param> 
     public YandexKassaService(ILogger<YandexKassaService> logger,
         IUserRepository userRepository,
         IAccessUserService accessUserService,
@@ -73,7 +75,8 @@ internal sealed class YandexKassaService : IYandexKassaService
         IRabbitMqService rabbitMqService,
         IMailingsService mailingsService,
         ITransactionScopeFactory transactionScopeFactory,
-        Lazy<IHubNotificationService> hubNotificationService)
+        Lazy<IHubNotificationService> hubNotificationService,
+        IOrdersService ordersService)
     {
         _logger = logger;
         _userRepository = userRepository;
@@ -86,6 +89,7 @@ internal sealed class YandexKassaService : IYandexKassaService
         _mailingsService = mailingsService;
         _transactionScopeFactory = transactionScopeFactory;
         _hubNotificationService = hubNotificationService;
+        _ordersService = ordersService;
     }
 
     #region Публичные методы.
@@ -120,8 +124,7 @@ internal sealed class YandexKassaService : IYandexKassaService
             }
             
             using var scope = _transactionScopeFactory.CreateTransactionScope();
-
-            // TODO: Получать все нужное из билдера через каст к нужному билдеру.
+            
             // Получаем заказ из кэша.
             var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, orderBuilder.OrderData.PublicId);
             var orderCache = await _commerceRedisService.GetOrderCacheAsync(key);
@@ -146,8 +149,6 @@ internal sealed class YandexKassaService : IYandexKassaService
             var createOrderInput = await CreateOrderRequestAsync(fareRuleName, orderCache.Price,
                 orderCache.RuleId, orderBuilder.OrderData.PublicId, month);
 
-            _logger.LogInformation("Начало создания заказа.");
-
             // TODO: Переделать на факторку HttpClientFactory.
             using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
 
@@ -156,6 +157,9 @@ internal sealed class YandexKassaService : IYandexKassaService
             // Так как мы не включали его. Мы просто сразу хотим списывать ДС.
             var httpContent = new StringContent(JsonConvert.SerializeObject(createOrderInput.CreateOrderRequest),
                 Encoding.UTF8, "application/json");
+            
+            _logger.LogInformation("Начало создания заказа.");
+            
             var responseCreateOrder = await httpClient.PostAsync(new Uri(ApiConsts.YandexKassa.CREATE_PAYMENT),
                 httpContent);
 
@@ -181,15 +185,12 @@ internal sealed class YandexKassaService : IYandexKassaService
                     $"Ошибка парсинга данных из ПС. Данные платежа: {JsonConvert.SerializeObject(createOrderInput)}");
                 throw ex;
             }
-
-            // TODO: Зачем несколько факторок нам, надо бы как то отрефачить поудобнее все это.
+            
             var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache,
                 createOrderInput, userId, orderBuilder.OrderData.PublicId, fareRuleName,
                 orderBuilder.OrderData.Account!, month);
-
-            // TODO: Разобрать бардак, который в этой факторке. Факторка не должна выполнять логики процессинга.
-            // TODO: Ее задача формирование моделей и валидации не более.
-            var result = await CreatePaymentOrderFactory.CreatePaymentOrderResultAsync(paymentOrderAggregateInput,
+            
+            var result = await _ordersService.CreatePaymentOrderAsync(paymentOrderAggregateInput,
                     _configuration, _commerceRepository, _rabbitMqService, _globalConfigRepository, _mailingsService);
 
             _logger.LogInformation("Конец создания заказа.");

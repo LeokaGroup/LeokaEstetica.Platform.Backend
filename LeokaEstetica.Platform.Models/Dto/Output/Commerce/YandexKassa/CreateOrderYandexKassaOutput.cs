@@ -13,25 +13,25 @@ public class CreateOrderYandexKassaOutput : ICreateOrderOutput, IFrontError
     /// <summary>
     /// Список ошибок.
     /// </summary>
-    public List<ValidationFailure> Errors { get; set; }
+    public List<ValidationFailure>? Errors { get; set; }
 
     /// <summary>
     /// Id платежа в ПС.
     /// </summary>
     [JsonProperty("id")]
-    public string PaymentId { get; set; }
+    public string? PaymentId { get; set; }
     
     /// <summary>
     /// Статус платежа в ПС.
     /// </summary>
     [JsonProperty("status")]
-    public string OrderStatus { get; set; }
+    public string? OrderStatus { get; set; }
 
     /// <summary>
     /// Подтверждение платежа.
     /// </summary>
     [JsonProperty("confirmation")]
-    public ConfirmationOutput Confirmation { get; set; }
+    public ConfirmationOutput? Confirmation { get; set; }
 
     /// <summary>
     /// Дата создания заказа в ПС.

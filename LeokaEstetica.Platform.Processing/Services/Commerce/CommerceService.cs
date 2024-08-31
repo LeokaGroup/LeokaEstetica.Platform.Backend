@@ -176,10 +176,11 @@ internal sealed class CommerceService : ICommerceService
                     await _commerceRedisService.CreateOrderCacheAsync(key, ruleBuilder.OrderCache);
 
                     return ruleBuilder.OrderCache;
-
-                // Добавляем в очередь кролика заказ на платную публикацию вакансии.
+                
                 // В этом кейсе не добавляем в кэш.
                 case OrderTypeEnum.CreateVacancy:
+                    
+                    // Готовим билдер для создания заказа в ПС.
                     builder = new PostVacancyOrderBuilder(_subscriptionRepository, _commerceRepository)
                     {
                         OrderData = new OrderData
@@ -215,7 +216,10 @@ internal sealed class CommerceService : ICommerceService
                             $"{JsonConvert.SerializeObject(createOrderInput.VacancyOrderData)}.");
                     }
                     
-                    // Добавляем в очередь кролика заказ на вакансию.
+                    // Создаем заказ в ПС и добавляем в нашу БД.
+                    // var createdPayment = await _commerceRepository.CreateOrderAsync(postVacancyBuilder);
+                    
+                    // Добавляем в очередь кролика заказ на платную публикацию вакансии.
                     
                     break;
 

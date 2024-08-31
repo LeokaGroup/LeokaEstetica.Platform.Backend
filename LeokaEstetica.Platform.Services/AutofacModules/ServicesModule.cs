@@ -6,7 +6,6 @@ using LeokaEstetica.Platform.Services.Abstractions.FareRule;
 using LeokaEstetica.Platform.Services.Abstractions.Header;
 using LeokaEstetica.Platform.Services.Abstractions.Knowledge;
 using LeokaEstetica.Platform.Services.Abstractions.Landing;
-using LeokaEstetica.Platform.Services.Abstractions.Orders;
 using LeokaEstetica.Platform.Services.Abstractions.Press;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
@@ -23,7 +22,6 @@ using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Header;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
 using LeokaEstetica.Platform.Services.Services.Landing;
-using LeokaEstetica.Platform.Services.Services.Orders;
 using LeokaEstetica.Platform.Services.Services.Press;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
@@ -215,15 +213,7 @@ public class ServicesModule : Module
             .RegisterType<KnowledgeService>()
             .As<IKnowledgeService>()
             .InstancePerLifetimeScope();
-        
-        // Сервис заказов пользователя.
-        builder.RegisterType<OrdersService>()
-            .Named<IOrdersService>("OrdersService")
-            .InstancePerLifetimeScope();
-        builder.RegisterType<OrdersService>()
-            .As<IOrdersService>()
-            .InstancePerLifetimeScope();
-        
+
         // Класс стратегии вычисления суммы возврата на основании использованных дней.
         builder
             .RegisterType<CalculateRefundUsedDaysStrategy>()
