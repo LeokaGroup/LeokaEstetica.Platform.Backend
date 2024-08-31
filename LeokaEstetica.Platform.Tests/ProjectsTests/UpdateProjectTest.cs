@@ -28,7 +28,7 @@ internal class UpdateProjectTest : BaseServiceTest
     private UpdateProjectInput CreateUpdateProjectFactory()
     {
         var result = new UpdateProjectInput("Новое название проекта1", "Новое описание проекта", 5,
-            ProjectStageEnum.Concept.ToString(), null)
+            ProjectStageEnum.Concept.ToString(), null, true)
         {
             Account = "sierra_93@mail.ru",
             Conditions = "Тестовые условия тест",

@@ -13,17 +13,18 @@ public class CreateProjectInput : ProjectInput, IFrontError
     /// </summary>
     public List<ValidationFailure>? Errors { get; set; }
 
-    /// <summary>
-    /// Конструктор.
-    /// </summary>
-    /// <param name="projectName">Название проекта.</param>
-    /// <param name="projectDetails">Описание проекта.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectStage">Стадия проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    public CreateProjectInput(string projectName, string projectDetails, long? projectId, string projectStage,
-        long? userId)
-        : base(projectName, projectDetails, projectId, projectStage, userId)
+	/// <summary>
+	/// Конструктор.
+	/// </summary>
+	/// <param name="projectName">Название проекта.</param>
+	/// <param name="projectDetails">Описание проекта.</param>
+	/// <param name="projectId">Id проекта.</param>
+	/// <param name="projectStage">Стадия проекта.</param>
+	/// <param name="userId">Id пользователя.</param>
+	/// <param name="isPublic">Видимость проекта.</param>
+	public CreateProjectInput(string projectName, string projectDetails, long? projectId, string projectStage,
+        long? userId, bool isPublic)
+        : base(projectName, projectDetails, projectId, projectStage, userId, isPublic)
     {
     }
 }
