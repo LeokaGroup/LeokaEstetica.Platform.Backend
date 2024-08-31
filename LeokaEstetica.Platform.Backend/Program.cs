@@ -31,7 +31,7 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", b =>
     b.WithOrigins(configuration.GetSection("CorsUrls:Urls").Get<string[]>()) 
         .AllowAnyHeader()
         .AllowAnyMethod()
-        .AllowCredentials();
+        .AllowCredentials(); 
 }));
 
 builder.Environment.EnvironmentName = configuration["Environment"];
