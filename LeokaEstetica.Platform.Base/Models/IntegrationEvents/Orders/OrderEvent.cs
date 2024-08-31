@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base.Models.Dto;
+using LeokaEstetica.Platform.Models.Dto.Input.Commerce.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
@@ -52,4 +53,9 @@ public class OrderEvent : BaseEventMessage
     /// Тип заказа.
     /// </summary>
     public OrderTypeEnum OrderType { get; set; }
+    
+    /// <summary>
+    /// Входная модель заказа на платное размещение вакансии.
+    /// </summary>
+    public OrderVacancyCacheInput? VacancyOrderData { get; set; }
 }

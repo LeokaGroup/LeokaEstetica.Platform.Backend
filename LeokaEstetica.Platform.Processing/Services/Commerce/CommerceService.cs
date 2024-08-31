@@ -216,6 +216,9 @@ internal sealed class CommerceService : ICommerceService
                             "VacancyOrderData: " +
                             $"{JsonConvert.SerializeObject(createOrderCacheInput.VacancyOrderData)}.");
                     }
+                    
+                    // Добавляем в очередь кролика заказ на вакансию.
+                    
                     break;
 
                 default:

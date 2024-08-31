@@ -53,6 +53,7 @@ public static class CreatePaymentOrderFactory
         var paymentId = string.Empty;
         ICreateOrderOutput? result = null;
 
+        // TODO: Переделать на факторку.
         using var httpClient = new HttpClient();
 
         if (createPaymentOrderAggregateInput.CreateOrderOutput is CreateOrderPayMasterOutput payMasterOrder)
@@ -119,7 +120,7 @@ public static class CreatePaymentOrderFactory
     }
 
     /// <summary>
-    /// TODO: Передават тип заказа в orderCache.
+    /// TODO: Передавать тип заказа в orderCache.
     /// Метод парсит результат для сохранения заказа в БД.
     /// </summary>
     /// <param name="paymentId">Id платежа в ПС.</param>
