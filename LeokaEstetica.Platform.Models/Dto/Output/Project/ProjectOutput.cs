@@ -108,4 +108,9 @@ public class ProjectOutput : ProjectRemarkResult, IFrontError
     /// Признак видимости проекта
     /// </summary>
     public bool IsPublic { get; set; }
+
+    /// <summary>
+    /// Признак владельца проекта
+    /// </summary>
+    public bool IsVisibleProjectButton { get; set; }
 }

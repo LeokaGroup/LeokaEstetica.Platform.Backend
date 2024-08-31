@@ -540,7 +540,7 @@ internal sealed class ProjectService : IProjectService
 				};
 			}
 
-			var result = await CreateProjectResultAsync(projectId, prj, userId);
+			var result = await CreateProjectResultAsync(projectId, prj, userId, isOwner);
 
 			var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
 			result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
@@ -1692,12 +1692,13 @@ internal sealed class ProjectService : IProjectService
 	/// <param name="userId">Id пользователя.</param>
 	/// <returns>Результаты проекта.</returns>
 	private async Task<ProjectOutput> CreateProjectResultAsync(long projectId,
-		(UserProjectEntity, ProjectStageEntity) prj, long userId)
+		(UserProjectEntity, ProjectStageEntity) prj, long userId, bool isOwner)
 	{
 		var result = _mapper.Map<ProjectOutput>(prj.Item1);
 		result.StageId = prj.Item2.StageId;
 		result.StageName = prj.Item2.StageName;
 		result.StageSysName = prj.Item2.StageSysName;
+		result.IsVisibleProjectButton = isOwner;
 
 		// Проверяем владельца проекта.
 		var projectOwnerId = await _projectRepository.GetProjectOwnerIdAsync(projectId);
