@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using FluentValidation;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
-using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Consts;
 
 namespace LeokaEstetica.Platform.Controllers.Validators.User;
@@ -21,7 +20,7 @@ public class CreateUserValidator : AbstractValidator<UserSignUpInput>
             .WithMessage(ValidationConsts.NOT_VALID_EMAIL_ERROR)
             .NotEmpty()
             .WithMessage(ValidationConsts.NOT_VALID_EMAIL_ERROR)
-            .Matches("[.\\-_a-z0-9]+@([a-z0-9][\\-a-z0-9]+\\.)+[a-z]{2,6}", RegexOptions.IgnoreCase);
+            .Matches(@"^[^@\s]+@(mail\.ru|gmail\.com|inbox\.ru|bk\.ru|list\.ru|yandex\.ru)${2,6}", RegexOptions.IgnoreCase);
 
         RuleFor(p => p.Password)
             .NotNull()
