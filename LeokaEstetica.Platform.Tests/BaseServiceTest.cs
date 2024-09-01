@@ -52,7 +52,6 @@ using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.Commerce;
-using LeokaEstetica.Platform.Processing.Services.PayMaster;
 using LeokaEstetica.Platform.RabbitMq.Services;
 using LeokaEstetica.Platform.Redis.Services.Commerce;
 using LeokaEstetica.Platform.Redis.Services.ProjectManagement;
@@ -252,7 +251,7 @@ internal class BaseServiceTest
 
         CommerceService = new CommerceService(commerceRedisService, null, userRepository, FareRuleRepository,
             commerceRepository, ordersRepository, subscriptionRepository, accessUserService,
-            null, null, null, null, null);
+            null, null, null, null);
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
             FareRuleRepository);

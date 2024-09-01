@@ -21,5 +21,5 @@ public class ConfirmationOutput : Confirmation
     /// Url на оплату для пользователя.
     /// </summary>
     [JsonProperty("confirmation_url")]
-    public string ConfirmationUrl { get; set; }
+    public string? ConfirmationUrl { get; set; }
 }

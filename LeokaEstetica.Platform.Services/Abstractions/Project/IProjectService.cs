@@ -2,6 +2,7 @@ using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Models.Dto.Input.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
+using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -80,7 +81,7 @@ public interface IProjectService
     /// </summary>
     /// <param name="createProjectVacancyInput">Входная модель.</param>
     /// <returns>Данные вакансии.</returns>
-    Task<VacancyOutput> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput);
+    Task<CreateOrderOutput> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput);
 
     /// <summary>
     /// Метод получает список вакансий проекта, которые могут быть прикреплены у проекту пользователя.

@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Constants;
@@ -15,12 +16,12 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
+using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
-using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
 using LeokaEstetica.Platform.Processing.BuilderData;
 using LeokaEstetica.Platform.Processing.Builders.Order;
@@ -49,10 +50,10 @@ internal sealed class CommerceService : ICommerceService
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IAccessUserService _accessUserService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
-    private readonly IPayMasterService _payMasterService;
     private readonly IYandexKassaService _yandexKassaService;
     private readonly Lazy<IDiscordService> _discordService;
     private readonly Lazy<IHubNotificationService> _hubNotificationService;
+    private readonly IMapper _mapper;
 
     /// <summary>
     /// Конструктор.
@@ -71,6 +72,7 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="yandexKassaService">Сервис ЮKassa.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
+    /// <param name="mapper">Маппер.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService,
         ILogger<CommerceService> logger,
@@ -81,10 +83,10 @@ internal sealed class CommerceService : ICommerceService
         ISubscriptionRepository subscriptionRepository,
         IAccessUserService accessUserService,
         IGlobalConfigRepository globalConfigRepository,
-        IPayMasterService payMasterService,
         IYandexKassaService yandexKassaService,
         Lazy<IDiscordService> discordService,
-        Lazy<IHubNotificationService> hubNotificationService)
+        Lazy<IHubNotificationService> hubNotificationService,
+        IMapper mapper)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
@@ -95,21 +97,16 @@ internal sealed class CommerceService : ICommerceService
         _subscriptionRepository = subscriptionRepository;
         _accessUserService = accessUserService;
         _globalConfigRepository = globalConfigRepository;
-        _payMasterService = payMasterService;
         _yandexKassaService = yandexKassaService;
         _discordService = discordService;
         _hubNotificationService = hubNotificationService;
+        _mapper = mapper;
     }
 
     #region Публичные методы.
 
-    // <summary>
-    /// Метод создает заказ в кэше.
-    /// </summary>
-    /// <param name="createOrderCache">Модель заказа для хранения в кэше.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <returns>Данные заказа добавленного в кэш.</returns>
-    public async Task<CreateOrderCache> CreateOrderCacheOrRabbitMqAsync(CreateOrderInput createOrderInput,
+    /// <inheritdoc />
+    public async Task<CreateOrderOutput> CreateOrderCacheOrRabbitMqAsync(CreateOrderInput createOrderInput,
         string account)
     {
         try
@@ -174,12 +171,11 @@ internal sealed class CommerceService : ICommerceService
                     var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId,
                         createOrderInput.PublicId);
                     await _commerceRedisService.CreateOrderCacheAsync(key, ruleBuilder.OrderCache);
-
-                    return ruleBuilder.OrderCache;
+                    
+                    return _mapper.Map<CreateOrderOutput>(ruleBuilder.OrderCache);
                 
                 // В этом кейсе не добавляем в кэш.
                 case OrderTypeEnum.CreateVacancy:
-                    
                     // Готовим билдер для создания заказа в ПС.
                     builder = new PostVacancyOrderBuilder(_subscriptionRepository, _commerceRepository)
                     {
@@ -216,21 +212,31 @@ internal sealed class CommerceService : ICommerceService
                             $"{JsonConvert.SerializeObject(createOrderInput.VacancyOrderData)}.");
                     }
                     
+                    if (postVacancyBuilder.OrderData is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания модели данных для сохранения ее в очередь кролика и БД. " +
+                            "VacancyOrderData: " +
+                            $"{JsonConvert.SerializeObject(createOrderInput.VacancyOrderData)}.");
+                    }
+                    
+                    if (postVacancyBuilder.OrderData.Amount is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания модели данных цены заказа для сохранения ее в очередь кролика и БД. " +
+                            "VacancyOrderData: " +
+                            $"{JsonConvert.SerializeObject(createOrderInput.VacancyOrderData)}.");
+                    }
+                    
                     // Создаем заказ в ПС и добавляем в нашу БД.
-                    // var createdPayment = await _commerceRepository.CreateOrderAsync(postVacancyBuilder);
+                    var order = await CreateOrderAsync(postVacancyBuilder);
                     
-                    // Добавляем в очередь кролика заказ на платную публикацию вакансии.
-                    
-                    break;
+                    return _mapper.Map<CreateOrderOutput>(order);
 
                 default:
                     throw new InvalidOperationException("Неизвестный кейс создания заказа. " +
                                                         $"OrderType: {createOrderInput.OrderType}.");
             }
-
-            throw new InvalidOperationException("Результат создания заказа должен был быть возвращен выше. " +
-                                                "Заказ нужного типа должен был быть обработан выше. " +
-                                                $"OrderType: {createOrderInput.OrderType}.");
         }
 
         catch (Exception ex)

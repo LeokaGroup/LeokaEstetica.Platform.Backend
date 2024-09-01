@@ -140,7 +140,7 @@ internal sealed class YandexKassaService : IYandexKassaService
             if (isTestPayMode)
             {
                 var testPayPrice = await _globalConfigRepository.GetValueByKeyAsync<decimal>(GlobalConfigKeys
-                    .Integrations.PaymentSystem.COMMEFCE_TEST_PRICE_MODE_ENABLED_VALUE);
+                    .Integrations.PaymentSystem.COMMERCE_TEST_PRICE_MODE_ENABLED_VALUE);
                 orderCache.Price = testPayPrice;
             }
             

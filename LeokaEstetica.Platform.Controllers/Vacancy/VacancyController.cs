@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
 using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
+using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
 using Microsoft.AspNetCore.Mvc;
@@ -94,9 +95,9 @@ public class VacancyController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<VacancyOutput> CreateVacancyAsync([FromBody] VacancyInput vacancyInput)
+    public async Task<CreateOrderOutput> CreateVacancyAsync([FromBody] VacancyInput vacancyInput)
     {
-        var result = new VacancyOutput();
+        var result = new CreateOrderOutput();
         var validator = await new CreateVacancyValidator().ValidateAsync(vacancyInput);
 
         if (validator.Errors.Any())

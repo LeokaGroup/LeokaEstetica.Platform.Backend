@@ -42,6 +42,7 @@ using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
+using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -642,7 +643,7 @@ internal sealed class ProjectService : IProjectService
 	/// </summary>
 	/// <param name="createProjectVacancyInput">Входная модель.</param>
 	/// <returns>Данные вакансии.</returns>
-	public async Task<VacancyOutput> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput)
+	public async Task<CreateOrderOutput> CreateProjectVacancyAsync(CreateProjectVacancyInput createProjectVacancyInput)
 	{
 		try
 		{

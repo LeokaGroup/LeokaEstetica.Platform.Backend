@@ -271,6 +271,7 @@ public class MappingProfile : Profile
         
         CreateMap<StoryAndEpicSystemStatusOutput, ProjectManagmentTaskStatusTemplateOutput>();
         CreateMap<ProjectManagmentTaskOutput, ProjectTaskExtendedEntity>();
+        CreateMap<CreateOrderCache, CreateOrderOutput>();
     }
     
     /// <summary>

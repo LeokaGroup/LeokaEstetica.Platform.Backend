@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
+using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
@@ -20,7 +21,7 @@ public interface ICommerceService
     /// <param name="createOrderCache">Входная модель.</param>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Данные заказа.</returns>
-    Task<CreateOrderCache> CreateOrderCacheOrRabbitMqAsync(CreateOrderInput createOrderCacheInput,
+    Task<CreateOrderOutput> CreateOrderCacheOrRabbitMqAsync(CreateOrderInput createOrderCacheInput,
         string account);
 
     /// <summary>

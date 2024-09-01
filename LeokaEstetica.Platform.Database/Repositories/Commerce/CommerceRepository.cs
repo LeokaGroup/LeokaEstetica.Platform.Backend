@@ -53,11 +53,9 @@ internal sealed class CommerceRepository : BaseRepository, ICommerceRepository
         parameters.Add("@statusSysName", createPaymentOrderInput.PaymentStatusSysName);
         parameters.Add("@currency", new Enum(CurrencyTypeEnum.RUB));
         parameters.Add("@price", createPaymentOrderInput.Price);
-        parameters.Add("@paymentMonth", createPaymentOrderInput.Price);
+        parameters.Add("@paymentMonth", createPaymentOrderInput.PaymentMonth);
         parameters.Add("@totalPrice", createPaymentOrderInput.Price);
-        
-        //TODO: Передавать в этот метод тип заказа, не хардкодить.
-        parameters.Add("@orderType", new Enum(OrderTypeEnum.FareRule));
+        parameters.Add("@orderType", new Enum(createPaymentOrderInput.OrderType));
 
         var query = "INSERT INTO commerce.orders (" +
                     "order_name, " +
