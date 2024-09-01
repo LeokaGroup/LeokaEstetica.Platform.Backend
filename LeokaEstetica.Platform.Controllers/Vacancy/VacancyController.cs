@@ -195,6 +195,30 @@ public class VacancyController : BaseController
 
         return result;
     }
+  
+    /// Метод находит вакансии по поисковому запросу.
+    /// </summary>
+    /// <param name="searchText">Строка поиска.</param>
+    /// <returns>Список вакансий соответствующие поисковому запросу.</returns>
+    [HttpGet]
+    [Route("search")]
+    [ProducesResponseType(200, Type = typeof(CatalogVacancyResultOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CatalogVacancyResultOutput> SearchVacanciesAsync([FromQuery] string searchText)
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return null;
+        }
+        
+        var result = await _vacancyFinderService.SearchVacanciesAsync(searchText);
+
+        return result;
+    }
+
 
     /// Метод удаляет вакансию.
     /// </summary>
