@@ -684,23 +684,24 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 	/// <returns>Список участников команды проекта.</returns>
 	public async Task<List<ProjectTeamMemberEntity>> GetProjectTeamMembersAsync(long teamId)
 	{
-		var result = await (from ptm in _pgContext.ProjectTeamMembers
-							where ptm.TeamId == teamId
-							select new ProjectTeamMemberEntity
-							{
-								UserId = ptm.UserId,
-								Joined = ptm.Joined,
-								TeamId = ptm.TeamId,
-								MemberId = ptm.MemberId,
-								UserVacancy = new UserVacancyEntity
-								{
-									VacancyId = ptm.VacancyId ?? 0
-								},
-								Role = ptm.Role
-							})
+        var result = await (from ptm in _pgContext.ProjectTeamMembers
+                            where ptm.TeamId == teamId
+                            orderby ptm.Role == "Владелец" descending
+                            select new ProjectTeamMemberEntity
+                            {
+                                UserId = ptm.UserId,
+                                Joined = ptm.Joined,
+                                TeamId = ptm.TeamId,
+                                MemberId = ptm.MemberId,
+                                UserVacancy = new UserVacancyEntity
+                                {
+                                    VacancyId = ptm.VacancyId ?? 0
+                                },
+                                Role = ptm.Role
+                            })
 			.ToListAsync();
 
-		return result;
+        return result;
 	}
 
 	/// <summary>
