@@ -2719,6 +2719,15 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 		{
 			var result = await _projectManagmentRepository.GetAvailableEpicsAsync(projectId);
 
+			foreach (var epic in result)
+			{
+				epic.EpicName = ClearHtmlBuilder.Clear(epic.EpicName);
+				if (epic.EpicName.Length > 40)
+				{
+					epic.EpicName = string.Concat(epic.EpicName.Substring(0, 40), "...");
+				}
+			}
+
 			return result;
 		}
 
