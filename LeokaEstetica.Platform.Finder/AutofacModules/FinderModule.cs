@@ -2,10 +2,8 @@ using Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Finder.Abstractions.Project;
 using LeokaEstetica.Platform.Finder.Abstractions.Resume;
-using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
-using LeokaEstetica.Platform.Finder.Services.Vacancy;
 
 namespace LeokaEstetica.Platform.Finder.AutofacModules;
 
@@ -14,16 +12,6 @@ public class FinderModule : Module
 {
     public static void InitModules(ContainerBuilder builder)
     {
-        // Поисковый сервис вакансий.
-        builder
-            .RegisterType<VacancyFinderService>()
-            .Named<IVacancyFinderService>("VacancyFinderService")
-            .InstancePerLifetimeScope();
-        builder
-            .RegisterType<VacancyFinderService>()
-            .As<IVacancyFinderService>()
-            .InstancePerLifetimeScope();
-        
         // Поисковый сервис резюме.
         builder
             .RegisterType<ResumeFinderService>()

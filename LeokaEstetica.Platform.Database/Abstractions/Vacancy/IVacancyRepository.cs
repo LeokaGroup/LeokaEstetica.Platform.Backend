@@ -65,14 +65,8 @@ public interface IVacancyRepository
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Название вакансии.</returns>
     Task<string> GetVacancyNameByVacancyIdAsync(long vacancyId);
-    
-    /// <summary>
-    /// Метод получает список вакансий для дальнейшей фильтрации.
-    /// </summary>
-    /// <returns>Список вакансий без выгрузки в память,
-    /// так как этот список будем еще фильтровать.</returns>
-    Task<IOrderedQueryable<CatalogVacancyOutput>> GetFiltersVacanciesAsync();
 
+    
     /// <summary>
     /// Метод удаляет вакансию.
     /// </summary>

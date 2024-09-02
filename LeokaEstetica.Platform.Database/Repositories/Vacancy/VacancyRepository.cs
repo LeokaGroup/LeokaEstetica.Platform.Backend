@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Primitives;
 using Enum = System.Enum;
 using IsolationLevel = System.Data.IsolationLevel;
 
@@ -237,29 +238,6 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             .FirstOrDefaultAsync();
 
         return result;
-    }
-
-    /// <summary>
-    /// Метод получает список вакансий для дальнейшей фильтрации.
-    /// </summary>
-    /// <returns>Список вакансий без выгрузки в память, так как этот список будем еще фильтровать.</returns>
-    public async Task<IOrderedQueryable<CatalogVacancyOutput>> GetFiltersVacanciesAsync()
-    {
-        var result = (IOrderedQueryable<CatalogVacancyOutput>)_pgContext.CatalogVacancies
-            .Include(uv => uv.Vacancy)
-            .Select(uv => new CatalogVacancyOutput
-            {
-                VacancyName = uv.Vacancy.VacancyName,
-                DateCreated = uv.Vacancy.DateCreated,
-                Employment = uv.Vacancy.Employment,
-                Payment = uv.Vacancy.Payment,
-                VacancyId = uv.Vacancy.VacancyId,
-                VacancyText = uv.Vacancy.VacancyText,
-                WorkExperience = uv.Vacancy.WorkExperience
-            })
-            .AsQueryable();
-
-        return await Task.FromResult(result);
     }
 
     /// <summary>
@@ -607,7 +585,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             query += " AND \"Payment\" <> 'Без оплаты' " +
                      "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2)";
         }
-        
+
         // Если фильтр по возрастанию зарплаты.
         if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary ?? string.Empty) ==
             FilterSalaryTypeEnum.DescSalary)
@@ -619,6 +597,17 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                      "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2) DESC";
 		}
 
+		// Поиск по ключевому слову
+		if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.SearchText))
+		{
+
+			parameters.Add("@searchText", "%" + vacancyCatalogInput.SearchText + "%");
+            query += 
+                " AND uv.\"VacancyName\" ILIKE @searchText " +
+				" OR uv.\"VacancyText\" ILIKE @searchText ";
+		}
+        
+		var result2 = await connection.QueryAsync<CatalogVacancyOutput>(query, parameters);
 		if (vacancyCatalogInput.LastId.HasValue)
 		{
 			parameters.Add("@lastId", vacancyCatalogInput.LastId);

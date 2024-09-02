@@ -42,7 +42,6 @@ using LeokaEstetica.Platform.Database.Repositories.Vacancy;
 using LeokaEstetica.Platform.Diagnostics.Services.Metrics;
 using LeokaEstetica.Platform.Finder.Services.Project;
 using LeokaEstetica.Platform.Finder.Services.Resume;
-using LeokaEstetica.Platform.Finder.Services.Vacancy;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Integrations.Abstractions.Reverso;
 using LeokaEstetica.Platform.Integrations.Services.Discord;
@@ -100,8 +99,6 @@ internal class BaseServiceTest
     protected readonly ProjectCommentsService ProjectCommentsService;
     protected readonly ProjectFinderService ProjectFinderService;
     protected readonly ResumeService ResumeService;
-    protected readonly VacancyFinderService VacancyFinderService;
-    protected readonly Finder.Services.Project.ProjectFinderService FinderProjectService;
     protected readonly ResumeFinderService ResumeFinderService;
     protected readonly ProjectPaginationService ProjectPaginationService;
     protected readonly FareRuleService FareRuleService;
@@ -261,8 +258,6 @@ internal class BaseServiceTest
         ResumeService = new ResumeService(null, resumeRepository, mapper, subscriptionRepository,
             FareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository, accessUserService,
             discordService);
-        VacancyFinderService = new VacancyFinderService(vacancyRepository, null);
-        FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, null);
         ResumeFinderService = new ResumeFinderService(null, resumeRepository);
         ProjectPaginationService = new ProjectPaginationService(projectRepository, null);
         FareRuleService = new FareRuleService(FareRuleRepository, null);
