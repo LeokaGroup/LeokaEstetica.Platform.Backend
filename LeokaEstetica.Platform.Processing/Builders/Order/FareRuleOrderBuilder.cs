@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Processing.BuilderData;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Processing")]
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Controllers")]
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Backend")]
 
 namespace LeokaEstetica.Platform.Processing.Builders.Order;
 

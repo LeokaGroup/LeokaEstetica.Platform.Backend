@@ -52,7 +52,6 @@ using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.Commerce;
-using LeokaEstetica.Platform.RabbitMq.Services;
 using LeokaEstetica.Platform.Redis.Services.Commerce;
 using LeokaEstetica.Platform.Redis.Services.ProjectManagement;
 using LeokaEstetica.Platform.Redis.Services.User;
@@ -103,7 +102,6 @@ internal class BaseServiceTest
     protected readonly ResumeFinderService ResumeFinderService;
     protected readonly ProjectPaginationService ProjectPaginationService;
     protected readonly FareRuleService FareRuleService;
-    protected readonly PayMasterService PayMasterService;
     protected readonly SubscriptionService SubscriptionService;
     protected readonly UserBlackListService UserBlackListService;
     protected readonly ResumeModerationService ResumeModerationService;
@@ -196,11 +194,23 @@ internal class BaseServiceTest
         VacancyModerationService = new VacancyModerationService(vacancyModerationRepository, null, mapper, null,
             vacancyRepository, userRepository, projectRepository, null, TelegramBotService, null);
         
+        var commerceRedisService = new CommerceRedisService(distributedCache);
+        var ordersRepository = new OrdersRepository(pgContext);
+        var commerceRepository = new CommerceRepository(pgContext, connectionProvider);
+        
+        // PayMasterService = new PayMasterService(null, AppConfiguration, userRepository,
+        //     commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService, mapper, null, null);
+
+        CommerceService = new CommerceService(commerceRedisService, null, userRepository, FareRuleRepository,
+            commerceRepository, ordersRepository, subscriptionRepository, accessUserService,
+            null, null, null, null, null);
+            
+        
         // Тут если нужен будет ProjectService, то тут проблема с порядком следования.
         // Не получится сделать просто, VacancyService и ProjectService нужны друг другу тесно.
         VacancyService = new VacancyService(null, vacancyRepository, mapper, null, userRepository,
             VacancyModerationService, subscriptionRepository,
-            null, null, vacancyModerationRepository, discordService, null);
+            null, null, vacancyModerationRepository, discordService, null, CommerceService);
 
         var projectResponseRepository = new ProjectResponseRepository(pgContext);
 
@@ -240,18 +250,6 @@ internal class BaseServiceTest
             subscriptionRepository, VacancyModerationService, projectNotificationsRepository,
             accessUserService, null, ProjectModerationRepository, discordService, null,
             globalConfigRepository, projectManagementRepository, wikiRepository, null, null, null);
-        
-        var ordersRepository = new OrdersRepository(pgContext);
-        var commerceRepository = new CommerceRepository(pgContext, connectionProvider);
-        var commerceRedisService = new CommerceRedisService(distributedCache);
-        var rabbitMqService = new RabbitMqService();
-        
-        // PayMasterService = new PayMasterService(null, AppConfiguration, userRepository,
-        //     commerceRepository, accessUserService, null, commerceRedisService, rabbitMqService, mapper, null, null);
-
-        CommerceService = new CommerceService(commerceRedisService, null, userRepository, FareRuleRepository,
-            commerceRepository, ordersRepository, subscriptionRepository, accessUserService,
-            null, null, null, null);
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
             FareRuleRepository);

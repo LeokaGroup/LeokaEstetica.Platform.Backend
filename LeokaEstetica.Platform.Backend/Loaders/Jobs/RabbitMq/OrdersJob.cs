@@ -7,9 +7,13 @@ using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
+using LeokaEstetica.Platform.Processing.BuilderData;
+using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using Newtonsoft.Json;
@@ -33,6 +37,7 @@ internal sealed class OrdersJob : IJob
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IDiscordService _discordService;
     private readonly ICommerceService _commerceService;
+    private readonly ISubscriptionRepository _subscriptionRepository;
 
     /// <summary>
     /// Название очереди.
@@ -54,13 +59,15 @@ internal sealed class OrdersJob : IJob
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
     /// <param name="discordService">Сервис дискорд.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
+    /// <param name="subscriptionRepository">Репозиторий подписок пользователей.</param>
     public OrdersJob(ICommerceRepository commerceRepository, 
         ILogger<OrdersJob> logger, 
         ISubscriptionService subscriptionService, 
         IFareRuleRepository fareRuleRepository,
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
-        ICommerceService commerceService)
+        ICommerceService commerceService,
+         ISubscriptionRepository subscriptionRepository)
     {
         _commerceRepository = commerceRepository;
         _logger = logger;
@@ -69,6 +76,7 @@ internal sealed class OrdersJob : IJob
         _globalConfigRepository = globalConfigRepository;
         _discordService = discordService;
         _commerceService = commerceService;
+        _subscriptionRepository = subscriptionRepository;
     }
     
     /// <summary>
@@ -161,9 +169,40 @@ internal sealed class OrdersJob : IJob
 
                 try
                 {
+                    BaseOrderBuilder? orderBuilder = null;
+
                     // Проверяем статус платежа в ПС.
-                    newOrderStatus = await _commerceService.CheckOrderStatusAsync(orderEvent.PaymentId);
-                
+                    if (orderEvent.OrderType == OrderTypeEnum.FareRule)
+                    {
+                        BaseOrderBuilder builder = new FareRuleOrderBuilder(_subscriptionRepository,
+                            _commerceRepository);
+                        orderBuilder = (FareRuleOrderBuilder)builder;
+                    }
+                    
+                    else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy)
+                    {
+                        BaseOrderBuilder builder = new PostVacancyOrderBuilder(_subscriptionRepository,
+                            _commerceRepository);
+                        orderBuilder = (FareRuleOrderBuilder)builder;
+                    }
+
+                    if (orderBuilder is null)
+                    {
+                        throw new InvalidOperationException("Ошибка определения типа билдера. " +
+                                                            $"OrderType: {orderEvent.OrderType}.");
+                    }
+                    
+                    orderBuilder.OrderData ??= new OrderData();
+                    orderBuilder.OrderData.PaymentId = orderEvent.PaymentId;
+                    newOrderStatus = await _commerceService.CheckOrderStatusAsync(orderBuilder);
+
+                    if (string.IsNullOrWhiteSpace(orderEvent.StatusSysName))
+                    {
+                        throw new InvalidOperationException("Ошибка определения системного названия статуса. " +
+                                                            $"StatusSysName: {orderEvent.StatusSysName}. " +
+                                                            $"OrderEvent: {orderEvent}.");
+                    }
+
                     // Получаем старый статус платежа до проверки в ПС.
                     oldStatusSysName = PaymentStatus.GetPaymentStatusBySysName(orderEvent.StatusSysName);
                 }
@@ -181,6 +220,13 @@ internal sealed class OrdersJob : IJob
                 {
                     try
                     {
+                        if (string.IsNullOrWhiteSpace(orderEvent.PaymentId))
+                        {
+                            throw new InvalidOperationException("Ошибка определения Id платежа в ПС. " +
+                                                                $"PaymentId: {orderEvent.PaymentId}. " +
+                                                                $"OrderEvent: {orderEvent}.");
+                        }
+                        
                         // Обновляем статус заказа в нашей БД.
                         var updatedOrderStatus = await _commerceRepository.UpdateOrderStatusAsync(
                             newOrderStatus.ToString(), newOrderStatus.GetEnumDescription(), orderEvent.PaymentId,
@@ -215,8 +261,39 @@ internal sealed class OrdersJob : IJob
                         // Подтвердить в ПС можно только заказы в статусе waiting_for_capture.
                         if (newOrderStatus == PaymentStatusEnum.WaitingForCapture)
                         {
-                            await _commerceService.ConfirmPaymentAsync(orderEvent.PaymentId,
-                                new Amount(orderEvent.Price, orderEvent.Currency.ToString()));
+                            BaseOrderBuilder? orderBuilder = null;
+
+                            // Проверяем статус платежа в ПС.
+                            if (orderEvent.OrderType == OrderTypeEnum.FareRule)
+                            {
+                                BaseOrderBuilder builder = new FareRuleOrderBuilder(_subscriptionRepository,
+                                    _commerceRepository);
+                                orderBuilder = (FareRuleOrderBuilder)builder;
+                            }
+                    
+                            else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy)
+                            {
+                                BaseOrderBuilder builder = new PostVacancyOrderBuilder(_subscriptionRepository,
+                                    _commerceRepository);
+                                orderBuilder = (FareRuleOrderBuilder)builder;
+                            }
+
+                            if (orderBuilder is null)
+                            {
+                                throw new InvalidOperationException("Ошибка определения типа билдера. " +
+                                                                    $"OrderType: {orderEvent.OrderType}.");
+                            }
+
+                            if (orderBuilder.OrderData is null)
+                            {
+                                throw new InvalidOperationException("Ошибка подготовительных данных билдера. " +
+                                                                    $"OrderType: {orderEvent.OrderType}.");
+                            }
+
+                            orderBuilder.OrderData.Amount ??= new Amount(orderEvent.Price,
+                                orderEvent.Currency.ToString());
+
+                            await _commerceService.ConfirmPaymentAsync(orderBuilder);
                         }
                     }
                 
