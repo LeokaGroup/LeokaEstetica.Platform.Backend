@@ -24,5 +24,10 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Vacancy
 		/// По дефолту 20.
 		/// </summary>
 		public short PaginationRows { get; set; }
+
+		/// <summary>
+		/// Строка поиска вакансий по названию.
+		/// </summary>
+		public string SearchText { get; set; }
 	}
 }

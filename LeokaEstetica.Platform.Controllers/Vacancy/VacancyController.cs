@@ -4,7 +4,6 @@ using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Controllers.ModelsValidation.Vacancy;
 using LeokaEstetica.Platform.Controllers.Validators.Vacancy;
-using LeokaEstetica.Platform.Finder.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
@@ -24,7 +23,6 @@ public class VacancyController : BaseController
     private readonly IVacancyService _vacancyService;
     private readonly IMapper _mapper;
     private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
-    private readonly IVacancyFinderService _vacancyFinderService;
 
     /// <summary>
     /// Конструктор.
@@ -36,13 +34,11 @@ public class VacancyController : BaseController
     /// <param name="vacancyPaginationService">Сервис пагинации вакансий.</param>
     public VacancyController(IVacancyService vacancyService,
         IMapper mapper,
-        IValidationExcludeErrorsService validationExcludeErrorsService, 
-        IVacancyFinderService vacancyFinderService)
+        IValidationExcludeErrorsService validationExcludeErrorsService)
     {
         _vacancyService = vacancyService;
         _mapper = mapper;
         _validationExcludeErrorsService = validationExcludeErrorsService;
-        _vacancyFinderService = vacancyFinderService;
     }
 
     /// <summary>
@@ -195,30 +191,6 @@ public class VacancyController : BaseController
 
         return result;
     }
-  
-    /// Метод находит вакансии по поисковому запросу.
-    /// </summary>
-    /// <param name="searchText">Строка поиска.</param>
-    /// <returns>Список вакансий соответствующие поисковому запросу.</returns>
-    [HttpGet]
-    [Route("search")]
-    [ProducesResponseType(200, Type = typeof(CatalogVacancyResultOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<CatalogVacancyResultOutput> SearchVacanciesAsync([FromQuery] string searchText)
-    {
-        if (string.IsNullOrWhiteSpace(searchText))
-        {
-            return null;
-        }
-        
-        var result = await _vacancyFinderService.SearchVacanciesAsync(searchText);
-
-        return result;
-    }
-
 
     /// Метод удаляет вакансию.
     /// </summary>
