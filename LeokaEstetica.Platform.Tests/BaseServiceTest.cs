@@ -99,7 +99,6 @@ internal class BaseServiceTest
     protected readonly ProjectCommentsService ProjectCommentsService;
     protected readonly ProjectFinderService ProjectFinderService;
     protected readonly ResumeService ResumeService;
-    protected readonly Finder.Services.Project.ProjectFinderService FinderProjectService;
     protected readonly ResumeFinderService ResumeFinderService;
     protected readonly ProjectPaginationService ProjectPaginationService;
     protected readonly FareRuleService FareRuleService;
@@ -259,7 +258,6 @@ internal class BaseServiceTest
         ResumeService = new ResumeService(null, resumeRepository, mapper, subscriptionRepository,
             FareRuleRepository, userRepository, fillColorResumeService, resumeModerationRepository, accessUserService,
             discordService);
-        FinderProjectService = new Finder.Services.Project.ProjectFinderService(projectRepository, null);
         ResumeFinderService = new ResumeFinderService(null, resumeRepository);
         ProjectPaginationService = new ProjectPaginationService(projectRepository, null);
         FareRuleService = new FareRuleService(FareRuleRepository, null);

@@ -39,4 +39,9 @@ public class CatalogProjectInput
     /// Список стадий проекта.
     /// </summary>
     public List<FilterProjectStageTypeEnum>? ProjectStages { get; set; }
+
+	/// <summary>
+	/// Строка для поискового запроса проектов
+	/// </summary>
+	public string SearchText { get; set; }
 }

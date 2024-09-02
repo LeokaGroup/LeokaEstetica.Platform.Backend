@@ -12,16 +12,6 @@ public class FinderModule : Module
 {
     public static void InitModules(ContainerBuilder builder)
     {
-        // Поисковый сервис проектов.
-        builder
-            .RegisterType<ProjectFinderService>()
-            .Named<IProjectFinderService>("ProjectFinderService")
-            .InstancePerLifetimeScope();
-        builder
-            .RegisterType<ProjectFinderService>()
-            .As<IProjectFinderService>()
-            .InstancePerLifetimeScope();
-        
         // Поисковый сервис резюме.
         builder
             .RegisterType<ResumeFinderService>()
