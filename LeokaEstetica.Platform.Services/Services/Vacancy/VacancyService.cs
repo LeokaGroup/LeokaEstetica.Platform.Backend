@@ -190,48 +190,14 @@ internal sealed class VacancyService : IVacancyService
                                                     $"#1 Ошибка в {nameof(VacancyService)}");
             }
 
+            // Добавляем вакансию в кролика после оплаты заказа в ПС.
             var createdOrder = await _commerceService.CreateOrderCacheOrRabbitMqAsync(new CreateOrderInput
             {
                 VacancyOrderData = vacancyInput,
                 OrderType = OrderTypeEnum.CreateVacancy
             }, vacancyInput.Account!);
 
-            // TODO: Это должна делать джоба заказов.
-            // Добавляем вакансию в таблицу вакансий пользователя.
-            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancyInput, userId);
-            var vacancyId = createdVacancy.VacancyId;
-            
-            // TODO: Это должна делать джоба заказов.
-            // Привязываем вакансию к проекту.
-            await _projectRepository.AttachProjectVacancyAsync(vacancyInput.ProjectId, vacancyId);
-
-            // TODO: Это должна делать джоба заказов.
-            // Отправляем вакансию на модерацию.
-            await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
-
-             // TODO: Это должна делать джоба заказов.
-            // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
-            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
-                "Данные успешно сохранены. Вакансия отправлена на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreatedUserVacancy",
-                userCode, UserConnectionModuleEnum.Main);
-
-            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
-            
-            // TODO: Это должна делать джоба заказов.
-            // Отправляем уведомление о созданной вакансии владельцу.
-            await _mailingsService.SendNotificationCreateVacancyAsync(user.Email, createdVacancy.VacancyName,
-                vacancyId);
-
-             // TODO: Это должна делать джоба заказов.
-            // Отправляем уведомление о созданной вакансии в дискорд.
-            await _discordService.SendNotificationCreatedVacancyBeforeModerationAsync(vacancyId);
-
             return createdOrder;
-            
-            // var result = _mapper.Map<VacancyOutput>(createdVacancy);
-
-            // return result;
         }
 
         catch (Exception ex)

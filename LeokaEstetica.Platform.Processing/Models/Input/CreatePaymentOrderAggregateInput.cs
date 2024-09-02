@@ -1,5 +1,6 @@
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Base;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 
 namespace LeokaEstetica.Platform.Processing.Models.Input;
@@ -48,4 +49,9 @@ public class CreatePaymentOrderAggregateInput
     /// Кол-во месяцев, на которое оформлен тариф.
     /// </summary>
     public short? Month { get; set; }
+
+    /// <summary>
+    /// Данные вакансии заказа.
+    /// </summary>
+    public VacancyInput? VacancyOrderData { get; set; }
 }

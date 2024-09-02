@@ -1,15 +1,21 @@
 ﻿using System.Text;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
+using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
+using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.BuilderData;
@@ -38,6 +44,11 @@ internal sealed class OrdersJob : IJob
     private readonly IDiscordService _discordService;
     private readonly ICommerceService _commerceService;
     private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly IVacancyRepository _vacancyRepository;
+    private readonly IProjectRepository _projectRepository;
+    private readonly IVacancyModerationService _vacancyModerationService;
+    private readonly IUserRepository _userRepository;
+    private readonly IMailingsService _mailingsService;
 
     /// <summary>
     /// Название очереди.
@@ -60,14 +71,24 @@ internal sealed class OrdersJob : IJob
     /// <param name="discordService">Сервис дискорд.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
     /// <param name="subscriptionRepository">Репозиторий подписок пользователей.</param>
-    public OrdersJob(ICommerceRepository commerceRepository, 
-        ILogger<OrdersJob> logger, 
-        ISubscriptionService subscriptionService, 
+    /// <param name="vacancyRepository">Репозиторий вакансий.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="mailingsService">Сервис рассылок.</param>
+    public OrdersJob(ICommerceRepository commerceRepository,
+        ILogger<OrdersJob> logger,
+        ISubscriptionService subscriptionService,
         IFareRuleRepository fareRuleRepository,
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
         ICommerceService commerceService,
-         ISubscriptionRepository subscriptionRepository)
+        ISubscriptionRepository subscriptionRepository,
+        IVacancyRepository vacancyRepository,
+        IProjectRepository projectRepository,
+        IVacancyModerationService vacancyModerationService,
+        IUserRepository userRepository,
+        IMailingsService mailingsService)
     {
         _commerceRepository = commerceRepository;
         _logger = logger;
@@ -77,6 +98,11 @@ internal sealed class OrdersJob : IJob
         _discordService = discordService;
         _commerceService = commerceService;
         _subscriptionRepository = subscriptionRepository;
+        _vacancyRepository = vacancyRepository;
+        _projectRepository = projectRepository;
+        _vacancyModerationService = vacancyModerationService;
+        _userRepository = userRepository;
+        _mailingsService = mailingsService;
     }
     
     /// <summary>
@@ -218,6 +244,8 @@ internal sealed class OrdersJob : IJob
                 // Если статус заказа изменился в ПС, то обновляем его статус в БД.
                 if (newOrderStatus != oldStatusSysName)
                 {
+                    VacancyInput? vacancy = null;
+                    
                     try
                     {
                         if (string.IsNullOrWhiteSpace(orderEvent.PaymentId))
@@ -275,7 +303,8 @@ internal sealed class OrdersJob : IJob
                             {
                                 BaseOrderBuilder builder = new PostVacancyOrderBuilder(_subscriptionRepository,
                                     _commerceRepository);
-                                orderBuilder = (FareRuleOrderBuilder)builder;
+                                orderBuilder = (PostVacancyOrderBuilder)builder;
+                                vacancy = ((PostVacancyOrderBuilder)builder).VacancyOrderData;
                             }
 
                             if (orderBuilder is null)
@@ -308,6 +337,50 @@ internal sealed class OrdersJob : IJob
                     if (_channel is null)
                     {
                         throw new InvalidOperationException("Канал кролика был NULL.");
+                    }
+
+                    // Если статус подтвержден, и тип заказа создание вакансии,
+                    // то создаем вакансию пользователя и отправляем ее на модерацию.
+                    if (newOrderStatus == PaymentStatusEnum.Succeeded)
+                    {
+                        if (vacancy is null)
+                        {
+                            throw new InvalidOperationException(
+                                "Данные вакансии не были заполнены для создания вакансии.");
+                        }
+                        
+                        // Добавляем вакансию в таблицу вакансий пользователя.
+                        var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancy,
+                            orderEvent.CreatedBy);
+                        var vacancyId = createdVacancy.VacancyId;
+
+                        if (vacancy.ProjectId <= 0)
+                        {
+                            throw new InvalidOperationException(
+                                "ProjectId не был заполнен. " +
+                                "Вакансия не может быть создана без привязки к проекту.");
+                        }
+                        
+                        // Привязываем вакансию к проекту.
+                        await _projectRepository.AttachProjectVacancyAsync(vacancy.ProjectId, vacancyId);
+                        
+                        // Отправляем вакансию на модерацию.
+                        await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
+                        
+                        // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
+                        // await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                        //     "Данные успешно сохранены. Вакансия отправлена на модерацию.",
+                        //     NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreatedUserVacancy",
+                        //     userCode, UserConnectionModuleEnum.Main);
+
+                        var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(orderEvent.CreatedBy);
+                        
+                        // Отправляем уведомление о созданной вакансии владельцу.
+                        await _mailingsService.SendNotificationCreateVacancyAsync(user.Email,
+                            createdVacancy.VacancyName, vacancyId);
+                        
+                        // Отправляем уведомление о созданной вакансии в дискорд.
+                        await _discordService.SendNotificationCreatedVacancyBeforeModerationAsync(vacancyId);
                     }
                     
                     // Подтверждаем сообщение, чтобы дропнуть его из очереди.

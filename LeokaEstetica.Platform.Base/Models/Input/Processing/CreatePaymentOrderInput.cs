@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Base.Models.Input.Processing;
@@ -86,4 +87,9 @@ public class CreatePaymentOrderInput
     /// Общая сумма заказа (вместе со скидками и НДС - если они были).
     /// </summary>
     public decimal TotalPrice { get; set; }
+
+    /// <summary>
+    /// Данные вакансии.
+    /// </summary>
+    public VacancyInput? Vacancy { get; set; }
 }

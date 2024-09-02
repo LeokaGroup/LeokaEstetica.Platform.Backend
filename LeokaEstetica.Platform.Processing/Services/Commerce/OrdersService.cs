@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Base.Extensions;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Base.Models.Input.Processing;
+using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
@@ -16,6 +17,7 @@ using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Base;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.YandexKassa;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
@@ -146,7 +148,7 @@ internal sealed class OrdersService : IOrdersService
     public async Task<ICreateOrderOutput> CreatePaymentOrderAsync(
         CreatePaymentOrderAggregateInput createPaymentOrderAggregateInput, IConfiguration configuration,
         ICommerceRepository commerceRepository, IRabbitMqService rabbitMqService,
-        IGlobalConfigRepository globalConfigRepository, IMailingsService mailingsService)
+        IGlobalConfigRepository globalConfigRepository, IMailingsService mailingsService, VacancyInput? vacancy)
     {
         try
         {
@@ -195,12 +197,27 @@ internal sealed class OrdersService : IOrdersService
                                                     $"СreatedOrder: {JsonConvert.SerializeObject(createdOrder)}.");
             }
 
-            /// TODO: Засунуть все параметры в модель. Их слишком много уже тут.
-            // Отправляем заказ в очередь для отслеживания его статуса.
-            var orderEvent = OrderEventFactory.CreateOrderEvent(createdOrderResult.OrderId,
-                createdOrderResult.PaymentStatusSysName, paymentId, createPaymentOrderAggregateInput.CreatedBy,
-                createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
-                createdOrderResult.Price, createdOrderResult.CurrencyValue);
+            OrderEvent? orderEvent = null;
+            
+            if (createdOrderResult.OrderType == OrderTypeEnum.FareRule)
+            {
+                /// TODO: Засунуть все параметры в модель. Их слишком много уже тут.
+                // Отправляем заказ в очередь для отслеживания его статуса.
+                orderEvent = OrderEventFactory.CreateOrderEvent(createdOrderResult.OrderId,
+                    createdOrderResult.PaymentStatusSysName, paymentId, createPaymentOrderAggregateInput.CreatedBy,
+                    createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
+                    createdOrderResult.Price, createdOrderResult.CurrencyValue);
+            }
+            
+            else if (createdOrderResult.OrderType == OrderTypeEnum.CreateVacancy)
+            {
+                /// TODO: Засунуть все параметры в модель. Их слишком много уже тут.
+                // Отправляем заказ в очередь для отслеживания его статуса.
+                orderEvent = OrderEventFactory.CreatePostVacancyOrderEvent(createdOrderResult.OrderId,
+                    createdOrderResult.PaymentStatusSysName, paymentId, createPaymentOrderAggregateInput.CreatedBy,
+                    createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
+                    createdOrderResult.Price, createdOrderResult.CurrencyValue, vacancy!);
+            }
 
             var queueType = string.Empty.CreateQueueDeclareNameFactory(configuration["Environment"],
                 QueueTypeEnum.OrdersQueue);

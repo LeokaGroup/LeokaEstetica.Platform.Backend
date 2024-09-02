@@ -12,6 +12,7 @@ using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.YandexKassa;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
@@ -64,7 +65,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <param name="mailingsService">Сервис email.</param>
     /// <param name="transactionScopeFactory">Факторка транзакций.</param>
     /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
-    /// <param name="ordersService">Сервис заказов.</param> 
+    /// <param name="ordersService">Сервис заказов.</param>
     public YandexKassaService(ILogger<YandexKassaService> logger,
         IUserRepository userRepository,
         IAccessUserService accessUserService,
@@ -185,13 +186,21 @@ internal sealed class YandexKassaService : IYandexKassaService
                     $"Ошибка парсинга данных из ПС. Данные платежа: {JsonConvert.SerializeObject(createOrderInput)}");
                 throw ex;
             }
-            
+
             var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache,
                 createOrderInput, userId, orderBuilder.OrderData.PublicId, fareRuleName,
                 orderBuilder.OrderData.Account!, month);
+
+            VacancyInput? vacancy = null;
             
+            if (orderBuilder.OrderData.OrderType == OrderTypeEnum.CreateVacancy)
+            {
+                vacancy = ((PostVacancyOrderBuilder)orderBuilder).VacancyOrderData;
+            }
+
             var result = await _ordersService.CreatePaymentOrderAsync(paymentOrderAggregateInput,
-                    _configuration, _commerceRepository, _rabbitMqService, _globalConfigRepository, _mailingsService);
+                _configuration, _commerceRepository, _rabbitMqService, _globalConfigRepository, _mailingsService,
+                vacancy);
 
             _logger.LogInformation("Конец создания заказа.");
             
