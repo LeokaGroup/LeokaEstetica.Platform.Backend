@@ -309,6 +309,9 @@ internal sealed class ProfileService : IProfileService
             result.IsSuccess = true;
             result.IsEmailChanged = savedProfileInfoData.IsEmailChanged;
 
+            // Отправляем анкету на модерацию.            
+            await _resumeModerationRepository.AddResumeModerationAsync(profileInfoId);
+
             // Отправляем уведомление в пачку об изменениях анкеты.
             await _discordService.SendNotificationChangedProfileInfoBeforeModerationAsync(profileInfoId);
 
