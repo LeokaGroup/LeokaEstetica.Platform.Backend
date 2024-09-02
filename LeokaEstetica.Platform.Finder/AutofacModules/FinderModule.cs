@@ -24,16 +24,6 @@ public class FinderModule : Module
             .As<IVacancyFinderService>()
             .InstancePerLifetimeScope();
         
-        // Поисковый сервис проектов.
-        builder
-            .RegisterType<ProjectFinderService>()
-            .Named<IProjectFinderService>("ProjectFinderService")
-            .InstancePerLifetimeScope();
-        builder
-            .RegisterType<ProjectFinderService>()
-            .As<IProjectFinderService>()
-            .InstancePerLifetimeScope();
-        
         // Поисковый сервис резюме.
         builder
             .RegisterType<ResumeFinderService>()

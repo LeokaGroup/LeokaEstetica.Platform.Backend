@@ -33,7 +33,6 @@ public class ProjectController : BaseController
 	private readonly IMapper _mapper;
 	private readonly IValidationExcludeErrorsService _validationExcludeErrorsService;
 	private readonly IProjectCommentsService _projectCommentsService;
-	private readonly IProjectFinderService _projectFinderService;
 	private readonly IProjectPaginationService _projectPaginationService;
 	private readonly ILogger<ProjectController> _logger;
 	private readonly Lazy<IDiscordService> _discordService;
@@ -45,7 +44,6 @@ public class ProjectController : BaseController
 	/// <param name="mapper">Автомаппер.</param>
 	/// <param name="validationExcludeErrorsService">Сервис исключения валидации ошибок.</param>
 	/// <param name="projectCommentsService">Сервис комментариев проектов.</param>
-	/// <param name="projectFinderService">Поисковый сервис проектов.</param>
 	/// <param name="projectPaginationService">Сервис пагинации проектов.</param>
 	/// <param name="logger">Сервис логера.</param>
 	/// <param name="discordService">Сервис уведомлений дискорда.</param>
@@ -53,7 +51,6 @@ public class ProjectController : BaseController
 		IMapper mapper,
 		IValidationExcludeErrorsService validationExcludeErrorsService,
 		IProjectCommentsService projectCommentsService,
-		IProjectFinderService projectFinderService,
 		IProjectPaginationService projectPaginationService,
 		ILogger<ProjectController> logger,
 		Lazy<IDiscordService> discordService)
@@ -62,7 +59,6 @@ public class ProjectController : BaseController
 		_mapper = mapper;
 		_validationExcludeErrorsService = validationExcludeErrorsService;
 		_projectCommentsService = projectCommentsService;
-		_projectFinderService = projectFinderService;
 		_projectPaginationService = projectPaginationService;
 		_logger = logger;
 		_discordService = discordService;
@@ -461,30 +457,6 @@ public class ProjectController : BaseController
 		};
 	}
 
-    /// <summary>
-	/// TODO: Это должно находится в контроллере поиска. Перенести.
-	/// Метод находит проекты по поисковому запросу.
-	/// </summary>
-	/// <param name="searchText">Строка поиска.</param>
-	/// <returns>Список проектов соответствующие поисковому запросу.</returns>
-	[HttpGet]
-	[Route("search")]
-	[ProducesResponseType(200, Type = typeof(CatalogProjectResultOutput))]
-	[ProducesResponseType(400)]
-	[ProducesResponseType(403)]
-	[ProducesResponseType(500)]
-	[ProducesResponseType(404)]
-	public async Task<CatalogProjectResultOutput> SearchProjectsAsync([FromQuery] string searchText)
-	{
-		if (string.IsNullOrWhiteSpace(searchText))
-		{
-			return null;
-		}
-
-		var result = await _projectFinderService.SearchProjectsAsync(searchText);
-
-		return result;
-	}
 
 	/// <summary>
 	/// Метод пагинации проектов.

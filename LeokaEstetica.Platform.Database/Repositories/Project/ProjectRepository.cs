@@ -267,7 +267,16 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 	        isFilterApplied = true;
         }
 
-        if (catalogProjectInput.LastId.HasValue)
+		// Поисковой запрос названия/описания проекта
+		if (!string.IsNullOrWhiteSpace(catalogProjectInput.SearchText))
+		{
+			parameters.Add("@SearchText", "%"+ catalogProjectInput.SearchText + "%");
+			query+=
+				" AND u.\"ProjectName\" ILIKE @searchText " +
+				" OR u.\"ProjectDetails\" ILIKE @searchText ";
+		}
+
+		if (catalogProjectInput.LastId.HasValue)
         {
 	        parameters.Add("@lastId", catalogProjectInput.LastId);
 	        
