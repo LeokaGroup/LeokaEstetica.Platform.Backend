@@ -148,7 +148,8 @@ internal sealed class OrdersService : IOrdersService
     public async Task<ICreateOrderOutput> CreatePaymentOrderAsync(
         CreatePaymentOrderAggregateInput createPaymentOrderAggregateInput, IConfiguration configuration,
         ICommerceRepository commerceRepository, IRabbitMqService rabbitMqService,
-        IGlobalConfigRepository globalConfigRepository, IMailingsService mailingsService, VacancyInput? vacancy)
+        IGlobalConfigRepository globalConfigRepository, IMailingsService mailingsService, VacancyInput? vacancy,
+        OrderTypeEnum orderType)
     {
         try
         {
@@ -186,7 +187,7 @@ internal sealed class OrdersService : IOrdersService
 
             var createdOrder = await CreatePaymentOrderAsync(paymentId, createPaymentOrderAggregateInput.OrderCache,
                 createPaymentOrderAggregateInput.CreateOrderInput, createPaymentOrderAggregateInput.CreatedBy,
-                responseCheckStatusOrder);
+                responseCheckStatusOrder, orderType);
 
             // Создаем заказ в БД.
             var createdOrderResult = await commerceRepository.CreateOrderAsync(createdOrder);
@@ -204,9 +205,9 @@ internal sealed class OrdersService : IOrdersService
                 /// TODO: Засунуть все параметры в модель. Их слишком много уже тут.
                 // Отправляем заказ в очередь для отслеживания его статуса.
                 orderEvent = OrderEventFactory.CreateOrderEvent(createdOrderResult.OrderId,
-                    createdOrderResult.PaymentStatusSysName, paymentId, createPaymentOrderAggregateInput.CreatedBy,
+                    createdOrderResult.StatusSysName, paymentId, createPaymentOrderAggregateInput.CreatedBy,
                     createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
-                    createdOrderResult.Price, createdOrderResult.CurrencyValue);
+                    createdOrderResult.Price, createdOrder.CurrencyType, createdOrderResult.OrderType);
             }
             
             else if (createdOrderResult.OrderType == OrderTypeEnum.CreateVacancy)
@@ -214,9 +215,10 @@ internal sealed class OrdersService : IOrdersService
                 /// TODO: Засунуть все параметры в модель. Их слишком много уже тут.
                 // Отправляем заказ в очередь для отслеживания его статуса.
                 orderEvent = OrderEventFactory.CreatePostVacancyOrderEvent(createdOrderResult.OrderId,
-                    createdOrderResult.PaymentStatusSysName, paymentId, createPaymentOrderAggregateInput.CreatedBy,
+                    createdOrderResult.StatusSysName, paymentId, createPaymentOrderAggregateInput.CreatedBy,
                     createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
-                    createdOrderResult.Price, createdOrderResult.CurrencyValue, vacancy!);
+                    createdOrderResult.Price, createdOrder.CurrencyType, vacancy!,
+                    createdOrderResult.OrderType);
             }
 
             var queueType = string.Empty.CreateQueueDeclareNameFactory(configuration["Environment"],
@@ -256,10 +258,11 @@ internal sealed class OrdersService : IOrdersService
     /// <param name="createOrderRequest">Модель запроса.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="responseCheckStatusOrder">Статус ответа из ПС.</param>
+    /// <param name="orderType">Тип заказа.</param>
     /// <returns>Результирующая модель для сохранения в БД.</returns>
     private static async Task<CreatePaymentOrderInput> CreatePaymentOrderAsync(string paymentId,
         CreateOrderCache orderCache, ICreateOrderInput createOrderInput, long userId,
-        string responseCheckStatusOrder)
+        string responseCheckStatusOrder, OrderTypeEnum orderType)
     {
         var createOrder = JsonConvert.DeserializeObject<PaymentStatusOutput>(responseCheckStatusOrder);
         var result = new CreatePaymentOrderInput
@@ -271,7 +274,8 @@ internal sealed class OrdersService : IOrdersService
             CurrencyType = CurrencyTypeEnum.RUB,
             Created = DateTime.Parse(createOrder!.Created),
             PaymentStatusSysName = createOrder.OrderStatus,
-            PaymentStatusName = PaymentStatusEnum.Pending.GetEnumDescription()
+            PaymentStatusName = PaymentStatusEnum.Pending.GetEnumDescription(),
+            OrderType = orderType
         };
         
         if (createOrderInput is CreateOrderPayMasterInput orderPayMasterInput)

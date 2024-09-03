@@ -197,6 +197,12 @@ internal sealed class OrdersJob : IJob
                 {
                     BaseOrderBuilder? orderBuilder = null;
 
+                    if (orderEvent.OrderType == OrderTypeEnum.Undefined)
+                    {
+                        throw new InvalidOperationException("Неизвестный тип заказа. " +
+                                                            $"OrderType: {orderEvent.OrderType}.");
+                    }
+
                     // Проверяем статус платежа в ПС.
                     if (orderEvent.OrderType == OrderTypeEnum.FareRule)
                     {
@@ -209,7 +215,7 @@ internal sealed class OrdersJob : IJob
                     {
                         BaseOrderBuilder builder = new PostVacancyOrderBuilder(_subscriptionRepository,
                             _commerceRepository);
-                        orderBuilder = (FareRuleOrderBuilder)builder;
+                        orderBuilder = (PostVacancyOrderBuilder)builder;
                     }
 
                     if (orderBuilder is null)
@@ -278,11 +284,12 @@ internal sealed class OrdersJob : IJob
                         }
 
                         // Для бесплатного тарифа нет срока подписки.
-                        if (!fareRule.FareRule.IsFree)
+                        // Кол-во месяцев есть только у оплаты заказа на тариф.
+                        if (!fareRule.FareRule.IsFree && orderEvent.PaymentMonth.HasValue)
                         {
                             // Проставляем подписку и даты подписки пользователю.
                             await _subscriptionService.SetUserSubscriptionAsync(orderEvent.CreatedBy, publicId,
-                                orderEvent.Month, orderEvent.OrderId, fareRule.FareRule.RuleId);
+                                orderEvent.PaymentMonth, orderEvent.OrderId, fareRule.FareRule.RuleId);
                         }
                         
                         // Если статус платежа в ПС ожидает подтверждения, то подтверждаем его, чтобы списать ДС.
@@ -321,6 +328,7 @@ internal sealed class OrdersJob : IJob
 
                             orderBuilder.OrderData.Amount ??= new Amount(orderEvent.Price,
                                 orderEvent.Currency.ToString());
+                            orderBuilder.OrderData.PaymentId = orderEvent.PaymentId;
 
                             await _commerceService.ConfirmPaymentAsync(orderBuilder);
                         }

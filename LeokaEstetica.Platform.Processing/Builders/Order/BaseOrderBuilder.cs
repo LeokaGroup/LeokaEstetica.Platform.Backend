@@ -53,4 +53,9 @@ public abstract class BaseOrderBuilder
     /// </summary>
     /// <returns>Заполненный ивент для кролика.</returns>
     protected internal abstract Task<OrderEvent> CreateOrderEventAsync();
+
+    /// <summary>
+    /// Метод заполняет тип заказа.
+    /// </summary>
+    protected internal abstract Task FillOrderTypeAsync();
 }

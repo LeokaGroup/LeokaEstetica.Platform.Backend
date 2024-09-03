@@ -1,4 +1,7 @@
-﻿namespace LeokaEstetica.Platform.Processing.Builders.Order;
+﻿using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Processing.BuilderData;
+
+namespace LeokaEstetica.Platform.Processing.Builders.Order;
 
 /// <summary>
 /// Класс билдера заказа.
@@ -12,8 +15,16 @@ internal class OrderBuilder
     /// <returns>Результирующая модель.</returns>
     public async Task BuildAsync(BaseOrderBuilder builder)
     {
-        await builder.FillMonthAsync();
+        builder.OrderData ??= new OrderData();
+        
+        // В кейсе с платной публикацией вакансий не важен срок подписки.
+        if (builder.OrderData.OrderType != OrderTypeEnum.CreateVacancy)
+        {
+            await builder.FillMonthAsync();
+        }
+        
         await builder.FillFareRuleNameAsync();
         await builder.CalculateFareRulePriceAsync();
+        await builder.FillOrderTypeAsync();
     }
 }

@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Processing.Models.Input;
 using LeokaEstetica.Platform.RabbitMq.Abstractions;
 using Microsoft.Extensions.Configuration;
@@ -50,9 +51,11 @@ public interface IOrdersService
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="mailingsService">Сервис email.</param>
     /// <param name="vacancy">Данные вакансии.</param>
+    /// <param name="orderType">Тип заказа.</param>
     /// <returns>Результирующая модель заказа.</returns>
     /// <exception cref="InvalidOperationException">Может бахнуть ошибку, если не прошла проверка статуса платежа в ПС.</exception>
     Task<ICreateOrderOutput> CreatePaymentOrderAsync(CreatePaymentOrderAggregateInput createPaymentOrderAggregateInput,
         IConfiguration configuration, ICommerceRepository commerceRepository, IRabbitMqService rabbitMqService,
-        IGlobalConfigRepository globalConfigRepository, IMailingsService mailingsService, VacancyInput? vacancy);
+        IGlobalConfigRepository globalConfigRepository, IMailingsService mailingsService, VacancyInput? vacancy,
+        OrderTypeEnum orderType);
 }

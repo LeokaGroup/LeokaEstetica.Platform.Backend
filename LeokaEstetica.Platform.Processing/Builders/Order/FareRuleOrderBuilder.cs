@@ -22,6 +22,11 @@ internal class FareRuleOrderBuilder : BaseOrderBuilder
     public CreateOrderCache OrderCache { get; set; }
 
     /// <summary>
+    /// Подготовительные данные.
+    /// </summary>
+    public OrderData OrderData { get; set; }
+
+    /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="subscriptionRepository">Репозиторий подписок.</param>
@@ -37,7 +42,7 @@ internal class FareRuleOrderBuilder : BaseOrderBuilder
     /// <inheritdoc />
     protected internal override Task FillMonthAsync()
     {
-        OrderCache.Month = OrderCache.Month;
+        OrderCache.Month = OrderData.Month;
 
         return Task.CompletedTask;
     }
@@ -45,8 +50,9 @@ internal class FareRuleOrderBuilder : BaseOrderBuilder
     /// <inheritdoc />
     protected internal override Task FillFareRuleNameAsync()
     {
-        OrderCache.FareRuleName = "Оплата тарифа: " + OrderData!.fareRuleNameFromCache
-                                                    + $" (на {OrderCache.Month} мес.)";
+        // OrderCache.FareRuleName = "Оплата тарифа: " + OrderData!.fareRuleNameFromCache
+        //                                             + $" (на {OrderCache.Month} мес.)";
+        OrderCache.FareRuleName = OrderData.FareRuleName;
 
         return Task.CompletedTask;
     }
@@ -65,5 +71,13 @@ internal class FareRuleOrderBuilder : BaseOrderBuilder
     protected internal override Task<OrderEvent> CreateOrderEventAsync()
     {
         throw new NotImplementedException("При оформлении заказа на тариф, кролик не задействуется в билдере.");
+    }
+
+    /// <inheritdoc />
+    protected internal override Task FillOrderTypeAsync()
+    {
+        OrderCache.OrderType = OrderData.OrderType;
+        
+        return Task.CompletedTask;
     }
 }

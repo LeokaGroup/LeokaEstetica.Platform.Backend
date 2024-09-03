@@ -91,7 +91,7 @@ internal class PostVacancyOrderBuilder : BaseOrderBuilder
                     "CreatedBy неизвестен. Пользователь на этом этапе уже должен быть известен. " +
                     $"OrderData: {JsonConvert.SerializeObject(OrderData)}."),
             Currency = CurrencyTypeEnum.RUB,
-            Month = null,
+            PaymentMonth = null,
             OrderId = OrderData.OrderId ?? throw new InvalidOperationException(
                 "OrderId заказа вакансии не был известен. " +
                 "Он обязательно должен был быть уже известен, так как на этом этапе заказ уже создан в нашей БД. " +
@@ -118,5 +118,11 @@ internal class PostVacancyOrderBuilder : BaseOrderBuilder
         };
 
         return await Task.FromResult(OrderEvent);
+    }
+
+    /// <inheritdoc />
+    protected internal override Task FillOrderTypeAsync()
+    {
+        throw new NotImplementedException("В билдере вакансий этот этап делается при создании ивента для кролика.");
     }
 }

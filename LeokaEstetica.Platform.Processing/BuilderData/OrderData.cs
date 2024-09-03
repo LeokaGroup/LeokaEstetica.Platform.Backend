@@ -39,7 +39,7 @@ internal class OrderData
     /// <summary>
     /// Кол-во сотрудников.
     /// </summary>
-    public short? EmployeesCount { get; set; }
+    public int? EmployeesCount { get; set; }
 
     /// <summary>
     /// Кол-во месяцев подписки. Может не быть задан для доп.заказов.

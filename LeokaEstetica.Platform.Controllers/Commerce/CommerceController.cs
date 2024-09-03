@@ -10,6 +10,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 using LeokaEstetica.Platform.Processing.BuilderData;
 using LeokaEstetica.Platform.Processing.Builders.Order;
@@ -93,6 +94,7 @@ public class CommerceController : BaseController
         builder.OrderData ??= new OrderData();
         builder.OrderData.PublicId = createOrderInput.PublicId;
         builder.OrderData.Account = GetUserName();
+        builder.OrderData.OrderType = OrderTypeEnum.FareRule;
         
         var result = await _commerceService.CreateOrderAsync(builder as FareRuleOrderBuilder)
             as CreateOrderYandexKassaOutput;

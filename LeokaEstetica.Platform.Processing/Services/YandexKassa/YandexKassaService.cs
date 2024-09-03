@@ -200,7 +200,7 @@ internal sealed class YandexKassaService : IYandexKassaService
 
             var result = await _ordersService.CreatePaymentOrderAsync(paymentOrderAggregateInput,
                 _configuration, _commerceRepository, _rabbitMqService, _globalConfigRepository, _mailingsService,
-                vacancy);
+                vacancy, orderBuilder.OrderData.OrderType);
 
             _logger.LogInformation("Конец создания заказа.");
             
@@ -307,9 +307,9 @@ internal sealed class YandexKassaService : IYandexKassaService
             {
                 var responseErrorDetails = responseConfirmOrder.Content.ReadAsStringAsync().Result;
                 var ex = new InvalidOperationException(
-                    "Ошибка подтверждения заказа в ПС." +
-                    $" Данные заказа: {JsonConvert.SerializeObject(orderBuilder.OrderData.Amount)}." +
-                    $" Ответ от ПС: {responseErrorDetails}");
+                    "Ошибка подтверждения заказа в ПС. " +
+                    $" Данные заказа: {JsonConvert.SerializeObject(orderBuilder)}. " +
+                    $" Ответ от ПС: {responseErrorDetails}.");
                 throw ex;
             }
 

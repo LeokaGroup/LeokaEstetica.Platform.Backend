@@ -143,9 +143,10 @@ internal sealed class CommerceService : ICommerceService
                             FareRuleName = fareRule.FareRule!.RuleName,
                             CreatedBy = userId,
                             RuleId = fareRule.FareRule.RuleId,
-                            OrderType = createOrderInput.OrderType,
-                            Month = createOrderInput.PaymentMonth
-                        },
+                            OrderType = OrderTypeEnum.FareRule,
+                            Month = createOrderInput.PaymentMonth,
+                            EmployeesCount = createOrderInput.EmployeesCount
+                        }
                     };
 
                     await orderBuilder.BuildAsync(builder);
@@ -164,6 +165,13 @@ internal sealed class CommerceService : ICommerceService
                     {
                         throw new InvalidOperationException(
                             "Ошибка создания модели заказа для сохранения его в кэше. " +
+                            $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderInput)}.");
+                    }
+                    
+                    if (ruleBuilder.OrderData is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания подготовительных данных заказа для сохранения его в кэше. " +
                             $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderInput)}.");
                     }
 
@@ -185,8 +193,8 @@ internal sealed class CommerceService : ICommerceService
                             FareRuleName = fareRule.FareRule!.RuleName,
                             CreatedBy = userId,
                             RuleId = fareRule.FareRule.RuleId,
-                            OrderType = createOrderInput.OrderType,
-                            Month = createOrderInput.PaymentMonth
+                            OrderType = OrderTypeEnum.CreateVacancy,
+                            Month = createOrderInput.PaymentMonth,
                         },
                         VacancyOrderData = createOrderInput.VacancyOrderData
                     };

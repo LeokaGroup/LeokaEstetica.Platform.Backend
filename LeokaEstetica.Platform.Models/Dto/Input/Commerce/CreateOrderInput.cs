@@ -14,11 +14,6 @@ public class CreateOrderInput
     public OrderTypeEnum OrderType { get; set; }
 
     /// <summary>
-    /// Входная модель заказа тарифа.
-    /// </summary>
-    public FareRuleCacheInput? FareRuleCache { get; set; }
-
-    /// <summary>
     /// Входная модель заказа на платное размещение вакансии.
     /// </summary>
     public VacancyInput? VacancyOrderData { get; set; }
@@ -32,4 +27,9 @@ public class CreateOrderInput
     /// Кол-во мес. подписки.
     /// </summary>
     public short? PaymentMonth { get; set; }
+    
+    /// <summary>
+    /// Кол-во сотрудников.
+    /// </summary>
+    public int? EmployeesCount { get; set; }
 }

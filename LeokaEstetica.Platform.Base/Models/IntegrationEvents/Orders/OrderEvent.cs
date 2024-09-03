@@ -36,7 +36,7 @@ public class OrderEvent : BaseEventMessage
     /// <summary>
     /// Кол-во месяцев подписки.
     /// </summary>
-    public short? Month { get; set; }
+    public short? PaymentMonth { get; set; }
 
     /// <summary>
     /// Цена.

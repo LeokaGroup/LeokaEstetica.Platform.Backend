@@ -19,9 +19,10 @@ public static class OrderEventFactory
     /// <param name="userId">Id пользователя.</param>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="month">Кол-во месяцев подписки.</param>
+    /// <param name="orderType">Тип заказа.</param>
     /// <returns>Результирующая модель.</returns>
     public static OrderEvent CreateOrderEvent(long orderId, string statusSysName, string paymentId, long userId,
-        Guid publicId, short? month, decimal price, CurrencyTypeEnum currency)
+        Guid publicId, short? month, decimal price, CurrencyTypeEnum currency, OrderTypeEnum orderType)
     {
         return new OrderEvent
         {
@@ -30,9 +31,10 @@ public static class OrderEventFactory
             PaymentId = paymentId,
             CreatedBy = userId,
             PublicId = publicId,
-            Month = month,
+            PaymentMonth = month,
             Price = price,
-            Currency = currency
+            Currency = currency,
+            OrderType = orderType
         };
     }
 
@@ -46,10 +48,11 @@ public static class OrderEventFactory
     /// <param name="userId">Id пользователя.</param>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="month">Кол-во месяцев подписки.</param>
+    /// <param name="orderType">Тип заказа.</param>
     /// <returns>Результирующая модель.</returns>
     public static PostVacancyOrderEvent CreatePostVacancyOrderEvent(long orderId, string statusSysName,
         string paymentId, long userId, Guid publicId, short? month, decimal price, CurrencyTypeEnum currency,
-        VacancyInput vacancyOrderData)
+        VacancyInput vacancyOrderData, OrderTypeEnum orderType)
     {
         return new PostVacancyOrderEvent
         {
@@ -58,10 +61,11 @@ public static class OrderEventFactory
             PaymentId = paymentId,
             CreatedBy = userId,
             PublicId = publicId,
-            Month = month,
+            PaymentMonth = month,
             Price = price,
             Currency = currency,
-            VacancyOrderData = vacancyOrderData
+            VacancyOrderData = vacancyOrderData,
+            OrderType = orderType
         };
     }
 }
