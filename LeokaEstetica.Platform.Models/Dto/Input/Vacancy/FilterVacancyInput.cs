@@ -26,12 +26,6 @@ public class FilterVacancyInput
     public string? Experience { get; set; }
 
     /// <summary>
-    /// Фильтр занятости (список значений).
-    /// <seealso cref="FilterEmploymentTypeEnum"/>.
-    /// </summary>
-    public string? EmploymentsValues { get; set; }
-
-    /// <summary>
     /// Список значений после парсинга списка знчений.
     /// </summary>
     public List<FilterEmploymentTypeEnum>? Employments { get; set; }

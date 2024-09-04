@@ -487,23 +487,23 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         // Если фильтр занятости = полная занятость.
         if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum.Full))
         {
-            parameters.Add("@employment", FilterEmploymentTypeEnum.Full.GetEnumDescription());
-            query += " AND \"Employment\" = @employment";
+            parameters.Add("@employmentFull", FilterEmploymentTypeEnum.Full.GetEnumDescription());
+            query += " AND \"Employment\" = @employmentFull";
         }
         
         // Если фильтр занятости = частичная занятость.
         if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum.Partial))
         {
-            parameters.Add("@employment", FilterEmploymentTypeEnum.Partial.GetEnumDescription());
-            query += " AND \"Employment\" = @employment";
+            parameters.Add("@employmentPartial", FilterEmploymentTypeEnum.Partial.GetEnumDescription());
+            query += " OR \"Employment\" = @employmentPartial";
         }
         
         // Если фильтр занятости = проектная занятость.
         if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum
                 .ProjectWork))
         {
-            parameters.Add("@employment", FilterEmploymentTypeEnum.ProjectWork.GetEnumDescription());
-            query += " AND \"Employment\" = @employment";
+            parameters.Add("@employmentProjectWork", FilterEmploymentTypeEnum.ProjectWork.GetEnumDescription());
+            query += " OR \"Employment\" = @employmentProjectWork";
         }
         
         // Если фильтр опыта работы более 6 лет.
@@ -567,12 +567,30 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             query += " AND \"Payment\" = @payment";
         }
 
-        // Если фильтр по дате.
-        if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary ?? string.Empty) ==
+		// Поиск по ключевому слову
+		if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.SearchText))
+		{
+
+			parameters.Add("@searchText", "%" + vacancyCatalogInput.SearchText + "%");
+			query +=
+				" AND uv.\"VacancyName\" ILIKE @searchText " +
+				" OR uv.\"VacancyText\" ILIKE @searchText ";
+		}
+
+		//Пагинация 
+		if (vacancyCatalogInput.LastId.HasValue)
+		{
+			parameters.Add("@lastId", vacancyCatalogInput.LastId);
+
+			query += " AND cv.\"VacancyId\" > @lastId ";
+		}
+
+		// Если фильтр по дате.
+		if (!isNeedOrder && Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary ?? string.Empty) ==
             FilterSalaryTypeEnum.Date)
         {
             isNeedOrder = true;
-            query += " ORDER BY \"DateCreated\" DESC";
+            query += " ORDER BY \"DateCreated\" DESC ";
         }
         
         // Если фильтр по возрастанию зарплаты.
@@ -595,25 +613,6 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             // Исключаем без оплаты, так как это помешает сортировке по цене.
             query += " AND \"Payment\" <> 'Без оплаты' " +
                      "ORDER BY REPLACE(\"Payment\", ' ', '')::NUMERIC(12, 2) DESC";
-		}
-
-		// Поиск по ключевому слову
-		if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.SearchText))
-		{
-
-			parameters.Add("@searchText", "%" + vacancyCatalogInput.SearchText + "%");
-            query += 
-                " AND uv.\"VacancyName\" ILIKE @searchText " +
-				" OR uv.\"VacancyText\" ILIKE @searchText ";
-		}
-        
-		var result2 = await connection.QueryAsync<CatalogVacancyOutput>(query, parameters);
-		if (vacancyCatalogInput.LastId.HasValue)
-		{
-			parameters.Add("@lastId", vacancyCatalogInput.LastId);
-
-			// Применяем пагинацию.
-			query += " AND cv.\"VacancyId\" > @lastId ";
 		}
 
 		// TODO: Передавать с фронта будем кол-во строк, при настройке пагинации пользователем.

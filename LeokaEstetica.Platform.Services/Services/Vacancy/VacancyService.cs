@@ -399,9 +399,6 @@ internal sealed class VacancyService : IVacancyService
                 CatalogVacancies = new List<CatalogVacancyOutput>()
             };
 
-			// Разбиваем строку занятости, так как там может приходить несколько значений в строке.
-			vacancyCatalogInput.Filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(vacancyCatalogInput.Filters.EmploymentsValues);
-
             result.CatalogVacancies = await _vacancyRepository.GetCatalogVacanciesAsync(vacancyCatalogInput);
 
             return result;
