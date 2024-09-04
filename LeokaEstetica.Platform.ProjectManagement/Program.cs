@@ -19,7 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
 builder.Services.AddControllers(opt =>
-    {
+    { 
         opt.Filters.Add(typeof(DiscordLogExceptionFilter));
     })
     .AddNewtonsoftJson()
