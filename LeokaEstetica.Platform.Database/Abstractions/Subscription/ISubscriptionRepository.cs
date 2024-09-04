@@ -72,4 +72,11 @@ public interface ISubscriptionRepository
     /// <param name="attributeId">Id аттрибута тарифа, который проверяем.</param>
     /// <returns>Данные подписки.</returns>
     Task<SubscriptionFareRuleCompositeOutput?> GetUserSubscriptionFareRuleByUserIdAsync(long userId, int attributeId);
+
+    /// <summary>
+    /// Метод получает подписку пользователя по его Id.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Данные подписки.</returns>
+    Task<UserSubscriptionOutput?> GetUserSubscriptionByUserIdAsync(long userId);
 }

@@ -56,4 +56,54 @@ public class OrderOutput
     /// Системное название статуса заказа.
     /// </summary>
     public string? StatusSysName { get; set; }
+    
+    /// <summary>
+    /// Тип заказа.
+    /// </summary>
+    public OrderTypeEnum OrderType { get; set; }
+    
+    /// <summary>
+    /// Системное название статуса платежа в ПС.
+    /// </summary>
+    public string? PaymentStatusSysName { get; set; }
+
+    /// <summary>
+    /// Название статуса платежа в ПС.
+    /// </summary>
+    public string? PaymentStatusName { get; set; }
+
+    /// <summary>
+    /// Дата создания платежа в ПС.
+    /// </summary>
+    public DateTime Created { get; set; }
+
+    /// <summary>
+    /// Валюта.
+    /// </summary>
+    public string? Currency { get; set; }
+
+    /// <summary>
+    /// Ставка НДС в %.
+    /// </summary>
+    public int? VatRate { get; set; }
+
+    /// <summary>
+    /// Цена с НДС (цена без НДС + НДС).
+    /// </summary>
+    public decimal? PriceVat { get; set; }
+
+    /// <summary>
+    /// % скидки.
+    /// </summary>
+    public int? Discount { get; set; }
+
+    /// <summary>
+    /// Цена со скидкой.
+    /// </summary>
+    public decimal? DiscountPrice { get; set; }
+
+    /// <summary>
+    /// Общая сумма заказа (вместе со скидками и НДС - если они были).
+    /// </summary>
+    public decimal TotalPrice { get; set; }
 }

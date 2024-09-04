@@ -137,7 +137,7 @@ internal sealed class RefundsService : IRefundsService
                     "Ошибка при вычислении суммы возврата. Мы уже знаем о проблеме и уже занимаемся ей. " +
                     $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCalculateRefund", userCode,
-                    UserConnectionModuleEnum.Processing);
+                    UserConnectionModuleEnum.Main);
 
                 throw new InvalidOperationException("Не удалось вычислить сумму возврата. " +
                                                     $"OrderId: {orderId}. " +
@@ -152,7 +152,7 @@ internal sealed class RefundsService : IRefundsService
                     "Ошибка при вычислении суммы возврата. Мы уже знаем о проблеме и уже занимаемся ей. " +
                     $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCalculateRefund", userCode,
-                    UserConnectionModuleEnum.Processing);
+                    UserConnectionModuleEnum.Main);
 
                 throw new InvalidOperationException("Сумма возврата не может быть отрицательной." +
                                                     $"Price: {price}" +
@@ -168,7 +168,7 @@ internal sealed class RefundsService : IRefundsService
             await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
                 "Ошибка при вычислении суммы возврата. Мы уже знаем о проблеме и уже занимаемся ей. ",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorCalculateRefund", userCode,
-                UserConnectionModuleEnum.Processing);
+                UserConnectionModuleEnum.Main);
 
             _logger.LogError(ex.Message, ex);
             throw;
@@ -241,7 +241,7 @@ internal sealed class RefundsService : IRefundsService
                         "Такой возврат уже создан. Нельзя создать возврат повторно." +
                         $"ID вашего заказа по которому сделан возврат {orderId}",
                         NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningManualRefund",
-                        userCode, UserConnectionModuleEnum.Processing);
+                        userCode, UserConnectionModuleEnum.Main);
 
                     return null;
                 }
@@ -266,7 +266,7 @@ internal sealed class RefundsService : IRefundsService
                 " Вы получите уведомление об этом на почту. " +
                 $"ID вашего заказа по которому будет возврат {orderId}",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessManualRefund", userCode,
-                UserConnectionModuleEnum.Processing);
+                UserConnectionModuleEnum.Main);
 
             return refund;
         }
@@ -279,7 +279,7 @@ internal sealed class RefundsService : IRefundsService
                 "Ошибка при возврате. Мы уже знаем о проблеме и уже занимаемся ей. " +
                 $"Вы можете обратиться в тех.поддержку. ID вашего заказа {orderId}",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotificationErrorRefund", userCode,
-                UserConnectionModuleEnum.Processing);
+                UserConnectionModuleEnum.Main);
 
             throw;
         }

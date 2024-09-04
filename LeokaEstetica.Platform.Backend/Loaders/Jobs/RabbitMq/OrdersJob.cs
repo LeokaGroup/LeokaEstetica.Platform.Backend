@@ -1,18 +1,29 @@
 ﻿using System.Text;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
+using LeokaEstetica.Platform.CallCenter.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
+using LeokaEstetica.Platform.Database.Abstractions.Subscription;
+using LeokaEstetica.Platform.Database.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
+using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
 using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
+using LeokaEstetica.Platform.Processing.BuilderData;
+using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Quartz;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -33,6 +44,12 @@ internal sealed class OrdersJob : IJob
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IDiscordService _discordService;
     private readonly ICommerceService _commerceService;
+    private readonly ISubscriptionRepository _subscriptionRepository;
+    private readonly IVacancyRepository _vacancyRepository;
+    private readonly IProjectRepository _projectRepository;
+    private readonly IVacancyModerationService _vacancyModerationService;
+    private readonly IUserRepository _userRepository;
+    private readonly IMailingsService _mailingsService;
 
     /// <summary>
     /// Название очереди.
@@ -54,13 +71,25 @@ internal sealed class OrdersJob : IJob
     /// <param name="globalConfigRepository">Репозиторий глобал конфигов.</param>
     /// <param name="discordService">Сервис дискорд.</param>
     /// <param name="commerceService">Сервис коммерции.</param>
-    public OrdersJob(ICommerceRepository commerceRepository, 
-        ILogger<OrdersJob> logger, 
-        ISubscriptionService subscriptionService, 
+    /// <param name="subscriptionRepository">Репозиторий подписок пользователей.</param>
+    /// <param name="vacancyRepository">Репозиторий вакансий.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
+    /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="mailingsService">Сервис рассылок.</param>
+    public OrdersJob(ICommerceRepository commerceRepository,
+        ILogger<OrdersJob> logger,
+        ISubscriptionService subscriptionService,
         IFareRuleRepository fareRuleRepository,
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
-        ICommerceService commerceService)
+        ICommerceService commerceService,
+        ISubscriptionRepository subscriptionRepository,
+        IVacancyRepository vacancyRepository,
+        IProjectRepository projectRepository,
+        IVacancyModerationService vacancyModerationService,
+        IUserRepository userRepository,
+        IMailingsService mailingsService)
     {
         _commerceRepository = commerceRepository;
         _logger = logger;
@@ -69,6 +98,12 @@ internal sealed class OrdersJob : IJob
         _globalConfigRepository = globalConfigRepository;
         _discordService = discordService;
         _commerceService = commerceService;
+        _subscriptionRepository = subscriptionRepository;
+        _vacancyRepository = vacancyRepository;
+        _projectRepository = projectRepository;
+        _vacancyModerationService = vacancyModerationService;
+        _userRepository = userRepository;
+        _mailingsService = mailingsService;
     }
     
     /// <summary>
@@ -161,9 +196,46 @@ internal sealed class OrdersJob : IJob
 
                 try
                 {
+                    BaseOrderBuilder? orderBuilder = null;
+
+                    if (orderEvent.OrderType == OrderTypeEnum.Undefined)
+                    {
+                        throw new InvalidOperationException("Неизвестный тип заказа. " +
+                                                            $"OrderType: {orderEvent.OrderType}.");
+                    }
+
                     // Проверяем статус платежа в ПС.
-                    newOrderStatus = await _commerceService.CheckOrderStatusAsync(orderEvent.PaymentId);
-                
+                    if (orderEvent.OrderType == OrderTypeEnum.FareRule)
+                    {
+                        BaseOrderBuilder builder = new FareRuleOrderBuilder(_subscriptionRepository,
+                            _commerceRepository);
+                        orderBuilder = (FareRuleOrderBuilder)builder;
+                    }
+                    
+                    else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy)
+                    {
+                        BaseOrderBuilder builder = new PostVacancyOrderBuilder(_subscriptionRepository,
+                            _commerceRepository);
+                        orderBuilder = (PostVacancyOrderBuilder)builder;
+                    }
+
+                    if (orderBuilder is null)
+                    {
+                        throw new InvalidOperationException("Ошибка определения типа билдера. " +
+                                                            $"OrderType: {orderEvent.OrderType}.");
+                    }
+                    
+                    orderBuilder.OrderData ??= new OrderData();
+                    orderBuilder.OrderData.PaymentId = orderEvent.PaymentId;
+                    newOrderStatus = await _commerceService.CheckOrderStatusAsync(orderBuilder);
+
+                    if (string.IsNullOrWhiteSpace(orderEvent.StatusSysName))
+                    {
+                        throw new InvalidOperationException("Ошибка определения системного названия статуса. " +
+                                                            $"StatusSysName: {orderEvent.StatusSysName}. " +
+                                                            $"OrderEvent: {orderEvent}.");
+                    }
+
                     // Получаем старый статус платежа до проверки в ПС.
                     oldStatusSysName = PaymentStatus.GetPaymentStatusBySysName(orderEvent.StatusSysName);
                 }
@@ -179,8 +251,30 @@ internal sealed class OrdersJob : IJob
                 // Если статус заказа изменился в ПС, то обновляем его статус в БД.
                 if (newOrderStatus != oldStatusSysName)
                 {
+                    var vacancyJson = JToken.Parse(message)["VacancyOrderData"];
+
+                    if (vacancyJson is null)
+                    {
+                        var ex = new InvalidOperationException("Ошибка парсинга данных вакансии. " +
+                                                               $"OrderEvent: {message}.");
+                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                        throw ex;
+                    }
+                    
+                    var vacancyString = JsonConvert.SerializeObject(vacancyJson);
+                    var vacancy = JsonConvert.DeserializeObject<VacancyInput>(vacancyString);
+                    
                     try
                     {
+                        if (string.IsNullOrWhiteSpace(orderEvent.PaymentId))
+                        {
+                            var ex = new InvalidOperationException("Ошибка определения Id платежа в ПС. " +
+                                                                   $"PaymentId: {orderEvent.PaymentId}. " +
+                                                                   $"OrderEvent: {orderEvent}.");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                            throw ex;
+                        }
+                        
                         // Обновляем статус заказа в нашей БД.
                         var updatedOrderStatus = await _commerceRepository.UpdateOrderStatusAsync(
                             newOrderStatus.ToString(), newOrderStatus.GetEnumDescription(), orderEvent.PaymentId,
@@ -191,32 +285,65 @@ internal sealed class OrdersJob : IJob
                             var ex = new InvalidOperationException("Не удалось найти заказ для обновления статуса. " +
                                                                    $"OrderId: {orderEvent.OrderId}." +
                                                                    $"PaymentId: {orderEvent.PaymentId}");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
                             throw ex;
                         }
 
                         var publicId = orderEvent.PublicId;
                         var fareRule = await _fareRuleRepository.GetFareRuleByPublicIdAsync(publicId);
 
-                        if (fareRule.FareRule is null)
-                        {
-                            throw new InvalidOperationException("Ошибка получения тарифа. " +
-                                                                $"PublicId: {publicId}.");
-                        }
-
                         // Для бесплатного тарифа нет срока подписки.
-                        if (!fareRule.FareRule.IsFree)
+                        // Кол-во месяцев есть только у оплаты заказа на тариф.
+                        if (!fareRule.FareRule!.IsFree && orderEvent.PaymentMonth.HasValue)
                         {
                             // Проставляем подписку и даты подписки пользователю.
-                            await _subscriptionService.SetUserSubscriptionAsync(orderEvent.UserId, publicId,
-                                orderEvent.Month, orderEvent.OrderId, fareRule.FareRule.RuleId);
+                            await _subscriptionService.SetUserSubscriptionAsync(orderEvent.CreatedBy, publicId,
+                                orderEvent.PaymentMonth, orderEvent.OrderId, fareRule.FareRule.RuleId);
                         }
                         
                         // Если статус платежа в ПС ожидает подтверждения, то подтверждаем его, чтобы списать ДС.
                         // Подтвердить в ПС можно только заказы в статусе waiting_for_capture.
                         if (newOrderStatus == PaymentStatusEnum.WaitingForCapture)
                         {
-                            await _commerceService.ConfirmPaymentAsync(orderEvent.PaymentId,
-                                new Amount(orderEvent.Price, orderEvent.Currency.ToString()));
+                            BaseOrderBuilder? orderBuilder = null;
+
+                            // Проверяем статус платежа в ПС.
+                            if (orderEvent.OrderType == OrderTypeEnum.FareRule)
+                            {
+                                BaseOrderBuilder builder = new FareRuleOrderBuilder(_subscriptionRepository,
+                                    _commerceRepository);
+                                orderBuilder = (FareRuleOrderBuilder)builder;
+                            }
+                    
+                            else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy)
+                            {
+                                BaseOrderBuilder builder = new PostVacancyOrderBuilder(_subscriptionRepository,
+                                    _commerceRepository);
+                                orderBuilder = (PostVacancyOrderBuilder)builder;
+                                vacancy = ((PostVacancyOrderBuilder)builder).VacancyOrderData;
+                            }
+
+                            if (orderBuilder is null)
+                            {
+                                var ex = new InvalidOperationException("Ошибка определения типа билдера. " +
+                                                                       $"OrderType: {orderEvent.OrderType}.");
+                                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                                throw ex;
+                            }
+
+                            if (orderBuilder.OrderData is null)
+                            {
+                                var ex = new InvalidOperationException("Ошибка подготовительных данных билдера. " +
+                                                                       $"OrderType: {orderEvent.OrderType}.");
+                                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                                throw ex;
+                            }
+
+                            orderBuilder.OrderData.Amount ??= new Amount(orderEvent.Price,
+                                orderEvent.Currency.ToString());
+                            orderBuilder.OrderData.PaymentId = orderEvent.PaymentId;
+
+                            await _commerceService.ConfirmPaymentAsync(orderBuilder);
                         }
                     }
                 
@@ -230,11 +357,95 @@ internal sealed class OrdersJob : IJob
 
                     if (_channel is null)
                     {
-                        throw new InvalidOperationException("Канал кролика был NULL.");
+                        var ex = new InvalidOperationException("Канал кролика был NULL.");
+                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                        throw ex;
                     }
+
+                    if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy
+                        && newOrderStatus != PaymentStatusEnum.Succeeded)
+                    {
+                        logger.LogInformation("Оставили сообщение в очереди заказов...");
                     
-                    // Подтверждаем сообщение, чтобы дропнуть его из очереди.
-                    _channel.BasicAck(ea.DeliveryTag, false);
+                        if (_channel is null)
+                        {
+                            var ex = new InvalidOperationException("Канал кролика был NULL.");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                            throw ex;
+                        }
+                    
+                        _channel.BasicRecoverAsync(false);
+
+                        await Task.Yield(); 
+                    }
+
+                    // Если статус подтвержден, и тип заказа создание вакансии,
+                    // то создаем вакансию пользователя и отправляем ее на модерацию.
+                    else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy
+                             && newOrderStatus == PaymentStatusEnum.Succeeded)
+                    {
+                        if (vacancy is null)
+                        {
+                            var ex = new InvalidOperationException(
+                                "Данные вакансии не были заполнены для создания вакансии.");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                            throw ex;
+                        }
+
+                        try
+                        {
+                            // Добавляем вакансию в таблицу вакансий пользователя.
+                            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancy,
+                                orderEvent.CreatedBy);
+                            var vacancyId = createdVacancy.VacancyId;
+
+                            if (vacancy.ProjectId <= 0)
+                            {
+                                var ex = new InvalidOperationException(
+                                    "ProjectId не был заполнен. " +
+                                    "Вакансия не может быть создана без привязки к проекту.");
+                                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                                throw ex;
+                            }
+                        
+                            // Привязываем вакансию к проекту.
+                            await _projectRepository.AttachProjectVacancyAsync(vacancy.ProjectId, vacancyId);
+                        
+                            // Отправляем вакансию на модерацию.
+                            await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
+                        
+                            // TODO: Из джобы так не сделать. Нужно другое решение как уведомлять пользователя. 
+                            // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
+                            // await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                            //     "Данные успешно сохранены. Вакансия отправлена на модерацию.",
+                            //     NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreatedUserVacancy",
+                            //     userCode, UserConnectionModuleEnum.Main);
+
+                            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(orderEvent.CreatedBy);
+                        
+                            // Отправляем уведомление о созданной вакансии владельцу.
+                            await _mailingsService.SendNotificationCreateVacancyAsync(user.Email,
+                                createdVacancy.VacancyName, vacancyId);
+                        
+                            // Отправляем уведомление о созданной вакансии в дискорд.
+                            await _discordService.SendNotificationCreatedVacancyBeforeModerationAsync(vacancyId);
+                        }
+                        
+                        catch (Exception ex)
+                        {
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                            throw;
+                        }
+                        
+                        // Подтверждаем сообщение, чтобы дропнуть его из очереди.
+                        _channel.BasicAck(ea.DeliveryTag, false);
+                    }
+
+                    if (orderEvent.OrderType != OrderTypeEnum.CreateVacancy)
+                    {
+                        // Подтверждаем сообщение, чтобы дропнуть его из очереди.
+                        _channel.BasicAck(ea.DeliveryTag, false);
+                    }
                 }
 
                 // Статус в ПС не изменился, оставляем его в очереди.
@@ -244,7 +455,9 @@ internal sealed class OrdersJob : IJob
                     
                     if (_channel is null)
                     {
-                         throw new InvalidOperationException("Канал кролика был NULL.");
+                         var ex = new InvalidOperationException("Канал кролика был NULL.");
+                         await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                         throw ex;
                     }
                     
                     _channel.BasicRecoverAsync(false);

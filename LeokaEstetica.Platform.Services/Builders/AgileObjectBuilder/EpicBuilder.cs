@@ -9,7 +9,7 @@ namespace LeokaEstetica.Platform.Services.Builders.AgileObjectBuilder;
 /// <summary>
 /// Строитель эпика.
 /// </summary>
-internal class EpicBuilder : AgileObjectBuilder
+internal class EpicBuilder : BaseAgileObjectBuilder
 {
     private const int EPIC_TYPE_ID = 4;
     

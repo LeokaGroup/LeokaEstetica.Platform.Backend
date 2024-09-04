@@ -214,6 +214,29 @@ internal sealed class SubscriptionRepository : BaseRepository, ISubscriptionRepo
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<UserSubscriptionOutput?> GetUserSubscriptionByUserIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT us.subscription_id, " +
+                    "us.is_active, " +
+                    "us.user_id," +
+                    "asub.rule_id " +
+                    "FROM subscriptions.user_subscriptions AS us " +
+                    "INNER JOIN subscriptions.all_subscriptions AS asub " +
+                    "ON us.subscription_id = asub.subscription_id " +
+                    "WHERE us.user_id = @userId " +
+                    "AND us.is_active";
+
+        var result = await connection.QueryFirstOrDefaultAsync<UserSubscriptionOutput?>(query, parameters);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

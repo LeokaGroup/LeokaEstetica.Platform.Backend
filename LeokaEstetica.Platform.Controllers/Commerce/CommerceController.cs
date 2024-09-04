@@ -9,7 +9,11 @@ using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.YandexKassa;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
+using LeokaEstetica.Platform.Processing.BuilderData;
+using LeokaEstetica.Platform.Processing.Builders.Order;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -85,7 +89,14 @@ public class CommerceController : BaseController
             throw ex;
         }
 
-        var result = await _commerceService.CreateOrderAsync(createOrderInput.PublicId, GetUserName())
+        // Здесь NULL, чтобы не тащить азвисимости в контроллер лишние, внутри сервиса заполним.
+        BaseOrderBuilder builder = new FareRuleOrderBuilder(null, null);
+        builder.OrderData ??= new OrderData();
+        builder.OrderData.PublicId = createOrderInput.PublicId;
+        builder.OrderData.Account = GetUserName();
+        builder.OrderData.OrderType = OrderTypeEnum.FareRule;
+        
+        var result = await _commerceService.CreateOrderAsync(builder as FareRuleOrderBuilder)
             as CreateOrderYandexKassaOutput;
 
         return result ??
@@ -93,19 +104,19 @@ public class CommerceController : BaseController
     }
 
     /// <summary>
-    /// Метод создает заказ в кэше и хранит его 2 часа.
+    /// Метод создает заказ в кэше или в кролике (зависит от тарифа, услуг).
     /// </summary>
     /// <param name="createOrderCacheInput">Входная модель.</param>
     /// <returns>Данные заказа, которые хранятся в кэше.</returns>
     [HttpPost]
-    [Route("fare-rule/order-form/pre")]
+    [Route("order/order-form/pre")]
     [ProducesResponseType(200, Type = typeof(OrderCacheOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<OrderCacheOutput> CreateOrderCacheAsync(
-        [FromBody] CreateOrderCacheInput createOrderCacheInput)
+    public async Task<OrderCacheOutput> CreateOrderCacheOrRabbitMqAsync(
+        [FromBody] CreateOrderInput createOrderCacheInput)
     {
         var validator = await new CreateOrderCacheValidator().ValidateAsync(createOrderCacheInput);
         
@@ -122,9 +133,9 @@ public class CommerceController : BaseController
             throw ex;
         }
 
-        var orderFromCache = await _commerceService.CreateOrderCacheAsync(createOrderCacheInput, GetUserName());
+        var orderFromCache = await _commerceService.CreateOrderCacheOrRabbitMqAsync(createOrderCacheInput,
+            GetUserName());
         
-        // TODO: Можно ли избежать каста?
         var result = _mapper.Map<OrderCacheOutput>(orderFromCache);
 
         return result;
@@ -137,20 +148,20 @@ public class CommerceController : BaseController
     /// </summary>
     /// <param name="publicId">Публичный код тарифа.</param>
     /// <returns>Услуги и сервисы заказа.</returns>
-    [HttpGet]
-    [Route("fare-rule/order-form/products")]
-    [ProducesResponseType(200, Type = typeof(OrderCacheOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<OrderCacheOutput> GetOrderProductsCacheAsync([FromQuery] Guid publicId)
-    {
-        var orderFromCache = await _commerceService.GetOrderProductsCacheAsync(publicId, GetUserName());
-        var result = _mapper.Map<OrderCacheOutput>(orderFromCache);
-
-        return result;
-    }
+    // [HttpGet]
+    // [Route("fare-rule/order-form/products")]
+    // [ProducesResponseType(200, Type = typeof(OrderCacheOutput))]
+    // [ProducesResponseType(400)]
+    // [ProducesResponseType(403)]
+    // [ProducesResponseType(500)]
+    // [ProducesResponseType(404)]
+    // public async Task<OrderCacheOutput> GetOrderProductsCacheAsync([FromQuery] Guid publicId)
+    // {
+    //     var orderFromCache = await _commerceService.GetOrderProductsCacheAsync(publicId, GetUserName());
+    //     var result = _mapper.Map<OrderCacheOutput>(orderFromCache);
+    //
+    //     return result;
+    // }
 
     /// <summary>
     /// TODO: Продумать аналитику в новой версии монетизации.
@@ -168,7 +179,14 @@ public class CommerceController : BaseController
     [ProducesResponseType(404)]
     public async Task<OrderFreeOutput> CheckFreePriceAsync([FromQuery] Guid publicId, [FromQuery] short month)
     {
-        var result = await _commerceService.CheckFreePriceAsync(GetUserName(), publicId, month);
+        // Здесь NULL, чтобы не тащить азвисимости в контроллер лишние, внутри сервиса заполним.
+        BaseOrderBuilder builder = new FareRuleOrderBuilder(null, null);
+        builder.OrderData ??= new OrderData();
+        builder.OrderData.PublicId = publicId;
+        builder.OrderData.Account = GetUserName();
+        builder.OrderData.Month = month;
+        
+        var result = await _commerceService.CheckFreePriceAsync(builder as FareRuleOrderBuilder);
 
         return result;
     }
@@ -213,6 +231,24 @@ public class CommerceController : BaseController
     {
         var result = await _commerceService.CalculateFareRulePriceAsync(publicId, selectedMonth, employeeCount,
             GetUserName());
+
+        return result;
+    }
+
+    /// <summary>
+    /// Метод вычисляет цену за публикацию вакансии в соответствии с тарифом пользователя.
+    /// </summary>
+    /// <returns>Выходная модель.</returns>
+    [HttpGet]
+    [Route("calculate-price-vacancy")]
+    [ProducesResponseType(200, Type = typeof(CalculatePostVacancyPriceOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CalculatePostVacancyPriceOutput> CalculatePricePostVacancyAsync()
+    {
+        var result = await _commerceService.CalculatePricePostVacancyAsync(GetUserName());
 
         return result;
     }

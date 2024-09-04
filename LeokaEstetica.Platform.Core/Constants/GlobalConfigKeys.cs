@@ -71,7 +71,7 @@ public static class GlobalConfigKeys
             /// <summary>
             /// Ключ тестовой цены для тестирования оплаты в ПС на реальной цене заказа.
             /// </summary>
-            public const string COMMEFCE_TEST_PRICE_MODE_ENABLED_VALUE = "Commerce.Test.Price.Enabled.Value";
+            public const string COMMERCE_TEST_PRICE_MODE_ENABLED_VALUE = "Commerce.Test.Price.Enabled.Value";
             
             /// <summary>
             /// Ключ вкл/откл режим тестовой цены для тестирования оплаты в ПС на реальной цене заказа.

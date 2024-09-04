@@ -1,4 +1,5 @@
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Orders;
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Base.Factors;
@@ -18,20 +19,53 @@ public static class OrderEventFactory
     /// <param name="userId">Id пользователя.</param>
     /// <param name="publicId">Публичный ключ тарифа.</param>
     /// <param name="month">Кол-во месяцев подписки.</param>
+    /// <param name="orderType">Тип заказа.</param>
     /// <returns>Результирующая модель.</returns>
     public static OrderEvent CreateOrderEvent(long orderId, string statusSysName, string paymentId, long userId,
-        Guid publicId, short month, decimal price, CurrencyTypeEnum currency)
+        Guid publicId, short? month, decimal price, CurrencyTypeEnum currency, OrderTypeEnum orderType)
     {
         return new OrderEvent
         {
             OrderId = orderId,
             StatusSysName = statusSysName,
             PaymentId = paymentId,
-            UserId = userId,
+            CreatedBy = userId,
             PublicId = publicId,
-            Month = month,
+            PaymentMonth = month,
             Price = price,
-            Currency = currency
+            Currency = currency,
+            OrderType = orderType
+        };
+    }
+
+    /// <summary>
+    /// TODO: Засунуть все параметры в модель. Их слишком много уже тут.
+    /// Метод наполняет данными событие заказа.
+    /// </summary>
+    /// <param name="orderId">Id заказа.</param>
+    /// <param name="statusSysName">Системное название статуса заказа.</param>
+    /// <param name="paymentId">Id платежа в ПС.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="publicId">Публичный ключ тарифа.</param>
+    /// <param name="month">Кол-во месяцев подписки.</param>
+    /// <param name="orderType">Тип заказа.</param>
+    /// <returns>Результирующая модель.</returns>
+    public static PostVacancyOrderEvent CreatePostVacancyOrderEvent(long orderId, string statusSysName,
+        string paymentId, long userId, Guid publicId, short? month, decimal price, CurrencyTypeEnum currency,
+        VacancyInput vacancyOrderData, OrderTypeEnum orderType)
+    {
+        return new PostVacancyOrderEvent
+        {
+            OrderId = orderId,
+            StatusSysName = statusSysName,
+            PaymentId = paymentId,
+            CreatedBy = userId,
+            PublicId = publicId,
+            PaymentMonth = month,
+            Price = price,
+            Currency = currency,
+            VacancyOrderData = vacancyOrderData,
+            OrderType = orderType
         };
     }
 }

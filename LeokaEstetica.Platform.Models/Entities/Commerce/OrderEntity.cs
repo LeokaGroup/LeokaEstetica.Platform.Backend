@@ -1,6 +1,7 @@
 namespace LeokaEstetica.Platform.Models.Entities.Commerce;
 
 /// <summary>
+/// TODO: Выпилить когда дропнем старые таблицы заказов и перейдем на DTO.
 /// Класс сопоставляется с таблицей заказов Commerce.Orders.
 /// </summary>
 public class OrderEntity
@@ -13,12 +14,12 @@ public class OrderEntity
     /// <summary>
     /// Название заказа.
     /// </summary>
-    public string OrderName { get; set; }
+    public string? OrderName { get; set; }
 
     /// <summary>
     /// Детальное описание заказа.
     /// </summary>
-    public string OrderDetails { get; set; }
+    public string? OrderDetails { get; set; }
 
     /// <summary>
     /// Дата создания заказа.
@@ -33,7 +34,7 @@ public class OrderEntity
     /// <summary>
     /// Название статуса заказа. По дефолту "Новый".
     /// </summary>
-    public string StatusName { get; set; }
+    public string? StatusName { get; set; }
 
     /// <summary>
     /// Цена заказа.
@@ -48,15 +49,15 @@ public class OrderEntity
     /// <summary>
     /// Валюта заказа.
     /// </summary>
-    public string Currency { get; set; }
+    public string? Currency { get; set; }
 
     /// <summary>
     /// Системное название статуса заказа. По дефолту "New".
     /// </summary>
-    public string StatusSysName { get; set; }
+    public string? StatusSysName { get; set; }
 
     /// <summary>
     /// Id заказа в ПС.
     /// </summary>
-    public string PaymentId { get; set; }
+    public string? PaymentId { get; set; }
 }

@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using AutoMapper;
-using Dapper;
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Exceptions;
@@ -28,8 +27,11 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
 using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
+using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -57,6 +59,7 @@ internal sealed class VacancyService : IVacancyService
     private readonly IVacancyModerationRepository _vacancyModerationRepository;
     private readonly IDiscordService _discordService;
     private readonly Lazy<IHubNotificationService> _hubNotificationService;
+    private readonly ICommerceService _commerceService;
 
     /// <summary>
     /// Конструктор.
@@ -69,6 +72,7 @@ internal sealed class VacancyService : IVacancyService
     /// <param name="vacancyModerationService">Сервис модерации вакансий.</param>
     /// <param name="discordService">Сервис уведомления дискорда.</param>
     /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
+    /// <param name="commerceService">Сервис коммерции.</param>
     public VacancyService(ILogger<VacancyService> logger,
         IVacancyRepository vacancyRepository,
         IMapper mapper,
@@ -76,11 +80,12 @@ internal sealed class VacancyService : IVacancyService
         IUserRepository userRepository,
         IVacancyModerationService vacancyModerationService,
         ISubscriptionRepository subscriptionRepository,
-        IProjectRepository projectRepository, 
-        IMailingsService mailingsService, 
+        IProjectRepository projectRepository,
+        IMailingsService mailingsService,
         IVacancyModerationRepository vacancyModerationRepository,
         IDiscordService discordService,
-         Lazy<IHubNotificationService> hubNotificationService)
+        Lazy<IHubNotificationService> hubNotificationService,
+        ICommerceService commerceService)
     {
         _logger = logger;
         _vacancyRepository = vacancyRepository;
@@ -95,6 +100,7 @@ internal sealed class VacancyService : IVacancyService
         _vacancyModerationRepository = vacancyModerationRepository;
         _discordService = discordService;
         _hubNotificationService = hubNotificationService;
+        _commerceService = commerceService;
     }
 
     #region Публичные методы.
@@ -129,7 +135,7 @@ internal sealed class VacancyService : IVacancyService
     /// </summary>
     /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    public async Task<VacancyOutput> CreateVacancyAsync(VacancyInput vacancyInput)
+    public async Task<CreateOrderOutput> CreateVacancyAsync(VacancyInput vacancyInput)
     {
         var userId = await _userRepository.GetUserByEmailAsync(vacancyInput.Account!);
 
@@ -184,34 +190,14 @@ internal sealed class VacancyService : IVacancyService
                                                     $"#1 Ошибка в {nameof(VacancyService)}");
             }
 
-            // Добавляем вакансию в таблицу вакансий пользователя.
-            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancyInput, userId);
-            var vacancyId = createdVacancy.VacancyId;
-            
-            // Привязываем вакансию к проекту.
-            await _projectRepository.AttachProjectVacancyAsync(vacancyInput.ProjectId, vacancyId);
+            // Добавляем вакансию в кролика после оплаты заказа в ПС.
+            var createdOrder = await _commerceService.CreateOrderCacheOrRabbitMqAsync(new CreateOrderInput
+            {
+                VacancyOrderData = vacancyInput,
+                OrderType = OrderTypeEnum.CreateVacancy
+            }, vacancyInput.Account!);
 
-            // Отправляем вакансию на модерацию.
-            await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
-
-            // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
-            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
-                "Данные успешно сохранены. Вакансия отправлена на модерацию.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreatedUserVacancy",
-                userCode, UserConnectionModuleEnum.Main);
-
-            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
-            
-            // Отправляем уведомление о созданной вакансии владельцу.
-            await _mailingsService.SendNotificationCreateVacancyAsync(user.Email, createdVacancy.VacancyName,
-                vacancyId);
-
-            // Отправляем уведомление о созданной вакансии в дискорд.
-            await _discordService.SendNotificationCreatedVacancyBeforeModerationAsync(vacancyId);
-            
-            var result = _mapper.Map<VacancyOutput>(createdVacancy);
-
-            return result;
+            return createdOrder;
         }
 
         catch (Exception ex)

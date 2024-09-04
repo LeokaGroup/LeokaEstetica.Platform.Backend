@@ -1,3 +1,4 @@
+using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Base.Models.Input.Processing;
@@ -35,7 +36,7 @@ public class CreatePaymentOrderInput
     /// <summary>
     /// Кол-во месяцев, на которые приобрели тариф.
     /// </summary>
-    public short PaymentMonth { get; set; }
+    public short? PaymentMonth { get; set; }
 
     /// <summary>
     /// Системное название статуса платежа в ПС.
@@ -61,4 +62,34 @@ public class CreatePaymentOrderInput
     /// Тип заказа.
     /// </summary>
     public OrderTypeEnum OrderType { get; set; }
+
+    /// <summary>
+    /// Ставка НДС в %.
+    /// </summary>
+    public int? VatRate { get; set; }
+
+    /// <summary>
+    /// Цена с НДС (цена без НДС + НДС).
+    /// </summary>
+    public decimal? PriceVat { get; set; }
+
+    /// <summary>
+    /// % скидки.
+    /// </summary>
+    public int? Discount { get; set; }
+
+    /// <summary>
+    /// Цена со скидкой.
+    /// </summary>
+    public decimal? DiscountPrice { get; set; }
+
+    /// <summary>
+    /// Общая сумма заказа (вместе со скидками и НДС - если они были).
+    /// </summary>
+    public decimal TotalPrice { get; set; }
+
+    /// <summary>
+    /// Данные вакансии.
+    /// </summary>
+    public VacancyInput? Vacancy { get; set; }
 }

@@ -16,17 +16,17 @@ public class OrderEvent : BaseEventMessage
     /// <summary>
     /// Системное название статуса заказа.
     /// </summary>
-    public string StatusSysName { get; set; }
+    public string? StatusSysName { get; set; }
 
     /// <summary>
     /// Id платежа в ПС.
     /// </summary>
-    public string PaymentId { get; set; }
+    public string? PaymentId { get; set; }
 
     /// <summary>
     /// Id пользователя.
     /// </summary>
-    public long UserId { get; set; }
+    public long CreatedBy { get; set; }
 
     /// <summary>
     /// Публичный ключ тарифа.
@@ -36,7 +36,7 @@ public class OrderEvent : BaseEventMessage
     /// <summary>
     /// Кол-во месяцев подписки.
     /// </summary>
-    public short Month { get; set; }
+    public short? PaymentMonth { get; set; }
 
     /// <summary>
     /// Цена.
@@ -47,4 +47,9 @@ public class OrderEvent : BaseEventMessage
     /// Валюта.
     /// </summary>
     public CurrencyTypeEnum Currency { get; set; }
+
+    /// <summary>
+    /// Тип заказа.
+    /// </summary>
+    public OrderTypeEnum OrderType { get; set; }
 }

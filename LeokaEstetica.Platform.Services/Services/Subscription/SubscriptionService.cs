@@ -115,7 +115,7 @@ internal sealed class SubscriptionService : ISubscriptionService
     /// <param name="month">Кол-во месяцев подписки.</param>
     /// <param name="orderId">Id заказа.</param>
     /// <param name="ruleId">Id тарифа.</param>
-    public async Task SetUserSubscriptionAsync(long userId, Guid publicId, short month, long orderId, int ruleId)
+    public async Task SetUserSubscriptionAsync(long userId, Guid publicId, short? month, long orderId, int ruleId)
     {
         if (month <= 0)
         {
@@ -146,15 +146,12 @@ internal sealed class SubscriptionService : ISubscriptionService
         while (calcMonth > 0)
         {
             // Суммируем дни от каждого месяца.
-            days += DateTime.DaysInMonth(currentYear, calcMonth);
+            days += DateTime.DaysInMonth(currentYear, calcMonth.Value);
             calcMonth--;
         }
-        
-        var startDate = DateTime.UtcNow; // Дата начала подписки.
-        var endDate = startDate.AddDays(days); // Вычисляем дату окончания подписки.
 
         // Проставляем подписку пользователю.
-        await _userRepository.SetSubscriptionAsync(ruleId, userId, month, days);
+        await _userRepository.SetSubscriptionAsync(ruleId, userId, month.Value, days);
     }
 
     #endregion

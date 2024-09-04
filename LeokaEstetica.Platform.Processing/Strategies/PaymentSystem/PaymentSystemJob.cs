@@ -1,5 +1,5 @@
-using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
+using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
 
 namespace LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
@@ -12,15 +12,15 @@ internal class PaymentSystemJob
     /// <summary>
     /// Метод создает заказ.
     /// </summary>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <param name="account">Аккаунт.</param>
+    /// <param name="strategy">Стратегия, по которой будем оформлять заказ.</param>
+    /// <param name="orderBuilder">Билдер заказа.</param>
     /// <returns>Данные платежа.</returns>
-    internal async Task<ICreateOrderOutput> CreateOrderAsync(BasePaymentSystemStrategy strategy, Guid publicId,
-        string account)
+    protected internal async Task<ICreateOrderOutput> CreateOrderAsync(BasePaymentSystemStrategy strategy,
+        BaseOrderBuilder orderBuilder)
     {
         if (strategy is not null)
         {
-            return await strategy.CreateOrderAsync(publicId, account);
+            return await strategy.CreateOrderAsync(orderBuilder);
         }
 
         return null;
@@ -29,13 +29,15 @@ internal class PaymentSystemJob
     /// <summary>
     /// Метод проверяет статус платежа в ПС.
     /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
+    /// <param name="strategy">Стратегия, по которой будем оформлять заказ.</param>
+    /// <param name="orderBuilder">Билдер заказа.</param>
     /// <returns>Статус платежа.</returns>
-    internal async Task<PaymentStatusEnum> CheckOrderStatusAsync(BasePaymentSystemStrategy strategy, string paymentId)
+    protected internal async Task<PaymentStatusEnum> CheckOrderStatusAsync(BasePaymentSystemStrategy strategy,
+        BaseOrderBuilder orderBuilder)
     {
         if (strategy is not null)
         {
-            return await strategy.CheckOrderStatusAsync(paymentId);
+            return await strategy.CheckOrderStatusAsync(orderBuilder);
         }
 
         return PaymentStatusEnum.None;
@@ -44,13 +46,14 @@ internal class PaymentSystemJob
     /// <summary>
     /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
     /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
-    /// <param name="amount">Данные о цене.</param>
-    internal async Task ConfirmPaymentAsync(BasePaymentSystemStrategy strategy, string paymentId, Amount amount)
+    /// <param name="strategy">Стратегия, по которой будем оформлять заказ.</param>
+    /// <param name="orderBuilder">Билдер заказа.</param>
+    protected internal async Task ConfirmPaymentAsync(BasePaymentSystemStrategy strategy,
+        BaseOrderBuilder orderBuilder)
     {
         if (strategy is not null)
         {
-            await strategy.ConfirmPaymentAsync(paymentId, amount);
+            await strategy.ConfirmPaymentAsync(orderBuilder);
         }
     }
 }

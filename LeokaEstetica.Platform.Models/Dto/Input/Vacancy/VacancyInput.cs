@@ -6,39 +6,14 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 public class VacancyInput
 {
     /// <summary>
-    /// Конструктор.
-    /// </summary>
-    /// <param name="vacancyName">Название вакансии.</param>
-    /// <param name="vacancyText">Описание вакансии.</param>
-    /// <param name="vacancyId">Id вакансии.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="userId">Id пользователя.</param>
-    public VacancyInput(string vacancyName, string vacancyText, long? vacancyId, long projectId, long? userId)
-    {
-        if (vacancyId.HasValue)
-        {
-            VacancyId = vacancyId.Value;
-        }
-
-        if (userId.HasValue)
-        {
-            UserId = userId.Value;
-        }
-        
-        VacancyName = vacancyName;
-        VacancyText = vacancyText;
-        ProjectId = projectId;
-    }
-
-    /// <summary>
     /// Название вакансии.
     /// </summary>
-    public string VacancyName { get; set; }
+    public string? VacancyName { get; set; }
 
     /// <summary>
     /// Описание вакансии.
     /// </summary>
-    public string VacancyText { get; set; }
+    public string? VacancyText { get; set; }
 
     /// <summary>
     /// Опыт работы.

@@ -6,6 +6,10 @@ namespace LeokaEstetica.Platform.Models.Entities.FareRule;
 /// </summary>
 public class FareRuleEntity
 {
+    public FareRuleEntity()
+    {
+    }
+    
     /// <summary>
     /// Конструктор.
     /// </summary>

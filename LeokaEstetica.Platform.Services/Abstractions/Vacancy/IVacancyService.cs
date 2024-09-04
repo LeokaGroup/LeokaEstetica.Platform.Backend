@@ -1,6 +1,7 @@
 using LeokaEstetica.Platform.Access.Enums;
 using LeokaEstetica.Platform.Models.Dto.Input.Vacancy;
 using LeokaEstetica.Platform.Models.Dto.Output.Configs;
+using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
@@ -23,7 +24,7 @@ public interface IVacancyService
     /// </summary>
     /// <param name="vacancyInput">Входная модель.</param>
     /// <returns>Данные созданной вакансии.</returns>
-    Task<VacancyOutput> CreateVacancyAsync(VacancyInput vacancyInput);
+    Task<CreateOrderOutput> CreateVacancyAsync(VacancyInput vacancyInput);
     
     /// <summary>
     /// Метод обновляет вакансию.

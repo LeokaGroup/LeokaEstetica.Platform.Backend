@@ -11,19 +11,20 @@ using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
-using LeokaEstetica.Platform.Models.Dto.Base.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache;
-using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.Base.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.FareRule;
+using LeokaEstetica.Platform.Models.Dto.Output.Orders;
+using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Processing.Abstractions.Commerce;
-using LeokaEstetica.Platform.Processing.Abstractions.PayMaster;
 using LeokaEstetica.Platform.Processing.Abstractions.YandexKassa;
+using LeokaEstetica.Platform.Processing.BuilderData;
+using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Processing.Strategies.PaymentSystem;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
@@ -49,11 +50,10 @@ internal sealed class CommerceService : ICommerceService
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IAccessUserService _accessUserService;
     private readonly IGlobalConfigRepository _globalConfigRepository;
-    private readonly IPayMasterService _payMasterService;
-    private readonly IMapper _mapper;
     private readonly IYandexKassaService _yandexKassaService;
     private readonly Lazy<IDiscordService> _discordService;
     private readonly Lazy<IHubNotificationService> _hubNotificationService;
+    private readonly IMapper _mapper;
 
     /// <summary>
     /// Конструктор.
@@ -69,10 +69,10 @@ internal sealed class CommerceService : ICommerceService
     /// <param name="accessUserService">Сервис доступа пользователей.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="payMasterService">Сервис платежной системы PayMaster.</param>
-    /// <param name="mapper">Автомаппер.</param>
     /// <param name="yandexKassaService">Сервис ЮKassa.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
+    /// <param name="mapper">Маппер.</param>
     /// </summary>
     public CommerceService(ICommerceRedisService commerceRedisService,
         ILogger<CommerceService> logger,
@@ -83,11 +83,10 @@ internal sealed class CommerceService : ICommerceService
         ISubscriptionRepository subscriptionRepository,
         IAccessUserService accessUserService,
         IGlobalConfigRepository globalConfigRepository,
-        IPayMasterService payMasterService,
-        IMapper mapper,
         IYandexKassaService yandexKassaService,
         Lazy<IDiscordService> discordService,
-        Lazy<IHubNotificationService> hubNotificationService)
+        Lazy<IHubNotificationService> hubNotificationService,
+        IMapper mapper)
     {
         _commerceRedisService = commerceRedisService;
         _logger = logger;
@@ -98,22 +97,16 @@ internal sealed class CommerceService : ICommerceService
         _subscriptionRepository = subscriptionRepository;
         _accessUserService = accessUserService;
         _globalConfigRepository = globalConfigRepository;
-        _payMasterService = payMasterService;
-        _mapper = mapper;
         _yandexKassaService = yandexKassaService;
         _discordService = discordService;
         _hubNotificationService = hubNotificationService;
+        _mapper = mapper;
     }
 
     #region Публичные методы.
 
-    // <summary>
-    /// Метод создает заказ в кэше.
-    /// </summary>
-    /// <param name="createOrderCache">Модель заказа для хранения в кэше.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <returns>Данные заказа добавленного в кэш.</returns>
-    public async Task<CreateOrderCacheOutput> CreateOrderCacheAsync(CreateOrderCacheInput createOrderCacheInput,
+    /// <inheritdoc />
+    public async Task<CreateOrderOutput> CreateOrderCacheOrRabbitMqAsync(CreateOrderInput createOrderInput,
         string account)
     {
         try
@@ -125,30 +118,171 @@ internal sealed class CommerceService : ICommerceService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-
-            var fareRule = await GetFareRuleAsync(userId, createOrderCacheInput.EmployeesCount,
-                createOrderCacheInput.PublicId);
             
-            var fareRuleAttributeValues = fareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
+            var orderBuilder = new OrderBuilder();
+            BaseOrderBuilder? builder;
+            (FareRuleCompositeOutput? FareRule, IEnumerable<FareRuleAttributeOutput>? FareRuleAttributes,
+                IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues) fareRule;
+            
+            fareRule.FareRule = default;
+            fareRule.FareRuleAttributes = default;
+            fareRule.FareRuleAttributeValues = default;
 
-            var order = new CreateOrderCache
+            // При оплате тарифа нам известен PublicId с фронта.
+            if (createOrderInput.OrderType == OrderTypeEnum.FareRule)
             {
-                RuleId = fareRule.FareRule!.RuleId,
-                Month = createOrderCacheInput.PaymentMonth,
-                UserId = userId,
-                FareRuleName = fareRule.FareRule.RuleName,
-                // Цена тарифа = минимальная цена тарифа * кол-во сотрудников * кол-во месяцев.
-                Price = fareRuleAttributeValues!.MinValue!.Value * createOrderCacheInput.EmployeesCount *
-                        createOrderCacheInput.PaymentMonth
-            };
+                fareRule = await GetFareRuleAsync(userId, createOrderInput.PublicId);
+            }
+            
+            // При оплате вакансии мы не знаем на фронте PublicId.
+            // Определим его исходя из текущего пользователя.
+            else if (createOrderInput.OrderType == OrderTypeEnum.CreateVacancy)
+            {
+                var userSubscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
 
-            // Сохраняем заказ в кэш сроком на 4 часа.
-            var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, createOrderCacheInput.PublicId);
-            await _commerceRedisService.CreateOrderCacheAsync(key, order);
+                if (userSubscription is null)
+                {
+                    throw new InvalidOperationException("Ошибка получения подписки пользователя. " +
+                                                        $"UserId: {userId}.");
+                }
 
-            var result = _mapper.Map<CreateOrderCacheOutput>(order);
+                var publicId = (await _fareRuleRepository.GetByIdAsync(userSubscription.RuleId))?.PublicId;
 
-            return result;
+                if (publicId is null || publicId == Guid.Empty)
+                {
+                    throw new InvalidOperationException("Ошибка получения публичного кода тарифа. " +
+                                                        $"UserId: {userId}. " +
+                                                        $"PublicId: {publicId}.");
+                }
+                
+                fareRule = await GetFareRuleAsync(userId, publicId.Value);
+            }
+
+            var fareRuleAttributeValues = fareRule.FareRuleAttributeValues
+                ?.FirstOrDefault(x => x.AttributeId == 4);
+
+            switch (createOrderInput.OrderType)
+            {
+                case OrderTypeEnum.Undefined:
+                    throw new InvalidOperationException(
+                        "Неизвестный тип заказа. " +
+                        $"CreateOrderInput: {JsonConvert.SerializeObject(createOrderInput)}.");
+
+                // Создаем заказ на подписку тарифа.
+                case OrderTypeEnum.FareRule:
+                    builder = new FareRuleOrderBuilder(_subscriptionRepository, _commerceRepository)
+                    {
+                        OrderData = new OrderData
+                        {
+                            FareRuleAttributeValues = fareRuleAttributeValues,
+                            FareRuleName = fareRule.FareRule!.RuleName,
+                            CreatedBy = userId,
+                            RuleId = fareRule.FareRule.RuleId,
+                            OrderType = OrderTypeEnum.FareRule,
+                            Month = createOrderInput.PaymentMonth,
+                            EmployeesCount = createOrderInput.EmployeesCount,
+                            PublicId = fareRule.FareRule.PublicId
+                        }
+                    };
+
+                    await orderBuilder.BuildAsync(builder);
+
+                    if (builder is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания билдера заказа тарифа. " +
+                            $"CreateOrderInput: {JsonConvert.SerializeObject(createOrderInput)}.");
+                    }
+
+                    var ruleBuilder = builder as FareRuleOrderBuilder ??
+                                      throw new InvalidCastException($"Ошибка каста к {nameof(FareRuleOrderBuilder)}");
+
+                    if (ruleBuilder.OrderCache is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания модели заказа для сохранения его в кэше. " +
+                            $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderInput)}.");
+                    }
+                    
+                    if (ruleBuilder.OrderData is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания подготовительных данных заказа для сохранения его в кэше. " +
+                            $"CreateOrderCacheInput: {JsonConvert.SerializeObject(createOrderInput)}.");
+                    }
+
+                    // Сохраняем заказ в кэш сроком на 4 часа.
+                    var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId,
+                        createOrderInput.PublicId);
+                    await _commerceRedisService.CreateOrderCacheAsync(key, ruleBuilder.OrderCache);
+                    
+                    return _mapper.Map<CreateOrderOutput>(ruleBuilder.OrderCache);
+                
+                // В этом кейсе не добавляем в кэш.
+                case OrderTypeEnum.CreateVacancy:
+                    // Готовим билдер для создания заказа в ПС.
+                    builder = new PostVacancyOrderBuilder(_subscriptionRepository, _commerceRepository)
+                    {
+                        OrderData = new OrderData
+                        {
+                            FareRuleAttributeValues = fareRuleAttributeValues,
+                            FareRuleName = fareRule.FareRule!.RuleName,
+                            CreatedBy = userId,
+                            RuleId = fareRule.FareRule.RuleId,
+                            OrderType = OrderTypeEnum.CreateVacancy,
+                            Month = createOrderInput.PaymentMonth,
+                            Account = account,
+                            PublicId = fareRule.FareRule.PublicId
+                        },
+                        VacancyOrderData = createOrderInput.VacancyOrderData
+                    };
+
+                    await orderBuilder.BuildAsync(builder);
+
+                    if (builder is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания билдера заказа на платную публикацию вакансии. " +
+                            $"CreateOrderInput: {JsonConvert.SerializeObject(createOrderInput)}.");
+                    }
+
+                    var postVacancyBuilder = builder as PostVacancyOrderBuilder ??
+                                             throw new InvalidCastException(
+                                                 $"Ошибка каста к {nameof(PostVacancyOrderBuilder)}");
+
+                    if (postVacancyBuilder.VacancyOrderData is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания модели вакансии для сохранения ее в очередь кролика. " +
+                            "VacancyOrderData: " +
+                            $"{JsonConvert.SerializeObject(createOrderInput.VacancyOrderData)}.");
+                    }
+                    
+                    if (postVacancyBuilder.OrderData is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания модели данных для сохранения ее в очередь кролика и БД. " +
+                            "VacancyOrderData: " +
+                            $"{JsonConvert.SerializeObject(createOrderInput.VacancyOrderData)}.");
+                    }
+                    
+                    if (postVacancyBuilder.OrderData.Amount is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Ошибка создания модели данных цены заказа для сохранения ее в очередь кролика и БД. " +
+                            "VacancyOrderData: " +
+                            $"{JsonConvert.SerializeObject(createOrderInput.VacancyOrderData)}.");
+                    }
+                    
+                    // Создаем заказ в ПС и добавляем в нашу БД.
+                    var order = await CreateOrderAsync(postVacancyBuilder);
+                    
+                    return _mapper.Map<CreateOrderOutput>(order);
+
+                default:
+                    throw new InvalidOperationException("Неизвестный кейс создания заказа. " +
+                                                        $"OrderType: {createOrderInput.OrderType}.");
+            }
         }
 
         catch (Exception ex)
@@ -158,25 +292,25 @@ internal sealed class CommerceService : ICommerceService
         }
     }
 
-    /// <summary>
-    /// Метод получает услуги и сервисы заказа из кэша.
-    /// </summary>
-    /// <param name="publicId">Публичный код тарифа.</param>
-    /// <param name="account">Аккаунт.</param>
-    /// <returns>Услуги и сервисы заказа.</returns>
-    public async Task<CreateOrderCache> GetOrderProductsCacheAsync(Guid publicId, string account)
+    /// <inheritdoc />
+    public async Task<CreateOrderCache> GetOrderProductsCacheAsync(BaseOrderBuilder orderBuilder)
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+            if (orderBuilder.OrderData is null)
+            {
+                throw new InvalidOperationException("Данные заказа не были подготовлены для получения услуг заказа.");
+            }
+            
+            var userId = await _userRepository.GetUserByEmailAsync(orderBuilder.OrderData.Account!);
 
             if (userId <= 0)
             {
-                var ex = new NotFoundUserIdByAccountException(account);
+                var ex = new NotFoundUserIdByAccountException(orderBuilder.OrderData.Account!);
                 throw ex;
             }
 
-            var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, publicId);
+            var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, orderBuilder.OrderData.PublicId);
             var result = await _commerceRedisService.GetOrderCacheAsync(key);
 
             return result;
@@ -217,7 +351,7 @@ internal sealed class CommerceService : ICommerceService
 
         // Узнаем цену подписки за день.
         var priceDay = Math.Round(orderPrice / referenceUsedDays);
-        
+
         // Вычисляем сумму остатка (цена всей подписки - цена за день).
         var resultRefundPrice = Math.Round(orderPrice - priceDay);
 
@@ -240,23 +374,21 @@ internal sealed class CommerceService : ICommerceService
         return resultRefundPrice;
     }
 
-    /// <summary>
-    /// TODO: Скорректировать логику под новую версию оплат.
-    /// Метод вычисляет, есть ли остаток с прошлой подписки пользователя для учета ее как скидку при оформлении новой подписки.
-    /// </summary>
-    /// <param name="account">Аккаунт.</param>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <param name="month">Кол-во месяцев подписки.</param>
-    /// <returns>Сумма остатка, если она есть.</returns>
-    public async Task<OrderFreeOutput> CheckFreePriceAsync(string account, Guid publicId, short month)
+    /// <inheritdoc />
+    public async Task<OrderFreeOutput> CheckFreePriceAsync(BaseOrderBuilder orderBuilder)
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+            if (orderBuilder.OrderData is null)
+            {
+                throw new InvalidOperationException("Данные заказа не были подготовлены для проверки цены заказа.");
+            }
+            
+            var userId = await _userRepository.GetUserByEmailAsync(orderBuilder.OrderData.Account!);
 
             if (userId <= 0)
             {
-                var ex = new NotFoundUserIdByAccountException(account);
+                var ex = new NotFoundUserIdByAccountException(orderBuilder.OrderData.Account!);
                 throw ex;
             }
 
@@ -357,7 +489,7 @@ internal sealed class CommerceService : ICommerceService
                 await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Для оформления тарифа должна быть заполнена информация вашей анкеты.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserProfile",
-                    userCode, UserConnectionModuleEnum.Processing);
+                    userCode, UserConnectionModuleEnum.Main);
 
                 return true;
             }
@@ -375,34 +507,33 @@ internal sealed class CommerceService : ICommerceService
     /// <summary>
     /// Метод создает заказ.
     /// </summary>
-    /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <param name="account">Аккаунт.</param>
+    /// <param name="orderBuilder">Билдер заказа.</param>
     /// <returns>Данные платежа.</returns>
-    public async Task<ICreateOrderOutput> CreateOrderAsync(Guid publicId, string account)
+    public async Task<ICreateOrderOutput> CreateOrderAsync(BaseOrderBuilder orderBuilder)
     {
         try
         {
             // Через какую ПС будем проводить оплату.
             var paymentSystemType = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys
                 .Integrations.PaymentSystem.COMMERCE_PAYMENT_SYSTEM_TYPE_MODE);
-            
+
             _logger.LogInformation($"Заказ будет создан в ПС: {paymentSystemType}.");
 
             var systemType = Enum.Parse<PaymentSystemEnum>(paymentSystemType);
-            
+
             var paymentSystemJob = new PaymentSystemJob();
-            
+
             _logger.LogInformation("Начали создание заказа в ПС.");
 
             // Создаем заказ в ПС, которая выбрана в конфиг таблице.
             var order = systemType switch
             {
                 PaymentSystemEnum.Yandex => await paymentSystemJob.CreateOrderAsync(
-                    new YandexKassaStrategy(_yandexKassaService), publicId, account),
+                    new YandexKassaStrategy(_yandexKassaService), orderBuilder),
 
                 // TODO: Не используется (в будущем возможно будет).
-                PaymentSystemEnum.PayMaster => await paymentSystemJob.CreateOrderAsync(
-                    new PayMasterStrategy(_payMasterService), publicId, account),
+                // PaymentSystemEnum.PayMaster => await paymentSystemJob.CreateOrderAsync(
+                //     new PayMasterStrategy(_payMasterService), orderBuilder),
 
                 _ => throw new InvalidOperationException("Неизвестный тип платежной системы.")
             };
@@ -424,9 +555,9 @@ internal sealed class CommerceService : ICommerceService
     /// <summary>
     /// Метод проверяет статус платежа в ПС.
     /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
+    /// <param name="orderBuilder">Билдер заказа.</param>
     /// <returns>Статус платежа.</returns>
-    public async Task<PaymentStatusEnum> CheckOrderStatusAsync(string paymentId)
+    public async Task<PaymentStatusEnum> CheckOrderStatusAsync(BaseOrderBuilder orderBuilder)
     {
         var paymentSystemType = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys
             .Integrations.PaymentSystem.COMMERCE_PAYMENT_SYSTEM_TYPE_MODE);
@@ -439,10 +570,11 @@ internal sealed class CommerceService : ICommerceService
         var orderStatus = systemType switch
         {
             PaymentSystemEnum.Yandex => await paymentSystemJob.CheckOrderStatusAsync(
-                new YandexKassaStrategy(_yandexKassaService), paymentId),
+                new YandexKassaStrategy(_yandexKassaService), orderBuilder),
 
-            PaymentSystemEnum.PayMaster => await paymentSystemJob.CheckOrderStatusAsync(
-                new PayMasterStrategy(_payMasterService), paymentId),
+             // TODO: Не используется (в будущем возможно будет).
+            // PaymentSystemEnum.PayMaster => await paymentSystemJob.CheckOrderStatusAsync(
+            //     new PayMasterStrategy(_payMasterService), orderBuilder),
 
             _ => throw new InvalidOperationException("Неизвестный тип платежной системы.")
         };
@@ -453,9 +585,8 @@ internal sealed class CommerceService : ICommerceService
     /// <summary>
     /// Метод подтвержадет платеж в ПС. После этого спишутся ДС.
     /// </summary>
-    /// <param name="paymentId">Id платежа.</param>
-    /// <param name="amount">Данные о цене.</param>
-    public async Task ConfirmPaymentAsync(string paymentId, Amount amount)
+    /// <param name="orderBuilder">Билдер заказа.</param>
+    public async Task ConfirmPaymentAsync(BaseOrderBuilder orderBuilder)
     {
         var paymentSystemType = await _globalConfigRepository.GetValueByKeyAsync<string>(GlobalConfigKeys
             .Integrations.PaymentSystem.COMMERCE_PAYMENT_SYSTEM_TYPE_MODE);
@@ -469,7 +600,7 @@ internal sealed class CommerceService : ICommerceService
         if (systemType == PaymentSystemEnum.Yandex)
         {
             await paymentSystemJob.ConfirmPaymentAsync(
-                new YandexKassaStrategy(_yandexKassaService), paymentId, amount);
+                new YandexKassaStrategy(_yandexKassaService), orderBuilder);
         }
 
         else
@@ -484,7 +615,7 @@ internal sealed class CommerceService : ICommerceService
     {
         try
         {
-             var userId = await _userRepository.GetUserByEmailAsync(account);
+            var userId = await _userRepository.GetUserByEmailAsync(account);
 
             if (userId <= 0)
             {
@@ -492,10 +623,10 @@ internal sealed class CommerceService : ICommerceService
                 throw ex;
             }
 
-            var fareRule = await GetFareRuleAsync(userId, employeeCount, publicId);
-            
+            var fareRule = await GetFareRuleAsync(userId, publicId);
+
             var fareRuleAttributeValues = fareRule.FareRuleAttributeValues?.FirstOrDefault(x => x.AttributeId == 4);
-            
+
             var result = new CalculateFareRulePriceOutput
             {
                 // Цена тарифа = минимальная цена тарифа * кол-во сотрудников * кол-во месяцев.
@@ -505,7 +636,55 @@ internal sealed class CommerceService : ICommerceService
 
             return result;
         }
-        
+
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<CalculatePostVacancyPriceOutput> CalculatePricePostVacancyAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
+
+            if (userSubscription is null)
+            {
+                throw new InvalidOperationException("Ошибка получения подписки пользователя. " +
+                                                    $"UserId: {userId}.");
+            }
+
+            // Получаем услугу по тарифу.
+            var fees = await _commerceRepository.GetFeesByFareRuleIdAsync(userSubscription.RuleId);
+
+            if (fees is null)
+            {
+                throw new InvalidOperationException("Ошибка получения услуги. " +
+                                                    $"UserId: {userId}. " +
+                                                    $"RuleId: {userSubscription.RuleId}.");
+            }
+
+            var result = new CalculatePostVacancyPriceOutput
+            {
+                Price = fees.FeesPrice,
+                IsNeedUserAction = true,
+                Fees = fees
+            };
+
+            return result;
+        }
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
@@ -561,13 +740,8 @@ internal sealed class CommerceService : ICommerceService
     /// <exception cref="InvalidOperationException">Если не прошли валидацию.</exception>
     private async Task<(FareRuleCompositeOutput? FareRule, IEnumerable<FareRuleAttributeOutput>? FareRuleAttributes,
         IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues)> GetFareRuleAsync(long userId,
-        int employeesCount, Guid publicId)
+        Guid publicId)
     {
-        if (employeesCount <= 0)
-        {
-            throw new InvalidOperationException("Не передано кол-во сотрудников для оформления тарифа.");
-        }
-
         // Получаем тариф, на который пользователь пытается перейти.
         var newFareRule = await _fareRuleRepository.GetFareRuleByPublicIdAsync(publicId);
 

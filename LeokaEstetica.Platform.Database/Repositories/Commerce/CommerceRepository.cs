@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Base.Models.Input.Processing;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Models.Dto.Output.Commerce;
 using LeokaEstetica.Platform.Models.Dto.Output.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Models.Entities.Commerce;
@@ -52,11 +53,9 @@ internal sealed class CommerceRepository : BaseRepository, ICommerceRepository
         parameters.Add("@statusSysName", createPaymentOrderInput.PaymentStatusSysName);
         parameters.Add("@currency", new Enum(CurrencyTypeEnum.RUB));
         parameters.Add("@price", createPaymentOrderInput.Price);
-        parameters.Add("@paymentMonth", createPaymentOrderInput.Price);
+        parameters.Add("@paymentMonth", createPaymentOrderInput.PaymentMonth);
         parameters.Add("@totalPrice", createPaymentOrderInput.Price);
-        
-        //TODO: Передавать в этот метод тип заказа, не хардкодить.
-        parameters.Add("@orderType", new Enum(OrderTypeEnum.FareRule));
+        parameters.Add("@orderType", new Enum(createPaymentOrderInput.OrderType));
 
         var query = "INSERT INTO commerce.orders (" +
                     "order_name, " +
@@ -283,6 +282,30 @@ internal sealed class CommerceRepository : BaseRepository, ICommerceRepository
     public async Task<bool> IfExistsRefundAsync(string orderId)
     {
         var result = await _pgContext.Refunds.AnyAsync(r => r.RefundOrderId.Equals(orderId));
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<FeesOutput?> GetFeesByFareRuleIdAsync(int fareRuleId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@fareRuleId", fareRuleId);
+
+        var query = "SELECT fees_id, " +
+                    "fees_name, " +
+                    "fees_sys_name, " +
+                    "fees_price, " +
+                    "fees_measure, " +
+                    "fees_fare_rule_id, " +
+                    "fees_is_active " +
+                    "FROM commerce.fees " +
+                    "WHERE fees_fare_rule_id = @fareRuleId " +
+                    "AND fees_is_active";
+
+        var result = await connection.QueryFirstOrDefaultAsync<FeesOutput?>(query, parameters);
 
         return result;
     }
