@@ -29,7 +29,7 @@ internal class OrderData
     /// <summary>
     /// Id тарифа.
     /// </summary>
-    public long? RuleId { get; set; }
+    public int? RuleId { get; set; }
 
     /// <summary>
     /// Тип заказа.

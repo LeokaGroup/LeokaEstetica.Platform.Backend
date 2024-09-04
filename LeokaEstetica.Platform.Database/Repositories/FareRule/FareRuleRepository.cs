@@ -85,25 +85,22 @@ internal sealed class FareRuleRepository : BaseRepository, IFareRuleRepository
     /// </summary>
     /// <param name="fareRuleId">Id тарифа.</param>
     /// <returns>Данные тарифа.</returns>
-    public async Task<FareRuleEntity> GetByIdAsync(long fareRuleId)
+    public async Task<FareRuleEntity?> GetByIdAsync(long fareRuleId)
     {
-        var result = await _pgContext.FareRules
-            .Where(fr => fr.RuleId == fareRuleId)
-            .Select(fr => new FareRuleEntity(fr.PublicId)
-            {
-                RuleId = fr.RuleId,
-                Name = fr.Name,
-                Label = fr.Label,
-                Currency = fr.Currency,
-                Price = fr.Price,
-                FareRuleItems = _pgContext.FareRuleItems
-                    .Where(fri => fri.RuleId == fr.RuleId)
-                    .OrderBy(o => o.Position)
-                    .ToList(),
-                Position = fr.Position,
-                IsPopular = fr.IsPopular
-            })
-            .FirstOrDefaultAsync();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@ruleId", fareRuleId);
+
+        var query = "SELECT rule_id, " +
+                    "rule_name, " +
+                    "is_free, " +
+                    "public_id " +
+                    "FROM rules.fare_rules " +
+                    "WHERE rule_id = @ruleId " +
+                    "ORDER BY position";
+
+        var result = await connection.QuerySingleOrDefaultAsync<FareRuleEntity?>(query, parameters);
 
         return result;
     }

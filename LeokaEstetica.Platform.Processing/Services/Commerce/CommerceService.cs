@@ -121,8 +121,43 @@ internal sealed class CommerceService : ICommerceService
             
             var orderBuilder = new OrderBuilder();
             BaseOrderBuilder? builder;
+            (FareRuleCompositeOutput? FareRule, IEnumerable<FareRuleAttributeOutput>? FareRuleAttributes,
+                IEnumerable<FareRuleAttributeValueOutput>? FareRuleAttributeValues) fareRule;
+            
+            fareRule.FareRule = default;
+            fareRule.FareRuleAttributes = default;
+            fareRule.FareRuleAttributeValues = default;
 
-            var fareRule = await GetFareRuleAsync(userId, createOrderInput.PublicId);
+            // При оплате тарифа нам известен PublicId с фронта.
+            if (createOrderInput.OrderType == OrderTypeEnum.FareRule)
+            {
+                fareRule = await GetFareRuleAsync(userId, createOrderInput.PublicId);
+            }
+            
+            // При оплате вакансии мы не знаем на фронте PublicId.
+            // Определим его исходя из текущего пользователя.
+            else if (createOrderInput.OrderType == OrderTypeEnum.CreateVacancy)
+            {
+                var userSubscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
+
+                if (userSubscription is null)
+                {
+                    throw new InvalidOperationException("Ошибка получения подписки пользователя. " +
+                                                        $"UserId: {userId}.");
+                }
+
+                var publicId = (await _fareRuleRepository.GetByIdAsync(userSubscription.RuleId))?.PublicId;
+
+                if (publicId is null || publicId == Guid.Empty)
+                {
+                    throw new InvalidOperationException("Ошибка получения публичного кода тарифа. " +
+                                                        $"UserId: {userId}. " +
+                                                        $"PublicId: {publicId}.");
+                }
+                
+                fareRule = await GetFareRuleAsync(userId, publicId.Value);
+            }
+
             var fareRuleAttributeValues = fareRule.FareRuleAttributeValues
                 ?.FirstOrDefault(x => x.AttributeId == 4);
 
@@ -145,7 +180,8 @@ internal sealed class CommerceService : ICommerceService
                             RuleId = fareRule.FareRule.RuleId,
                             OrderType = OrderTypeEnum.FareRule,
                             Month = createOrderInput.PaymentMonth,
-                            EmployeesCount = createOrderInput.EmployeesCount
+                            EmployeesCount = createOrderInput.EmployeesCount,
+                            PublicId = fareRule.FareRule.PublicId
                         }
                     };
 
@@ -195,6 +231,8 @@ internal sealed class CommerceService : ICommerceService
                             RuleId = fareRule.FareRule.RuleId,
                             OrderType = OrderTypeEnum.CreateVacancy,
                             Month = createOrderInput.PaymentMonth,
+                            Account = account,
+                            PublicId = fareRule.FareRule.PublicId
                         },
                         VacancyOrderData = createOrderInput.VacancyOrderData
                     };
@@ -451,7 +489,7 @@ internal sealed class CommerceService : ICommerceService
                 await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Для оформления тарифа должна быть заполнена информация вашей анкеты.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserProfile",
-                    userCode, UserConnectionModuleEnum.Processing);
+                    userCode, UserConnectionModuleEnum.Main);
 
                 return true;
             }

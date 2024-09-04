@@ -23,6 +23,7 @@ using LeokaEstetica.Platform.Processing.Builders.Order;
 using LeokaEstetica.Platform.Processing.Enums;
 using LeokaEstetica.Platform.Services.Abstractions.Subscription;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Quartz;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -250,15 +251,28 @@ internal sealed class OrdersJob : IJob
                 // Если статус заказа изменился в ПС, то обновляем его статус в БД.
                 if (newOrderStatus != oldStatusSysName)
                 {
-                    VacancyInput? vacancy = null;
+                    var vacancyJson = JToken.Parse(message)["VacancyOrderData"];
+
+                    if (vacancyJson is null)
+                    {
+                        var ex = new InvalidOperationException("Ошибка парсинга данных вакансии. " +
+                                                               $"OrderEvent: {message}.");
+                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                        throw ex;
+                    }
+                    
+                    var vacancyString = JsonConvert.SerializeObject(vacancyJson);
+                    var vacancy = JsonConvert.DeserializeObject<VacancyInput>(vacancyString);
                     
                     try
                     {
                         if (string.IsNullOrWhiteSpace(orderEvent.PaymentId))
                         {
-                            throw new InvalidOperationException("Ошибка определения Id платежа в ПС. " +
-                                                                $"PaymentId: {orderEvent.PaymentId}. " +
-                                                                $"OrderEvent: {orderEvent}.");
+                            var ex = new InvalidOperationException("Ошибка определения Id платежа в ПС. " +
+                                                                   $"PaymentId: {orderEvent.PaymentId}. " +
+                                                                   $"OrderEvent: {orderEvent}.");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                            throw ex;
                         }
                         
                         // Обновляем статус заказа в нашей БД.
@@ -271,21 +285,16 @@ internal sealed class OrdersJob : IJob
                             var ex = new InvalidOperationException("Не удалось найти заказ для обновления статуса. " +
                                                                    $"OrderId: {orderEvent.OrderId}." +
                                                                    $"PaymentId: {orderEvent.PaymentId}");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
                             throw ex;
                         }
 
                         var publicId = orderEvent.PublicId;
                         var fareRule = await _fareRuleRepository.GetFareRuleByPublicIdAsync(publicId);
 
-                        if (fareRule.FareRule is null)
-                        {
-                            throw new InvalidOperationException("Ошибка получения тарифа. " +
-                                                                $"PublicId: {publicId}.");
-                        }
-
                         // Для бесплатного тарифа нет срока подписки.
                         // Кол-во месяцев есть только у оплаты заказа на тариф.
-                        if (!fareRule.FareRule.IsFree && orderEvent.PaymentMonth.HasValue)
+                        if (!fareRule.FareRule!.IsFree && orderEvent.PaymentMonth.HasValue)
                         {
                             // Проставляем подписку и даты подписки пользователю.
                             await _subscriptionService.SetUserSubscriptionAsync(orderEvent.CreatedBy, publicId,
@@ -316,14 +325,18 @@ internal sealed class OrdersJob : IJob
 
                             if (orderBuilder is null)
                             {
-                                throw new InvalidOperationException("Ошибка определения типа билдера. " +
-                                                                    $"OrderType: {orderEvent.OrderType}.");
+                                var ex = new InvalidOperationException("Ошибка определения типа билдера. " +
+                                                                       $"OrderType: {orderEvent.OrderType}.");
+                                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                                throw ex;
                             }
 
                             if (orderBuilder.OrderData is null)
                             {
-                                throw new InvalidOperationException("Ошибка подготовительных данных билдера. " +
-                                                                    $"OrderType: {orderEvent.OrderType}.");
+                                var ex = new InvalidOperationException("Ошибка подготовительных данных билдера. " +
+                                                                       $"OrderType: {orderEvent.OrderType}.");
+                                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                                throw ex;
                             }
 
                             orderBuilder.OrderData.Amount ??= new Amount(orderEvent.Price,
@@ -344,55 +357,95 @@ internal sealed class OrdersJob : IJob
 
                     if (_channel is null)
                     {
-                        throw new InvalidOperationException("Канал кролика был NULL.");
+                        var ex = new InvalidOperationException("Канал кролика был NULL.");
+                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                        throw ex;
+                    }
+
+                    if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy
+                        && newOrderStatus != PaymentStatusEnum.Succeeded)
+                    {
+                        logger.LogInformation("Оставили сообщение в очереди заказов...");
+                    
+                        if (_channel is null)
+                        {
+                            var ex = new InvalidOperationException("Канал кролика был NULL.");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                            throw ex;
+                        }
+                    
+                        _channel.BasicRecoverAsync(false);
+
+                        await Task.Yield(); 
                     }
 
                     // Если статус подтвержден, и тип заказа создание вакансии,
                     // то создаем вакансию пользователя и отправляем ее на модерацию.
-                    if (newOrderStatus == PaymentStatusEnum.Succeeded)
+                    else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy
+                             && newOrderStatus == PaymentStatusEnum.Succeeded)
                     {
                         if (vacancy is null)
                         {
-                            throw new InvalidOperationException(
+                            var ex = new InvalidOperationException(
                                 "Данные вакансии не были заполнены для создания вакансии.");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                            throw ex;
                         }
-                        
-                        // Добавляем вакансию в таблицу вакансий пользователя.
-                        var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancy,
-                            orderEvent.CreatedBy);
-                        var vacancyId = createdVacancy.VacancyId;
 
-                        if (vacancy.ProjectId <= 0)
+                        try
                         {
-                            throw new InvalidOperationException(
-                                "ProjectId не был заполнен. " +
-                                "Вакансия не может быть создана без привязки к проекту.");
+                            // Добавляем вакансию в таблицу вакансий пользователя.
+                            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancy,
+                                orderEvent.CreatedBy);
+                            var vacancyId = createdVacancy.VacancyId;
+
+                            if (vacancy.ProjectId <= 0)
+                            {
+                                var ex = new InvalidOperationException(
+                                    "ProjectId не был заполнен. " +
+                                    "Вакансия не может быть создана без привязки к проекту.");
+                                await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                                throw ex;
+                            }
+                        
+                            // Привязываем вакансию к проекту.
+                            await _projectRepository.AttachProjectVacancyAsync(vacancy.ProjectId, vacancyId);
+                        
+                            // Отправляем вакансию на модерацию.
+                            await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
+                        
+                            // TODO: Из джобы так не сделать. Нужно другое решение как уведомлять пользователя. 
+                            // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
+                            // await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                            //     "Данные успешно сохранены. Вакансия отправлена на модерацию.",
+                            //     NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreatedUserVacancy",
+                            //     userCode, UserConnectionModuleEnum.Main);
+
+                            var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(orderEvent.CreatedBy);
+                        
+                            // Отправляем уведомление о созданной вакансии владельцу.
+                            await _mailingsService.SendNotificationCreateVacancyAsync(user.Email,
+                                createdVacancy.VacancyName, vacancyId);
+                        
+                            // Отправляем уведомление о созданной вакансии в дискорд.
+                            await _discordService.SendNotificationCreatedVacancyBeforeModerationAsync(vacancyId);
                         }
                         
-                        // Привязываем вакансию к проекту.
-                        await _projectRepository.AttachProjectVacancyAsync(vacancy.ProjectId, vacancyId);
+                        catch (Exception ex)
+                        {
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                            throw;
+                        }
                         
-                        // Отправляем вакансию на модерацию.
-                        await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
-                        
-                        // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
-                        // await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
-                        //     "Данные успешно сохранены. Вакансия отправлена на модерацию.",
-                        //     NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotificationSuccessCreatedUserVacancy",
-                        //     userCode, UserConnectionModuleEnum.Main);
-
-                        var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(orderEvent.CreatedBy);
-                        
-                        // Отправляем уведомление о созданной вакансии владельцу.
-                        await _mailingsService.SendNotificationCreateVacancyAsync(user.Email,
-                            createdVacancy.VacancyName, vacancyId);
-                        
-                        // Отправляем уведомление о созданной вакансии в дискорд.
-                        await _discordService.SendNotificationCreatedVacancyBeforeModerationAsync(vacancyId);
+                        // Подтверждаем сообщение, чтобы дропнуть его из очереди.
+                        _channel.BasicAck(ea.DeliveryTag, false);
                     }
-                    
-                    // Подтверждаем сообщение, чтобы дропнуть его из очереди.
-                    _channel.BasicAck(ea.DeliveryTag, false);
+
+                    if (orderEvent.OrderType != OrderTypeEnum.CreateVacancy)
+                    {
+                        // Подтверждаем сообщение, чтобы дропнуть его из очереди.
+                        _channel.BasicAck(ea.DeliveryTag, false);
+                    }
                 }
 
                 // Статус в ПС не изменился, оставляем его в очереди.
@@ -402,7 +455,9 @@ internal sealed class OrdersJob : IJob
                     
                     if (_channel is null)
                     {
-                         throw new InvalidOperationException("Канал кролика был NULL.");
+                         var ex = new InvalidOperationException("Канал кролика был NULL.");
+                         await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                         throw ex;
                     }
                     
                     _channel.BasicRecoverAsync(false);

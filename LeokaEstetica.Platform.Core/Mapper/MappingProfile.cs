@@ -274,6 +274,7 @@ public class MappingProfile : Profile
         CreateMap<CreateOrderCache, CreateOrderOutput>();
         CreateMap<CreateOrderOutput, CreateOrderCache>();
         CreateMap<CreateOrderOutput, OrderCacheOutput>();
+        CreateMap<CreateOrderYandexKassaOutput , CreateOrderOutput>();
     }
     
     /// <summary>

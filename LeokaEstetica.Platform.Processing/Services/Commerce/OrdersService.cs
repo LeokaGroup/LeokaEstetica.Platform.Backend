@@ -13,7 +13,6 @@ using LeokaEstetica.Platform.Database.Abstractions.Commerce;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.Orders;
 using LeokaEstetica.Platform.Messaging.Abstractions.Mail;
-using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.Base;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.PayMaster;
 using LeokaEstetica.Platform.Models.Dto.Input.Commerce.YandexKassa;
@@ -185,9 +184,10 @@ internal sealed class OrdersService : IOrdersService
                 throw ex;
             }
 
-            var createdOrder = await CreatePaymentOrderAsync(paymentId, createPaymentOrderAggregateInput.OrderCache,
+            var createdOrder = await CreatePaymentOrderAsync(paymentId,
                 createPaymentOrderAggregateInput.CreateOrderInput, createPaymentOrderAggregateInput.CreatedBy,
-                responseCheckStatusOrder, orderType);
+                responseCheckStatusOrder, orderType, createPaymentOrderAggregateInput.FareRuleName,
+                createPaymentOrderAggregateInput.Month);
 
             // Создаем заказ в БД.
             var createdOrderResult = await commerceRepository.CreateOrderAsync(createdOrder);
@@ -216,13 +216,18 @@ internal sealed class OrdersService : IOrdersService
                 // Отправляем заказ в очередь для отслеживания его статуса.
                 orderEvent = OrderEventFactory.CreatePostVacancyOrderEvent(createdOrderResult.OrderId,
                     createdOrderResult.StatusSysName, paymentId, createPaymentOrderAggregateInput.CreatedBy,
-                    createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.OrderCache.Month,
+                    createPaymentOrderAggregateInput.PublicId, createPaymentOrderAggregateInput.Month,
                     createdOrderResult.Price, createdOrder.CurrencyType, vacancy!,
                     createdOrderResult.OrderType);
             }
 
             var queueType = string.Empty.CreateQueueDeclareNameFactory(configuration["Environment"],
                 QueueTypeEnum.OrdersQueue);
+
+            if (orderEvent is null)
+            {
+                throw new InvalidOperationException("Ошибка формирования ивента для кролика.");
+            }
 
             await rabbitMqService.PublishAsync(orderEvent, queueType, configuration);
 
@@ -250,27 +255,27 @@ internal sealed class OrdersService : IOrdersService
     #region Приватные методы.
     
     /// <summary>
-    /// TODO: Передавать тип заказа в orderCache.
     /// Метод парсит результат для сохранения заказа в БД.
     /// </summary>
     /// <param name="paymentId">Id платежа в ПС.</param>
-    /// <param name="orderCache">Заказ в кэше.</param>
     /// <param name="createOrderRequest">Модель запроса.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="responseCheckStatusOrder">Статус ответа из ПС.</param>
     /// <param name="orderType">Тип заказа.</param>
+    /// <param name="fareRuleName">Название заказа.</param>
+    /// <param name="month">Кол-во месяцев подписки.</param>
     /// <returns>Результирующая модель для сохранения в БД.</returns>
     private static async Task<CreatePaymentOrderInput> CreatePaymentOrderAsync(string paymentId,
-        CreateOrderCache orderCache, ICreateOrderInput createOrderInput, long userId,
-        string responseCheckStatusOrder, OrderTypeEnum orderType)
+        ICreateOrderInput createOrderInput, long userId, string responseCheckStatusOrder, OrderTypeEnum orderType,
+        string? fareRuleName, short? month)
     {
         var createOrder = JsonConvert.DeserializeObject<PaymentStatusOutput>(responseCheckStatusOrder);
         var result = new CreatePaymentOrderInput
         {
             PaymentId = paymentId,
-            Name = orderCache.FareRuleName,
+            Name = fareRuleName,
             UserId = userId,
-            PaymentMonth = orderCache.Month,
+            PaymentMonth = month,
             CurrencyType = CurrencyTypeEnum.RUB,
             Created = DateTime.Parse(createOrder!.Created),
             PaymentStatusSysName = createOrder.OrderStatus,

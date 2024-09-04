@@ -106,6 +106,12 @@ internal sealed class YandexKassaService : IYandexKassaService
             }
             
             var userId = await _userRepository.GetUserByEmailAsync(orderBuilder.OrderData.Account!);
+
+            if (userId <= 0)
+            {
+                throw new InvalidOperationException("Ошибка определения пользователя при создании заказа. " +
+                                                    $"UserId: {userId}.");
+            }
             
             // Проверяем заполнение анкеты и даем доступ либо нет.
             var isEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
@@ -119,36 +125,84 @@ internal sealed class YandexKassaService : IYandexKassaService
                 await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Для покупки тарифа должна быть заполнена информация вашей анкеты.",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserProfile",
-                    userCode, UserConnectionModuleEnum.Processing);
+                    userCode, UserConnectionModuleEnum.Main);
 
                 throw ex;
             }
             
             using var scope = _transactionScopeFactory.CreateTransactionScope();
-            
-            // Получаем заказ из кэша.
-            var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, orderBuilder.OrderData.PublicId);
-            var orderCache = await _commerceRedisService.GetOrderCacheAsync(key);
-            
-            // Заполняем модель для запроса в ПС.
-            var fareRuleName = orderCache.FareRuleName;
-            var month = orderCache.Month;
 
-            var isTestPayMode = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.Integrations
-                .PaymentSystem.COMMEFCE_TEST_PRICE_MODE_ENABLED);
-
-            // Если хотим провести тестовый платеж, но на реальных ДС.
-            if (isTestPayMode)
+            string? description = null;
+            string? fareRuleName = null;
+            short? month = null;
+            VacancyInput? vacancy = null;
+            int ruleId = 0;
+            decimal price = 0;
+            CreateOrderCache? orderCache = null;
+            
+            if (orderBuilder.OrderData.OrderType == OrderTypeEnum.FareRule)
             {
-                var testPayPrice = await _globalConfigRepository.GetValueByKeyAsync<decimal>(GlobalConfigKeys
-                    .Integrations.PaymentSystem.COMMERCE_TEST_PRICE_MODE_ENABLED_VALUE);
-                orderCache.Price = testPayPrice;
+                // Получаем заказ из кэша.
+                var key = await _commerceRedisService.CreateOrderCacheKeyAsync(userId, orderBuilder.OrderData.PublicId);
+                orderCache = await _commerceRedisService.GetOrderCacheAsync(key);
+                
+                month = orderCache.Month;
+                fareRuleName = orderCache.FareRuleName;
+                description = "Оплата тарифа: " + fareRuleName + $" (на {month} мес.)";
+                price = orderCache.Price;
+                ruleId = orderCache.RuleId;
+                
+                var isTestPayMode = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.Integrations
+                    .PaymentSystem.COMMEFCE_TEST_PRICE_MODE_ENABLED);
+
+                // Если хотим провести тестовый платеж, но на реальных ДС.
+                if (isTestPayMode)
+                {
+                    var testPayPrice = await _globalConfigRepository.GetValueByKeyAsync<decimal>(GlobalConfigKeys
+                        .Integrations.PaymentSystem.COMMERCE_TEST_PRICE_MODE_ENABLED_VALUE);
+                    orderCache.Price = testPayPrice;
+                }
             }
             
-            // TODO: Адаптировать подготовку модели в ПС исходя из типа заказа.
+            else if (orderBuilder.OrderData.OrderType == OrderTypeEnum.CreateVacancy)
+            {
+                fareRuleName = orderBuilder.OrderData.FareRuleName;
+                description = "Оплата тарифа: " + fareRuleName;
+                
+                if (orderBuilder.OrderData.Amount is null)
+                {
+                    throw new InvalidOperationException(
+                        "Ошибка определения данных о цене заказа. " +
+                        $"OrderData: {JsonConvert.SerializeObject(orderBuilder.OrderData)}.");
+                }
+                
+                // TODO: Доработать под кейс с бесплатным заказом. В ПС такой нет смысла оформлять.
+                // TODO: Просто позволять создать вакансию надо, но с фиксацией такого заказа в нашей БД.
+                if (orderBuilder.OrderData.Amount.Value <= 0)
+                {
+                    throw new InvalidOperationException(
+                        "Цена заказа не может быть отрицательной и меньше нуля. " +
+                        $"OrderData: {JsonConvert.SerializeObject(orderBuilder.OrderData)}.");
+                }
+                
+                price = orderBuilder.OrderData.Amount.Value;
+
+                if (!orderBuilder.OrderData.RuleId.HasValue)
+                {
+                    throw new InvalidOperationException(
+                        "Ошибка определения Id тарифа. " +
+                        $"OrderData: {JsonConvert.SerializeObject(orderBuilder.OrderData)}.");
+                }
+                
+                ruleId = orderBuilder.OrderData.RuleId.Value;
+                
+                vacancy = ((PostVacancyOrderBuilder)orderBuilder).VacancyOrderData;
+            }
+
+            // Заполняем модель для запроса в ПС.
             // Готовим запрос в ПС.
-            var createOrderInput = await CreateOrderRequestAsync(fareRuleName, orderCache.Price,
-                orderCache.RuleId, orderBuilder.OrderData.PublicId, month);
+            var createOrderInput = await CreateOrderRequestAsync(price, ruleId, orderBuilder.OrderData.PublicId,
+                description);
 
             // TODO: Переделать на факторку HttpClientFactory.
             using var httpClient = new HttpClient().SetYandexKassaRequestAuthorizationHeader(_configuration);
@@ -190,13 +244,7 @@ internal sealed class YandexKassaService : IYandexKassaService
             var paymentOrderAggregateInput = CreatePaymentOrderAggregateInputResult(order, orderCache,
                 createOrderInput, userId, orderBuilder.OrderData.PublicId, fareRuleName,
                 orderBuilder.OrderData.Account!, month);
-
-            VacancyInput? vacancy = null;
-            
-            if (orderBuilder.OrderData.OrderType == OrderTypeEnum.CreateVacancy)
-            {
-                vacancy = ((PostVacancyOrderBuilder)orderBuilder).VacancyOrderData;
-            }
+            paymentOrderAggregateInput.PublicId = orderBuilder.OrderData.PublicId;
 
             var result = await _ordersService.CreatePaymentOrderAsync(paymentOrderAggregateInput,
                 _configuration, _commerceRepository, _rabbitMqService, _globalConfigRepository, _mailingsService,
@@ -340,17 +388,21 @@ internal sealed class YandexKassaService : IYandexKassaService
     #region Приватные методы.
 
     /// <summary>
-    /// Метод создает модель запроса в ПС ЮKassa.
+    /// Метод создает модель запроса в ПС.
     /// </summary>
-    /// <param name="fareRuleName">Название тарифа.</param>
     /// <param name="price">Цена.</param>
     /// <param name="ruleId">Id тарифа.</param>
     /// <param name="publicId">Публичный ключ тарифа.</param>
-    /// <param name="month">Кол-во мес, на которые оплачивается тариф.</param>
-    /// <returns>Модель запроса в ПС PayMaster.</returns>
-    private async Task<CreateOrderYandexKassaInput> CreateOrderRequestAsync(string? fareRuleName, decimal price,
-        int ruleId, Guid publicId, short? month)
+    /// <param name="description">Описание заказа.</param>
+    /// <returns>Модель запроса в ПС.</returns>
+    private async Task<CreateOrderYandexKassaInput> CreateOrderRequestAsync(decimal price,
+        int ruleId, Guid publicId, string? description)
     {
+        if (string.IsNullOrWhiteSpace(description))
+        {
+            throw new InvalidOperationException("Не заполнено описание заказа.");
+        }
+        
         var isTestMode = await _globalConfigRepository.GetValueByKeyAsync<bool>(
             GlobalConfigKeys.Integrations.PaymentSystem.COMMERCE_TEST_MODE_ENABLED);
 
@@ -359,7 +411,7 @@ internal sealed class YandexKassaService : IYandexKassaService
             CreateOrderRequest = new CreateOrderYandexKassaRequest
             {
                 TestMode = isTestMode,
-                Description = "Оплата тарифа: " + fareRuleName + $" (на {month} мес.)",
+                Description = description,
                 Amount = new Amount(price, CurrencyTypeEnum.RUB.ToString()),
                 PaymentMethodData = new PaymentMethodData("bank_card"),
                 Confirmation = new Confirmation("redirect", "https://leoka-estetica.ru/return_url"),
@@ -385,7 +437,7 @@ internal sealed class YandexKassaService : IYandexKassaService
     /// <param name="month">Кол-во месяцев, на которое оформлен тариф.</param>
     /// <returns>Наполненная входная модель для создания заказа.</returns>
     private CreatePaymentOrderAggregateInput CreatePaymentOrderAggregateInputResult(CreateOrderYandexKassaOutput order,
-        CreateOrderCache orderCache, CreateOrderYandexKassaInput createOrderInput, long userId, Guid publicId,
+        CreateOrderCache? orderCache, CreateOrderYandexKassaInput createOrderInput, long userId, Guid publicId,
         string? fareRuleName, string account, short? month)
     {
         var reesult = new CreatePaymentOrderAggregateInput

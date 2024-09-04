@@ -51,41 +51,81 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
     /// <inheritdoc />
     public async Task<UserVacancyEntity> CreateVacancyAsync(VacancyInput vacancyInput, long userId)
     {
-        var transaction = await _pgContext.Database
-            .BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
         try
         {
-            var vacancy = new UserVacancyEntity
-            {
-                DateCreated = DateTime.UtcNow,
-                VacancyName = vacancyInput.VacancyName,
-                VacancyText = vacancyInput.VacancyText,
-                WorkExperience = vacancyInput.WorkExperience,
-                Employment = vacancyInput.Employment,
-                Payment = vacancyInput.Payment,
-                UserId = userId,
-                Demands = vacancyInput.Demands,
-                Conditions = vacancyInput.Conditions
-            };
-            await _pgContext.UserVacancies.AddAsync(vacancy);
-            
-            await _pgContext.SaveChangesAsync(); // Сохраняем тут, так как нам нужен VacancyId.
+            var insertVacancyParameters = new DynamicParameters();
+            insertVacancyParameters.Add("@dateCreated", DateTime.UtcNow);
+            insertVacancyParameters.Add("@vacancyName", vacancyInput.VacancyName);
+            insertVacancyParameters.Add("@vacancyText", vacancyInput.VacancyText);
+            insertVacancyParameters.Add("@workExperience", vacancyInput.WorkExperience);
+            insertVacancyParameters.Add("@employment", vacancyInput.Employment);
+            insertVacancyParameters.Add("@payment", vacancyInput.Payment);
+            insertVacancyParameters.Add("@userId", userId);
+            insertVacancyParameters.Add("@demands", vacancyInput.Demands);
+            insertVacancyParameters.Add("@conditions", vacancyInput.Conditions);
 
-            // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации". 
-            await AddVacancyStatusAsync(vacancy.VacancyId, VacancyStatusNameEnum.Moderation.GetEnumDescription(),
-                VacancyStatusNameEnum.Moderation.ToString());
-            
-            await _pgContext.SaveChangesAsync();
-            
-            await transaction.CommitAsync();
+            var insertVacancyQuery = "INSERT INTO \"Vacancies\".\"UserVacancies\" (" +
+                                     "\"DateCreated\", " +
+                                     "\"VacancyName\", " +
+                                     "\"VacancyText\", " +
+                                     "\"WorkExperience\", " +
+                                     "\"Employment\", " +
+                                     "\"Payment\", " +
+                                     "\"UserId\", " +
+                                     "\"Demands\", " +
+                                     "\"Conditions\") " +
+                                     "VALUES (" +
+                                     "@dateCreated, " +
+                                     "@vacancyName, " +
+                                     "@vacancyText, " +
+                                     "@workExperience, " +
+                                     "@employment, " +
+                                     "@payment, " +
+                                     "@userId, " +
+                                     "@demands, " +
+                                     "@conditions) " +
+                                     "RETURNING \"VacancyId\"";
 
-            return vacancy;
+            var addedVacancyId = await connection.ExecuteScalarAsync<long>(insertVacancyQuery,
+                insertVacancyParameters);
+            
+            // Добавляем вакансию в таблицу статусов вакансий. Проставляем новой вакансии статус "На модерации".
+            var insertVacancyStatusParameters = new DynamicParameters();
+            insertVacancyStatusParameters.Add("@vacancyId", addedVacancyId);
+            insertVacancyStatusParameters.Add("@statusName", VacancyStatusNameEnum.Moderation.GetEnumDescription());
+            insertVacancyStatusParameters.Add("@statusSysName", VacancyStatusNameEnum.Moderation.ToString());
+
+            var insertVacancyStatusQuery = "INSERT INTO \"Vacancies\".\"VacancyStatuses\" (" +
+                                           "\"VacancyStatusSysName\", " +
+                                           "\"VacancyStatusName\", " +
+                                           "\"VacancyId\") " +
+                                           "VALUES (" +
+                                           "@statusSysName, " +
+                                           "@statusName, " +
+                                           "@vacancyId)";
+
+            await connection.ExecuteAsync(insertVacancyStatusQuery, insertVacancyStatusParameters);
+
+            transaction.Commit();
+            
+            var parameters = new DynamicParameters();
+            parameters.Add("@vacancyId", addedVacancyId);
+
+            var query = "SELECT * " +
+                        "FROM \"Vacancies\".\"UserVacancies\" " +
+                        "WHERE \"VacancyId\" = @vacancyId";
+
+            var result = await connection.QuerySingleOrDefaultAsync<UserVacancyEntity>(query, parameters);
+
+            return result;
         }
-
+        
         catch
         {
-            await transaction.RollbackAsync();
+            transaction.Rollback();
             throw;
         }
     }

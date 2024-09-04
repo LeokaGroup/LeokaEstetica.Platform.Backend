@@ -224,16 +224,35 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
     /// <returns>Основные данные профиля.</returns>
     public async Task<UserInfoOutput> GetUserPhoneEmailByUserIdAsync(long userId)
     {
-        var result = await _pgContext.Users
-            .Where(u => u.UserId == userId)
-            .Select(u => new UserInfoOutput
-            {
-                PhoneNumber = u.PhoneNumber,
-                Email = u.Email
-            })
-            .FirstOrDefaultAsync();
+        try
+        {
+            var result = await _pgContext.Users
+                .Where(u => u.UserId == userId)
+                .Select(u => new UserInfoOutput
+                {
+                    PhoneNumber = u.PhoneNumber,
+                    Email = u.Email
+                })
+                .FirstOrDefaultAsync();
 
-        return result;
+            return result;
+        }
+        
+        // TODO: При dispose PgContext пересоздаем датаконтекст и пробуем снова.
+        catch (ObjectDisposedException _)
+        {
+            var pgContext = CreateNewPgContextFactory.CreateNewPgContext(_configuration);
+            var result = await pgContext.Users
+                .Where(u => u.UserId == userId)
+                .Select(u => new UserInfoOutput
+                {
+                    PhoneNumber = u.PhoneNumber,
+                    Email = u.Email
+                })
+                .FirstOrDefaultAsync();
+
+            return result;
+        }
     }
 
     /// <summary>

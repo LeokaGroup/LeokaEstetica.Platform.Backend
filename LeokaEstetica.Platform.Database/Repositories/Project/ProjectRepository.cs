@@ -523,23 +523,36 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 	/// <returns>Флаг успеха.</returns>
 	public async Task<bool> AttachProjectVacancyAsync(long projectId, long vacancyId)
 	{
-		var isDublicateProjectVacancy = await _pgContext.ProjectVacancies
-			.AnyAsync(p => p.ProjectId == projectId
-						   && p.VacancyId == vacancyId);
+		using var connection = await ConnectionProvider.GetConnectionAsync();
 
+		var parameters = new DynamicParameters();
+		parameters.Add("@projectId", projectId);
+		parameters.Add("@vacancyId", vacancyId);
+
+		var isDublicateProjectVacancyQuery = "SELECT EXISTS (" +
+		                                     "SELECT \"VacancyId\" " +
+		                                     "FROM \"Projects\".\"ProjectVacancies\" " +
+		                                     "WHERE \"VacancyId\" = @vacancyId " +
+		                                     "AND \"ProjectId\" = @projectId)";
+
+		var isDublicateProjectVacancy = await connection.ExecuteScalarAsync<bool>(isDublicateProjectVacancyQuery,
+			parameters);
+		
 		// Если такая вакансия уже прикреплена к проекту.
 		if (isDublicateProjectVacancy)
 		{
 			return true;
 		}
 
-		await _pgContext.ProjectVacancies.AddAsync(new ProjectVacancyEntity
-		{
-			ProjectId = projectId,
-			VacancyId = vacancyId
-		});
-		await _pgContext.SaveChangesAsync();
+		var attachedProjectVacancyQuery = "INSERT INTO \"Projects\".\"ProjectVacancies\" (" +
+		                                  "\"ProjectId\", " +
+		                                  "\"VacancyId\") " +
+		                                  "VALUES (" +
+		                                  "@projectId, " +
+		                                  "@vacancyId)";
 
+		await connection.ExecuteAsync(attachedProjectVacancyQuery, parameters);
+		
 		return false;
 	}
 

@@ -21,7 +21,7 @@ public interface IFareRuleRepository
     /// </summary>
     /// <param name="fareRuleId">Id тарифа.</param>
     /// <returns>Данные тарифа.</returns>
-    Task<FareRuleEntity> GetByIdAsync(long fareRuleId);
+    Task<FareRuleEntity?> GetByIdAsync(long fareRuleId);
 
     /// <summary>
     /// Метод получает список названий входящих в список Ids тарифов.

@@ -17,14 +17,13 @@ internal class OrderBuilder
     {
         builder.OrderData ??= new OrderData();
         
-        // В кейсе с платной публикацией вакансий не важен срок подписки.
         if (builder.OrderData.OrderType != OrderTypeEnum.CreateVacancy)
         {
             await builder.FillMonthAsync();
+            await builder.FillOrderTypeAsync();
         }
         
         await builder.FillFareRuleNameAsync();
         await builder.CalculateFareRulePriceAsync();
-        await builder.FillOrderTypeAsync();
     }
 }
