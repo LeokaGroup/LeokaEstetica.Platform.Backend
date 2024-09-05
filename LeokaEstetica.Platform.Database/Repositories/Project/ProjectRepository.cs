@@ -242,7 +242,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
                     "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
 
-        var isFilterApplied = false;
+		var isFilterApplied = false;
 
         // Фильтр по стадиям проекта.
         if (catalogProjectInput.ProjectStages is not null && 
@@ -288,7 +288,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         parameters.Add("@countRows", 20);
 
         // Фильтр по дате.
-        query += "ORDER BY c.\"CatalogProjectId\", u2.\"DateCreated\" ";
+        query += "ORDER BY u2.\"DateCreated\" DESC , c.\"CatalogProjectId\" ";
         query += "LIMIT @countRows";
 
         var items = (await connection.QueryAsync<CatalogProjectOutput>(query, parameters))?.AsList();
