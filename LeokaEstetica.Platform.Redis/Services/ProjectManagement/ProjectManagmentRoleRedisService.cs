@@ -50,10 +50,15 @@ internal sealed class ProjectManagmentRoleRedisService : IProjectManagmentRoleRe
 
     /// <inheritdoc />
     public async Task SetUserRolesAsync(long userId, long projectId, long companyId,
-        IEnumerable<ProjectManagementRoleRedis> roles)
+        IEnumerable<ProjectManagementRoleRedis> roles, bool isCacheExists)
     {
         var key = CacheConst.Cache.PROJECT_MANAGEMENT_USER_ROLES + userId + "_" + projectId + "_" + companyId +
                   "_ProjectManagementRoles";
+
+        if (isCacheExists)
+        {
+            await _redis.RemoveAsync(key);
+        }
         
         await _redis.SetStringAsync(key,
             ProtoBufExtensions.Serialize(roles), new DistributedCacheEntryOptions

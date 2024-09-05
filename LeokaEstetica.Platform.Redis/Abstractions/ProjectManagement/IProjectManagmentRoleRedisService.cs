@@ -23,5 +23,7 @@ public interface IProjectManagmentRoleRedisService
     /// <param name="projectId">Id проекта.</param>
     /// <param name="companyId">Id компании.</param>
     /// <param name="roles">Роли пользователя.</param>
-    Task SetUserRolesAsync(long userId, long projectId, long companyId, IEnumerable<ProjectManagementRoleRedis> roles);
+    /// <param name="isCacheExists">Если в кэше уже были роли пользователя, то дропаем их перед обновлением.</param>
+    Task SetUserRolesAsync(long userId, long projectId, long companyId, IEnumerable<ProjectManagementRoleRedis> roles,
+        bool isCacheExists);
 }
