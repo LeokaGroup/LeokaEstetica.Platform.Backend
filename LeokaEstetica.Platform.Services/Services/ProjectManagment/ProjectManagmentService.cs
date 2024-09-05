@@ -2739,7 +2739,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 	}
 
 	/// <inheritdoc />
-	public async Task IncludeTaskEpicAsync(long projectEpicId, IEnumerable<string> projectTaskIds, string account,
+	public async Task IncludeTaskEpicAsync(long epicId, IEnumerable<string> projectTaskIds, string account,
 		long projectId)
 	{
 		var userId = await _userRepository.GetUserByEmailAsync(account);
@@ -2755,8 +2755,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 		try
 		{
 			var projectTaskIdToNumbers = projectTaskIds.Select(x => x.GetProjectTaskIdFromPrefixLink());
-
-			var epicId = await _projectManagmentRepository.GetEpicIdByProjectEpicIdAsync(projectId, projectEpicId);
 
 			// Добавляем задачу в эпик.
 			await _projectManagmentRepository.IncludeTaskEpicAsync(epicId, projectTaskIdToNumbers);
