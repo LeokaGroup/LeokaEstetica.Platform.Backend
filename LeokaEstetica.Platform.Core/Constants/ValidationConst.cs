@@ -358,5 +358,10 @@ public static class ValidationConst
 		/// Если не передан Id дерева.
 		/// </summary>
 		public const string NOT_VALID_WIKI_TREE_ID = "Не передан Id дерева.";
+		
+		/// <summary>
+		/// Если передали невалидный Id компании.
+		/// </summary>
+		public const string NOT_VALID_COMPANY_ID = "Id компании не передан.";
 	}
 }

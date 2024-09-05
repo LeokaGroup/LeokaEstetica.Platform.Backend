@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using System.Text;
 using AutoMapper;
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
@@ -80,7 +79,8 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
             _logger?.LogInformation($"Проверяем роли пользователя: {userId} в кэше Redis...");
 
             // Проверяем, есть ли настройки в кэше.
-            var cacheRoles = (await _projectManagmentRoleRedisService.GetUserRolesAsync(userId))?.AsList();
+            var cacheRoles = (await _projectManagmentRoleRedisService.GetUserRolesAsync(userId, projectId, companyId))
+                ?.AsList();
 
             // В кэше нашли роли пользователя - отдаем.
             if (cacheRoles is not null && cacheRoles.Count > 0)
@@ -105,7 +105,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                 
                 // Добавляем роли пользователя в кэш - чтобы в след.раз уже забрать оттуда.
                 var mapRedisRoles = _mapper.Map<IEnumerable<ProjectManagementRoleRedis>>(userRoles);
-                await _projectManagmentRoleRedisService.SetUserRolesAsync(userId, mapRedisRoles);
+                await _projectManagmentRoleRedisService.SetUserRolesAsync(userId, projectId, companyId, mapRedisRoles);
                 
                 return userRoles;
             }
@@ -128,7 +128,8 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
     }
 
     /// <inheritdoc />
-    public async Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles, string account)
+    public async Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles, string account, long projectId,
+        long companyId)
     {
         try
         {
@@ -136,11 +137,12 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
             var projectManagementRoles = roles.AsList();
             await _projectManagmentRoleRepository.Value.UpdateRolesAsync(projectManagementRoles);
 
-            // TODO: Также нужно обновлять роли в БД, а не ио
+            // TODO: Также нужно обновлять роли в БД, а не только в кэше.
             // Обновляем роли в кэше.
             foreach (var r in projectManagementRoles)
             {
-                var cacheRoles = (await _projectManagmentRoleRedisService.GetUserRolesAsync(r.UserId))?.AsList();
+                var cacheRoles = (await _projectManagmentRoleRedisService.GetUserRolesAsync(r.UserId, projectId,
+                    companyId))?.AsList();
                 
                 if (cacheRoles is not null && cacheRoles.Count > 0)
                 {
@@ -149,8 +151,9 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                     {
                         cr.IsEnabled = r.IsEnabled;
                     }
-                    
-                    await _projectManagmentRoleRedisService.SetUserRolesAsync(r.UserId, cacheRoles);
+
+                    await _projectManagmentRoleRedisService.SetUserRolesAsync(r.UserId, projectId,
+                        companyId, cacheRoles);
                 }
 
                 // Иначе ищем в БД роли.
@@ -174,7 +177,8 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                     }
                     
                     var mapRedisRoles = _mapper.Map<IEnumerable<ProjectManagementRoleRedis>>(userRoles);
-                    await _projectManagmentRoleRedisService.SetUserRolesAsync(r.UserId, mapRedisRoles);
+                    await _projectManagmentRoleRedisService.SetUserRolesAsync(r.UserId, projectId,
+                        companyId, mapRedisRoles);
                 }
             }
             

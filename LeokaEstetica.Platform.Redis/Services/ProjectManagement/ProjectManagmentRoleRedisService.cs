@@ -28,9 +28,11 @@ internal sealed class ProjectManagmentRoleRedisService : IProjectManagmentRoleRe
     #region Публичные методы.
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ProjectManagementRoleRedis>?> GetUserRolesAsync(long userId)
+    public async Task<IEnumerable<ProjectManagementRoleRedis>?> GetUserRolesAsync(long userId, long projectId,
+        long companyId)
     {
-        var key = CacheConst.Cache.PROJECT_MANAGEMENT_USER_ROLES + userId + "_ProjectManagementRoles";
+        var key = CacheConst.Cache.PROJECT_MANAGEMENT_USER_ROLES + userId + "_" + projectId + "_" + companyId +
+                  "_ProjectManagementRoles";
         var items = await _redis.GetStringAsync(key);
 
         if (string.IsNullOrEmpty(items))
@@ -47,9 +49,12 @@ internal sealed class ProjectManagmentRoleRedisService : IProjectManagmentRoleRe
     }
 
     /// <inheritdoc />
-    public async Task SetUserRolesAsync(long userId, IEnumerable<ProjectManagementRoleRedis> roles)
+    public async Task SetUserRolesAsync(long userId, long projectId, long companyId,
+        IEnumerable<ProjectManagementRoleRedis> roles)
     {
-        var key = CacheConst.Cache.PROJECT_MANAGEMENT_USER_ROLES + userId + "_ProjectManagementRoles";
+        var key = CacheConst.Cache.PROJECT_MANAGEMENT_USER_ROLES + userId + "_" + projectId + "_" + companyId +
+                  "_ProjectManagementRoles";
+        
         await _redis.SetStringAsync(key,
             ProtoBufExtensions.Serialize(roles), new DistributedCacheEntryOptions
             {
