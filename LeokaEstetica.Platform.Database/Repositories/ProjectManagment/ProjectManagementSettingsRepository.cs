@@ -212,7 +212,8 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
                     "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
                     "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
-                    "WHERE pt.\"ProjectId\" = @projectId)";
+                    "WHERE pt.\"ProjectId\" = @projectId)" +
+                    "ORDER BY IsOwner DESC";
 
         var result = await connection.QueryAsync<ProjectSettingUserOutput>(query, parameters);
 
