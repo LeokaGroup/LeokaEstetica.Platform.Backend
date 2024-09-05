@@ -685,8 +685,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 	public async Task<List<ProjectTeamMemberEntity>> GetProjectTeamMembersAsync(long teamId)
 	{
         var result = await (from ptm in _pgContext.ProjectTeamMembers
-                            where ptm.TeamId == teamId
-                            orderby ptm.Role == "Владелец" descending
+                            where ptm.TeamId == teamId                          
                             select new ProjectTeamMemberEntity
                             {
                                 UserId = ptm.UserId,
