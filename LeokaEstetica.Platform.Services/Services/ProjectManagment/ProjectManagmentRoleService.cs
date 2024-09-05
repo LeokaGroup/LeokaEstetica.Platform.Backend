@@ -105,7 +105,8 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                 
                 // Добавляем роли пользователя в кэш - чтобы в след.раз уже забрать оттуда.
                 var mapRedisRoles = _mapper.Map<IEnumerable<ProjectManagementRoleRedis>>(userRoles);
-                await _projectManagmentRoleRedisService.SetUserRolesAsync(userId, projectId, companyId, mapRedisRoles);
+                await _projectManagmentRoleRedisService.SetUserRolesAsync(userId, projectId, companyId, mapRedisRoles,
+                                               false);
                 
                 return userRoles;
             }
@@ -136,8 +137,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
             // Обновляем роли в БД.
             var projectManagementRoles = roles.AsList();
             await _projectManagmentRoleRepository.Value.UpdateRolesAsync(projectManagementRoles);
-
-            // TODO: Также нужно обновлять роли в БД, а не только в кэше.
+            
             // Обновляем роли в кэше.
             foreach (var r in projectManagementRoles)
             {
@@ -153,7 +153,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                     }
 
                     await _projectManagmentRoleRedisService.SetUserRolesAsync(r.UserId, projectId,
-                        companyId, cacheRoles);
+                        companyId, cacheRoles, true);
                 }
 
                 // Иначе ищем в БД роли.
@@ -162,6 +162,7 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                     var userRoles = (await _projectManagmentRoleRepository.Value.GetUserRolesAsync(r.UserId, null,
                         null))?.AsList();
 
+                    // Не ломаем приложение, но логируем такое.
                     if (userRoles is null || userRoles.Count <= 0)
                     {
                         var ex = new InvalidOperationException(
@@ -172,13 +173,12 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                         await _discordService.Value.SendNotificationErrorAsync(ex);
                         _logger?.LogError(ex, ex.Message);
                         
-                        // Не ломаем приложение, но логируем такое.
                         continue;
                     }
                     
                     var mapRedisRoles = _mapper.Map<IEnumerable<ProjectManagementRoleRedis>>(userRoles);
                     await _projectManagmentRoleRedisService.SetUserRolesAsync(r.UserId, projectId,
-                        companyId, mapRedisRoles);
+                        companyId, mapRedisRoles, false);
                 }
             }
             
