@@ -22,5 +22,8 @@ public interface IProjectManagmentRoleService
     /// </summary>
     /// <param name="roles">Список ролей к обновлению.</param>
     /// <param name="account">Аккаунт.</param>
-    Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles, string account);
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="companyId">Id компании.</param>
+    Task UpdateRolesAsync(IEnumerable<ProjectManagementRoleInput> roles, string account, long projectId,
+        long companyId);
 }

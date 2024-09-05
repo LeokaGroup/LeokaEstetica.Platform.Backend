@@ -1,5 +1,4 @@
-﻿using Dapper;
-using LeokaEstetica.Platform.Base;
+﻿using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
@@ -80,7 +79,7 @@ public class ProjectManagementRoleController : BaseController
     /// <summary>
     /// Метод обновляет роли пользователей.
     /// </summary>
-    /// <param name="roles">Список ролей к обновлению.</param>
+    /// <param name="updateRoleInput">Входная модель.</param>
     [HttpPut]
     [Route("roles")]
     [ProducesResponseType(200)]
@@ -88,10 +87,9 @@ public class ProjectManagementRoleController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task UpdateRolesAsync([FromBody] IEnumerable<ProjectManagementRoleInput> roles)
+    public async Task UpdateRolesAsync([FromBody] UpdateRoleInput updateRoleInput)
     {
-        var updatedRoles = roles.AsList();
-        var validator = await new ProjectManagementRoleValidator().ValidateAsync(updatedRoles);
+        var validator = await new ProjectManagementRoleValidator().ValidateAsync(updateRoleInput);
 
         if (validator.Errors.Any())
         {
@@ -107,6 +105,7 @@ public class ProjectManagementRoleController : BaseController
             throw ex;
         }
 
-        await _projectManagmentRoleService.UpdateRolesAsync(updatedRoles, GetUserName());
+        await _projectManagmentRoleService.UpdateRolesAsync(updateRoleInput.Roles!, GetUserName(),
+            updateRoleInput.ProjectId, updateRoleInput.CompanyId);
     }
 }
