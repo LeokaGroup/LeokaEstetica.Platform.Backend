@@ -371,11 +371,7 @@ internal sealed class VacancyService : IVacancyService
         }
     }
 
-	/// <summary>
-	/// Метод получает каталог вакансий с учетом фильтров и пагинации
-	/// </summary>
-	/// <param name="vacancyCatalogInput">Фильтры с пагинацией.</param>
-	/// <returns>Каталог вакансий после фильтрации и пагинации.</returns>
+    /// <inheritdoc />
 	public async Task<CatalogVacancyResultOutput> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput)
     {
         try
@@ -386,7 +382,8 @@ internal sealed class VacancyService : IVacancyService
             };
 
 			// Разбиваем строку занятости, так как там может приходить несколько значений в строке.
-			vacancyCatalogInput.Filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(vacancyCatalogInput.Filters.EmploymentsValues);
+			vacancyCatalogInput.Filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(
+                vacancyCatalogInput.Filters.EmploymentsValues);
 
             result.CatalogVacancies = await _vacancyRepository.GetCatalogVacanciesAsync(vacancyCatalogInput);
 

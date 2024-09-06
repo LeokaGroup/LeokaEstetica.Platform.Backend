@@ -44,6 +44,7 @@ public class VacancyController : BaseController
 
     /// <summary>
     /// Метод получает список вакансий для каталога.
+    /// Также метод применяет фильтрацию, поиск и пагинацию - если переданы соответствующие поля.
     /// </summary>
     /// <returns>Список вакансий.</returns>
     [HttpPost]

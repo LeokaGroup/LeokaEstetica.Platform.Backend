@@ -259,10 +259,10 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         // Фильтр с наличием вакансий.
         if (catalogProjectInput.IsAnyVacancies)
         {
-	        query += "  AND EXISTS ( " +
-	                 "    SELECT 1 " +
-	                 "    FROM \"Projects\".\"ProjectVacancies\" AS ppv " +
-	                 "    WHERE ppv.\"ProjectId\" = u.\"ProjectId\") ";
+	        query += " AND EXISTS ( " +
+	                 "SELECT 1 " +
+	                 "FROM \"Projects\".\"ProjectVacancies\" AS ppv " +
+	                 "WHERE ppv.\"ProjectId\" = u.\"ProjectId\") ";
 	                 
 	        isFilterApplied = true;
         }
@@ -307,23 +307,24 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
         if (!isFilterApplied)
         {
-	        var calcCountQuery = "SELECT COUNT (c.\"CatalogProjectId\") " +
-	                             "FROM \"Projects\".\"CatalogProjects\" AS c " +
-	                             "INNER JOIN \"Projects\".\"UserProjects\" AS u ON c.\"ProjectId\" = u.\"ProjectId\" " +
-	                             "LEFT JOIN \"Moderation\".\"Projects\" AS p ON u.\"ProjectId\" = p.\"ProjectId\" " +
-	                             "INNER JOIN \"Subscriptions\".\"UserSubscriptions\" AS u0 ON u.\"UserId\" = u0.\"UserId\" " +
-	                             "INNER JOIN \"Subscriptions\".\"Subscriptions\" AS s ON u0.\"SubscriptionId\" = s.\"ObjectId\" " +
-	                             "INNER JOIN \"Projects\".\"UserProjectsStages\" AS u1 ON u.\"ProjectId\" = u1.\"ProjectId\" " +
-	                             "INNER JOIN \"Projects\".\"UserProjects\" AS u2 ON c.\"ProjectId\" = u2.\"ProjectId\" " +
-	                             "INNER JOIN \"Projects\".\"ProjectStages\" AS p0 ON p0.\"StageId\" = u1.\"StageId\" " +
-	                             "WHERE " +
-	                             "(NOT (EXISTS ( " +
-	                             "SELECT 1 " +
-	                             "FROM \"Projects\".\"ArchivedProjects\" AS a " +
-	                             "WHERE a.\"ProjectId\" = u.\"ProjectId\")) " +
-	                             "AND u.\"IsPublic\") " +
-	                             "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
-	                             "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
+	        var calcCountQuery =
+		        "SELECT COUNT (c.\"CatalogProjectId\") " +
+		        "FROM \"Projects\".\"CatalogProjects\" AS c " +
+		        "INNER JOIN \"Projects\".\"UserProjects\" AS u ON c.\"ProjectId\" = u.\"ProjectId\" " +
+		        "LEFT JOIN \"Moderation\".\"Projects\" AS p ON u.\"ProjectId\" = p.\"ProjectId\" " +
+		        "INNER JOIN \"Subscriptions\".\"UserSubscriptions\" AS u0 ON u.\"UserId\" = u0.\"UserId\" " +
+		        "INNER JOIN \"Subscriptions\".\"Subscriptions\" AS s ON u0.\"SubscriptionId\" = s.\"ObjectId\" " +
+		        "INNER JOIN \"Projects\".\"UserProjectsStages\" AS u1 ON u.\"ProjectId\" = u1.\"ProjectId\" " +
+		        "INNER JOIN \"Projects\".\"UserProjects\" AS u2 ON c.\"ProjectId\" = u2.\"ProjectId\" " +
+		        "INNER JOIN \"Projects\".\"ProjectStages\" AS p0 ON p0.\"StageId\" = u1.\"StageId\" " +
+		        "WHERE " +
+		        "(NOT (EXISTS ( " +
+		        "SELECT 1 " +
+		        "FROM \"Projects\".\"ArchivedProjects\" AS a " +
+		        "WHERE a.\"ProjectId\" = u.\"ProjectId\")) " +
+		        "AND u.\"IsPublic\") " +
+		        "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
+		        "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
         
 	        calcCount = await connection.ExecuteScalarAsync<long>(calcCountQuery);
         }

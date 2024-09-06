@@ -49,12 +49,13 @@ public interface IVacancyService
     /// <returns>Данные вакансии.</returns>
     Task<VacancyOutput> GetVacancyByVacancyIdAsync(long vacancyId, ModeEnum mode, string account);
 
-	/// <summary>
-	/// Метод получает каталог вакансий после фильтрации и пагинации.
-	/// </summary>
-	/// <param name="VacancyCatalogInput">Фильтры с пагинацией.</param>
-	/// <returns>Каталог вакансий после фильтрации и пагинации.</returns>
-	Task<CatalogVacancyResultOutput> GetCatalogVacanciesAsync(VacancyCatalogInput VacancyCatalogInput);
+    /// <summary>
+    /// Метод получает список вакансий для каталога.
+    /// Также метод применяет фильтрацию, поиск и пагинацию - если переданы соответствующие поля.
+    /// </summary>
+    /// <param name="vacancyCatalogInput">Входная модель.</param>
+    /// <returns>Список вакансий.</returns>
+	Task<CatalogVacancyResultOutput> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput);
 
     /// <summary>
     /// Метод удаляет вакансию.

@@ -12,7 +12,6 @@ using LeokaEstetica.Platform.Models.Entities.Configs;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
 using LeokaEstetica.Platform.Models.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Primitives;
 using Enum = System.Enum;
 using IsolationLevel = System.Data.IsolationLevel;
 
@@ -486,7 +485,8 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<CatalogVacancyOutput>> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput)
+    public async Task<IEnumerable<CatalogVacancyOutput>> GetCatalogVacanciesAsync(
+        VacancyCatalogInput vacancyCatalogInput)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -504,7 +504,8 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                     "uv.\"DateCreated\", " +
                     "uv.\"Employment\", ";
 
-        query += Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay ?? string.Empty) == FilterPayTypeEnum.NotPay
+        query += Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay ?? string.Empty) ==
+                 FilterPayTypeEnum.NotPay
                  || vacancyCatalogInput.Filters.Employments?.Intersect(new List<FilterEmploymentTypeEnum>
                  {
                      FilterEmploymentTypeEnum.Full,
@@ -525,22 +526,24 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                  "AND NOT uv.\"VacancyId\" = ANY (SELECT \"VacancyId\" FROM cte_archived_vacancies)";
 
         // Если фильтр занятости = полная занятость.
-        if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum.Full))
+        if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(
+                FilterEmploymentTypeEnum.Full))
         {
             parameters.Add("@employment", FilterEmploymentTypeEnum.Full.GetEnumDescription());
             query += " AND \"Employment\" = @employment";
         }
         
         // Если фильтр занятости = частичная занятость.
-        if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum.Partial))
+        if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(
+                FilterEmploymentTypeEnum.Partial))
         {
             parameters.Add("@employment", FilterEmploymentTypeEnum.Partial.GetEnumDescription());
             query += " AND \"Employment\" = @employment";
         }
         
         // Если фильтр занятости = проектная занятость.
-        if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(FilterEmploymentTypeEnum
-                .ProjectWork))
+        if ((vacancyCatalogInput.Filters.Employments ?? new List<FilterEmploymentTypeEnum>()).Contains(
+                FilterEmploymentTypeEnum.ProjectWork))
         {
             parameters.Add("@employment", FilterEmploymentTypeEnum.ProjectWork.GetEnumDescription());
             query += " AND \"Employment\" = @employment";
@@ -601,7 +604,8 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         }
         
         // Если фильтр не имеет тип оплаты (не имеет значения), то передаем следующему по цепочке.
-        if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay ?? string.Empty) == FilterPayTypeEnum.UnknownPay)
+        if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay ?? string.Empty) ==
+            FilterPayTypeEnum.UnknownPay)
         {
             parameters.Add("@payment", FilterPayTypeEnum.UnknownPay.GetEnumDescription());
             query += " AND \"Payment\" = @payment";
@@ -647,7 +651,6 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
 				" OR uv.\"VacancyText\" ILIKE @searchText ";
 		}
         
-		var result2 = await connection.QueryAsync<CatalogVacancyOutput>(query, parameters);
 		if (vacancyCatalogInput.LastId.HasValue)
 		{
 			parameters.Add("@lastId", vacancyCatalogInput.LastId);
