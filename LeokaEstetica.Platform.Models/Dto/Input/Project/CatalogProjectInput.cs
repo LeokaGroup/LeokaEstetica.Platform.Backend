@@ -43,5 +43,5 @@ public class CatalogProjectInput
 	/// <summary>
 	/// Строка для поискового запроса проектов
 	/// </summary>
-	public string SearchText { get; set; }
+	public string? SearchText { get; set; }
 }

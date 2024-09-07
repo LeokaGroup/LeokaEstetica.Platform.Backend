@@ -270,10 +270,9 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 		// Поисковой запрос названия/описания проекта
 		if (!string.IsNullOrWhiteSpace(catalogProjectInput.SearchText))
 		{
-			parameters.Add("@SearchText", "%"+ catalogProjectInput.SearchText + "%");
-			query+=
-				" AND u.\"ProjectName\" ILIKE @searchText " +
-				" OR u.\"ProjectDetails\" ILIKE @searchText ";
+			parameters.Add("@searchText", string.Concat(catalogProjectInput.SearchText, "%"));
+			query+= " AND (u.\"ProjectName\" ILIKE @searchText " +
+			        " OR u.\"ProjectDetails\" ILIKE @searchText) ";
 		}
 
 		if (catalogProjectInput.LastId.HasValue)
@@ -293,6 +292,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
         var items = (await connection.QueryAsync<CatalogProjectOutput>(query, parameters))?.AsList();
 
+        // Нет данных, значит каталог проектов еще пуст.
         if (items is null || items.Count == 0)
         {
 	        return new CatalogProjectResultOutput
