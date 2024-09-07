@@ -1634,7 +1634,7 @@ internal sealed class ProjectService : IProjectService
 		var moderationVacancies = await _vacancyModerationService.VacanciesModerationAsync();
 
         // Получаем список вакансий из каталога вакансий.
-        var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
+        var catalogVacancies = await _vacancyRepository.GetCatalogVacanciesAsync(new VacancyCatalogInput());
         
         // Находим вакансии в архиве.
         var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).AsList();

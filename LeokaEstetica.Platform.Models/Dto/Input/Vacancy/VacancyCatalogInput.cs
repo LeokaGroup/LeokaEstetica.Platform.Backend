@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace LeokaEstetica.Platform.Models.Dto.Input.Vacancy
+﻿namespace LeokaEstetica.Platform.Models.Dto.Input.Vacancy
 {
 	/// <summary>
 	/// Класс входной модели каталога вакансий с фильтрацией и пагинацией
@@ -10,7 +8,7 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Vacancy
 		/// <summary>
 		/// Класс входной модели фильтрации вакансий.
 		/// </summary>
-		public FilterVacancyInput Filters { get; set; }
+		public FilterVacancyInput? Filters { get; set; }
 
 		/// <summary>
 		/// Id последней записи на фронте. Применяется дял пагинации.
@@ -26,8 +24,8 @@ namespace LeokaEstetica.Platform.Models.Dto.Input.Vacancy
 		public short PaginationRows { get; set; }
 
 		/// <summary>
-		/// Строка поиска вакансий по названию.
+		/// Поисковый текст.
 		/// </summary>
-		public string SearchText { get; set; }
+		public string? SearchText { get; set; }
 	}
 }

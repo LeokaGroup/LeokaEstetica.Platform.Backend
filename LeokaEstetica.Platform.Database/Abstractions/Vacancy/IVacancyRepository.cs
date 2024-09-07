@@ -32,13 +32,6 @@ public interface IVacancyRepository
     Task<UserVacancyEntity> UpdateVacancyAsync(VacancyInput vacancyInput);
 
     /// <summary>
-    /// TODO: userId возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
-    /// Метод получает список вакансий для каталога.
-    /// </summary>
-    /// <returns>Список вакансий.</returns>
-    Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync();
-
-    /// <summary>
     /// Метод получает названия полей для таблицы вакансий проектов пользователя.
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
