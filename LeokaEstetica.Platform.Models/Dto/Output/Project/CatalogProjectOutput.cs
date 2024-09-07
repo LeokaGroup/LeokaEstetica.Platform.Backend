@@ -11,17 +11,17 @@ public class CatalogProjectOutput
     /// <summary>
     /// Название проекта.
     /// </summary>
-    public string ProjectName { get; set; }
+    public string? ProjectName { get; set; }
 
     /// <summary>
     /// Описание проекта.
     /// </summary>
-    public string ProjectDetails { get; set; }
+    public string? ProjectDetails { get; set; }
 
     /// <summary>
     /// Изображение проекта.
     /// </summary>
-    public string ProjectIcon { get; set; }
+    public string? ProjectIcon { get; set; }
     
     /// <summary>
     /// PK.
@@ -41,7 +41,7 @@ public class CatalogProjectOutput
     /// <summary>
     /// Системное название проекта.
     /// </summary>
-    public string ProjectStageSysName { get; set; }
+    public string? ProjectStageSysName { get; set; }
 
     /// <summary>
     /// Id пользователя.
@@ -57,12 +57,12 @@ public class CatalogProjectOutput
     /// <summary>
     /// Цвет тега.
     /// </summary>
-    public string TagColor { get; set; }
+    public string? TagColor { get; set; }
 
     /// <summary>
     /// Значение тега.
     /// </summary>
-    public string TagValue { get; set; }
+    public string? TagValue { get; set; }
     
     /// <summary>
     /// Отображаемая дата.

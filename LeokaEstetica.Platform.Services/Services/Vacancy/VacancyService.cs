@@ -16,7 +16,6 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Redis.Models.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Services.Builders;
 using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
 using LeokaEstetica.Platform.Base.Extensions.PriceExtensions;
 using LeokaEstetica.Platform.Core.Enums;
@@ -376,16 +375,7 @@ internal sealed class VacancyService : IVacancyService
     {
         try
         {
-            var result = new CatalogVacancyResultOutput
-            {
-                CatalogVacancies = new List<CatalogVacancyOutput>()
-            };
-
-			// Разбиваем строку занятости, так как там может приходить несколько значений в строке.
-			vacancyCatalogInput.Filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(
-                vacancyCatalogInput.Filters.EmploymentsValues);
-
-            result.CatalogVacancies = await _vacancyRepository.GetCatalogVacanciesAsync(vacancyCatalogInput);
+            var result = await _vacancyRepository.GetCatalogVacanciesAsync(vacancyCatalogInput);
 
             return result;
         }

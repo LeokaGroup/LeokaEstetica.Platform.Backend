@@ -31,7 +31,6 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
@@ -403,13 +402,10 @@ internal sealed class ProjectService : IProjectService
     public async Task<CatalogProjectResultOutput> GetCatalogProjectsAsync(CatalogProjectInput catalogProjectInput)
     {
         try
-        { 
-	        // Разбиваем строку стадий проекта, так как там может приходить несколько значений в строке.
-	        catalogProjectInput.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(
-		        catalogProjectInput.StageValues);
-
+        {
 	        var result = await _projectRepository.GetCatalogProjectsAsync(catalogProjectInput);
 
+	        // TODO: Делать все это в запросе метода GetCatalogProjectsAsync.
             result.CatalogProjects = await ExecuteCatalogConditionsAsync(result.CatalogProjects.AsList());
 
             return result;
@@ -1442,6 +1438,7 @@ internal sealed class ProjectService : IProjectService
 	}
 
     /// <summary>
+    /// TODO: Делать все это в запросе метода GetCatalogProjectsAsync.
     /// Метод запускает проверки на разные условия прежде чем вывести проекты в каталог.
     /// Проекты могут быть отсеяны, если не проходят по условиям.
     /// </summary>
@@ -1666,7 +1663,8 @@ internal sealed class ProjectService : IProjectService
             // Ищем вакансию в каталоге вакансий.
             else
             {
-                var isCatalogVacancy = catalogVacancies.Any(v => v.VacancyId == pv.VacancyId);
+	            catalogVacancies.CatalogVacancies ??= new List<CatalogVacancyOutput>();
+                var isCatalogVacancy = catalogVacancies.CatalogVacancies.Any(v => v.VacancyId == pv.VacancyId);
 
                 if (isCatalogVacancy)
                 {

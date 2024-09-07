@@ -242,13 +242,11 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
 
         // Фильтр по стадиям проекта.
-        if (catalogProjectInput.ProjectStages is not null && 
-            catalogProjectInput.ProjectStages.Count > 0 && 
-            !catalogProjectInput.ProjectStages.Contains(FilterProjectStageTypeEnum.None))
+        if (!string.IsNullOrWhiteSpace(catalogProjectInput.StageValues))
         {
-	        var stageList = catalogProjectInput.ProjectStages?.Select(e => e.ToString()).AsList();
-            parameters.Add("@stageList", stageList);
-            query += " AND p0.\"StageSysName\" = ANY (@stageList) ";
+	        parameters.Add("@stages", catalogProjectInput.StageValues);
+	        // Приходит в строке через запятую, поэтому можем через IN.
+            query += " AND p0.\"StageSysName\" IN (@stages) ";
         }
 
         // Фильтр с наличием вакансий.
@@ -280,7 +278,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         parameters.Add("@countRows", 20);
 
         // Фильтр по дате.
-        query += "ORDER BY c.\"CatalogProjectId\", u2.\"DateCreated\" DESC ";
+        query += "ORDER BY c.\"CatalogProjectId\", u.\"DateCreated\" DESC ";
         query += "LIMIT @countRows";
 
         var items = (await connection.QueryAsync<CatalogProjectOutput>(query, parameters))?.AsList();

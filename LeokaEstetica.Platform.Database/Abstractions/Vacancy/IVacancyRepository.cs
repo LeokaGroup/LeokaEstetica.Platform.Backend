@@ -124,5 +124,5 @@ public interface IVacancyRepository
     /// </summary>
     /// <param name="vacancyCatalogInput">Входная модель.</param>
     /// <returns>Список вакансий.</returns>
-	Task<IEnumerable<CatalogVacancyOutput>> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput);
+	Task<CatalogVacancyResultOutput> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput);
 }
