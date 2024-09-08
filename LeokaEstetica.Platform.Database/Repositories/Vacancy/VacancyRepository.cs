@@ -466,6 +466,9 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                     "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
 
         vacancyCatalogInput.Filters ??= new FilterVacancyInput();
+        
+        // Если применили любой фильтр.
+        var isFiltedApplied = false;
 
         // Фильтр по занятости.
         if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.EmploymentsValues))
@@ -473,6 +476,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             // EmploymentsValues разделены запятой в строке с фронта, поэтому можем через IN.
             parameters.Add("@employments", vacancyCatalogInput.Filters.EmploymentsValues);
             query += "AND u.\"Employment\" IN (@employments) ";
+            isFiltedApplied = true;
         }
 
         // Фильтр по опыту работы.
@@ -480,6 +484,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         {
             parameters.Add("@workExperience", vacancyCatalogInput.Filters.Experience);
             query += "AND u.\"WorkExperience\" = @workExperience ";
+            isFiltedApplied = true;
         }
 
         // Фильтр по оплате.
@@ -489,18 +494,21 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay) == FilterPayTypeEnum.UnknownPay)
             {
                 query += "AND u.\"Payment\" = 'Без оплаты' ";
+                isFiltedApplied = true;
             }
             
             // Есть оплата.
             if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay) == FilterPayTypeEnum.Pay)
             {
                 query += "AND u.\"Payment\" = REPLACE(u.\"Payment\", 'Без оплаты', 0)::NUMERIC(12, 2) > 0 ";
+                isFiltedApplied = true;
             }
             
             // Без оплата.
             if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay) == FilterPayTypeEnum.NotPay)
             {
                 query += "AND u.\"Payment\" = REPLACE(u.\"Payment\", 'Без оплаты', 0)::NUMERIC(12, 2) = 0 ";
+                isFiltedApplied = true;
             }
         }
         
@@ -510,6 +518,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
 	        
             // Применяем пагинацию.
             query += "AND c.\"CatalogVacancyId\" > @lastId ";
+            isFiltedApplied = true;
         }
         
         // Поисковой поисковый запрос.
@@ -518,6 +527,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             parameters.Add("@searchText", string.Concat(vacancyCatalogInput.SearchText, "%"));
             query+= " AND (u.\"VacancyName\" ILIKE @searchText " +
                     " OR u.\"VacancyText\" ILIKE @searchText) ";
+            isFiltedApplied = true;
         }
         
         // TODO: Передавать с фронта будем кол-во строк, при настройке пагинации пользователем.
@@ -529,6 +539,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         {
             // Фильтр по дате.
             query += "ORDER BY c.\"CatalogVacancyId\", u.\"DateCreated\" ";
+            isFiltedApplied = true;
         }
 
         // По убыванию даты и по доп.фильтрам сортировки.
@@ -543,6 +554,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                 query += "ORDER BY c.\"CatalogVacancyId\", " +
                          "u.\"DateCreated\" DESC, " +
                          "REPLACE(u.\"Payment\", 'Без оплаты', 0)::NUMERIC(12, 2) ";
+                isFiltedApplied = true;
             }
             
             // Фильтр по убыванию оплаты.
@@ -554,10 +566,9 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                 query += "ORDER BY c.\"CatalogVacancyId\", " +
                          "u.\"DateCreated\" DESC, " +
                          "REPLACE(u.\"Payment\", 'Без оплаты', 0)::NUMERIC(12, 2) DESC ";
+                isFiltedApplied = true;
             }
         }
-        
-        var calcCount = await connection.ExecuteScalarAsync<long>(query);
 
         query += "LIMIT @countRows";
 
@@ -573,12 +584,29 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                 Total = 0
             };
         }
+        
+        var calcCountQuery = "SELECT c.\"CatalogVacancyId\" AS Total" +
+                             "FROM \"Vacancies\".\"CatalogVacancies\" AS c " +
+                             "INNER JOIN \"Vacancies\".\"UserVacancies\" AS u ON c.\"VacancyId\" = u.\"VacancyId\" " +
+                             "LEFT JOIN \"Moderation\".\"Vacancies\" AS p ON u.\"VacancyId\" = p.\"VacancyId\" " +
+                             "INNER JOIN \"Subscriptions\".\"UserSubscriptions\" AS u0 ON u.\"UserId\" = u0.\"UserId\" " +
+                             "INNER JOIN \"Subscriptions\".\"Subscriptions\" AS s ON u0.\"SubscriptionId\" = s.\"ObjectId\" " +
+                             "WHERE " +
+                             "(NOT (EXISTS ( " +
+                             "SELECT 1 " +
+                             "FROM \"Vacancies\".\"ArchivedVacancies\" AS a " +
+                             "WHERE a.\"VacancyId\" = u.\"VacancyId\"))) " +
+                             "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
+                             "AND (p.\"ModerationStatusId\" IS NOT NULL))";
+
+        // Всего записей в каталоге - нужно для пагинации фронта.
+        var calcCount = await connection.ExecuteScalarAsync<long>(calcCountQuery);
 
         var result = new CatalogVacancyResultOutput
         {
             CatalogVacancies = items,
-            LastId = items.LastOrDefault()?.CatalogVacancyId,
-            Total = calcCount
+            Total = !isFiltedApplied ? calcCount : items.Count,
+            LastId = items.LastOrDefault()?.CatalogVacancyId
         };
 
         return result;
