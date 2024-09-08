@@ -279,6 +279,9 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
         // Фильтр по дате.
         query += "ORDER BY c.\"CatalogProjectId\", u.\"DateCreated\" DESC ";
+
+        var calcCount = await connection.ExecuteScalarAsync<long>(query);
+        
         query += "LIMIT @countRows";
 
         var items = (await connection.QueryAsync<CatalogProjectOutput>(query, parameters))?.AsList();
@@ -294,35 +297,13 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 	        };
         }
 
-        var calcCountQuery =
-	        "SELECT COUNT (c.\"CatalogProjectId\") " +
-	        "FROM \"Projects\".\"CatalogProjects\" AS c " +
-	        "INNER JOIN \"Projects\".\"UserProjects\" AS u ON c.\"ProjectId\" = u.\"ProjectId\" " +
-	        "LEFT JOIN \"Moderation\".\"Projects\" AS p ON u.\"ProjectId\" = p.\"ProjectId\" " +
-	        "INNER JOIN \"Subscriptions\".\"UserSubscriptions\" AS u0 ON u.\"UserId\" = u0.\"UserId\" " +
-	        "INNER JOIN \"Subscriptions\".\"Subscriptions\" AS s ON u0.\"SubscriptionId\" = s.\"ObjectId\" " +
-	        "INNER JOIN \"Projects\".\"UserProjectsStages\" AS u1 ON u.\"ProjectId\" = u1.\"ProjectId\" " +
-	        "INNER JOIN \"Projects\".\"UserProjects\" AS u2 ON c.\"ProjectId\" = u2.\"ProjectId\" " +
-	        "INNER JOIN \"Projects\".\"ProjectStages\" AS p0 ON p0.\"StageId\" = u1.\"StageId\" " +
-	        "WHERE " +
-	        "(NOT (EXISTS ( " +
-	        "SELECT 1 " +
-	        "FROM \"Projects\".\"ArchivedProjects\" AS a " +
-	        "WHERE a.\"ProjectId\" = u.\"ProjectId\")) " +
-	        "AND u.\"IsPublic\") " +
-	        "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
-	        "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
-        
-        // Всего записей в каталоге - нужно для пагинации фронта.
-        var calcCount = await connection.ExecuteScalarAsync<long>(calcCountQuery);
-
         var result = new CatalogProjectResultOutput
         {
 	        CatalogProjects = !string.IsNullOrWhiteSpace(catalogProjectInput.Date)
 	                          && !catalogProjectInput.Date.Equals("None")
 		        ? items.OrderByDescending(o => o.DateCreated)
 		        : items.OrderBy(o => o.DateCreated),
-	        Total = calcCount > 0 ? calcCount : items.Count,
+	        Total = calcCount,
 	        LastId = items.LastOrDefault()?.CatalogProjectId
         };
 
