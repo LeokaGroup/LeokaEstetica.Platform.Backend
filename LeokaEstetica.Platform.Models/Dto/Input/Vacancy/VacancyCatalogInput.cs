@@ -27,5 +27,10 @@
 		/// Поисковый текст.
 		/// </summary>
 		public string? SearchText { get; set; }
+		
+		/// <summary>
+		/// Признак использования пагинации.
+		/// </summary>
+		public bool IsPagination { get; set; }
 	}
 }

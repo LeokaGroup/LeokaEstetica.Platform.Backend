@@ -480,7 +480,8 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         }
 
         // Фильтр по опыту работы.
-        if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.Experience))
+        if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.Experience)
+            && !vacancyCatalogInput.Filters.Experience.Equals("None"))
         {
             parameters.Add("@workExperience", vacancyCatalogInput.Filters.Experience);
             query += "AND u.\"WorkExperience\" = @workExperience ";
@@ -488,7 +489,8 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         }
 
         // Фильтр по оплате.
-        if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.Pay))
+        if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.Pay)
+            && !vacancyCatalogInput.Filters.Pay.Equals("None"))
         {
             // Без разницы.
             if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay) == FilterPayTypeEnum.UnknownPay)
@@ -512,7 +514,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             }
         }
         
-        if (vacancyCatalogInput.LastId.HasValue)
+        if (vacancyCatalogInput.IsPagination && vacancyCatalogInput.LastId.HasValue)
         {
             parameters.Add("@lastId", vacancyCatalogInput.LastId);
 	        
@@ -535,7 +537,8 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         
         // Фильтр по дате (возрастанию даты).
         if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.Salary)
-            && Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary) == FilterSalaryTypeEnum.Date)
+            && Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary) == FilterSalaryTypeEnum.Date
+            && !vacancyCatalogInput.Filters.Salary.Equals("None"))
         {
             // Фильтр по дате.
             query += "ORDER BY c.\"CatalogVacancyId\", u.\"DateCreated\" ";
@@ -585,7 +588,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             };
         }
         
-        var calcCountQuery = "SELECT c.\"CatalogVacancyId\" AS Total" +
+        var calcCountQuery = "SELECT c.\"CatalogVacancyId\" AS Total " +
                              "FROM \"Vacancies\".\"CatalogVacancies\" AS c " +
                              "INNER JOIN \"Vacancies\".\"UserVacancies\" AS u ON c.\"VacancyId\" = u.\"VacancyId\" " +
                              "LEFT JOIN \"Moderation\".\"Vacancies\" AS p ON u.\"VacancyId\" = p.\"VacancyId\" " +
