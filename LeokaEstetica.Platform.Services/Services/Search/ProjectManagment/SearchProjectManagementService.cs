@@ -104,7 +104,7 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
             var settings = (await _projectSettingsConfigRepository.GetBuildProjectSpaceSettingsAsync(userId))
                 ?.AsList();
 
-            if (settings is null || !settings.Any())
+            if (settings is null || settings.Count == 0)
             {
                 throw new InvalidOperationException("Ошибка получения настроек проекта. " +
                                                     $"ProjectId: {projectId}. " +
@@ -112,49 +112,83 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
             }
             
             var strategy = new BaseSearchAgileObjectAlgorithm();
-            var searchConditions = new List<bool>
-            {
-                isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription
-            };
+            // var searchConditions = new List<bool>
+            // {
+            //     isSearchByProjectTaskId, isSearchByTaskName, isSearchByTaskDescription
+            // };
             long parsedProjectTaskId = 0;
             
             // Разбиваем поисковую строку по пробелам.
             var splitedConditions = searchText.Split(" ");
+
+            var projectTaskPrefix = settings.Find(x =>
+                    x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX))!
+                .ParamValue;
             
+            // TODO: Кейс комби-поиска пока не продуман полностью, пока закоментили.
             // Если комбинированный режим поиска (т.е. поиск идет по нескольким или всем критериям).
-            if (searchConditions.Count(x => x) > 1)
+            // if (searchConditions.Count(x => x) > 1)
+            // {
+            //     var projectTaskPrefix = settings.Find(x =>
+            //             x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX))!
+            //         .ParamValue;
+            //
+            //     // Если есть признак поиска по Id и если сплитованная строка содержит Id задачи с префиксом.
+            //     // То отделяем Id задачи от название или описания.
+            //     if (isSearchByProjectTaskId && splitedConditions
+            //             .Select(x => x.Contains(projectTaskPrefix))
+            //             .Any(x => x))
+            //     {
+            //         try
+            //         {
+            //             // Успешно спарсили Id задачи с префиксом.
+            //             parsedProjectTaskId = splitedConditions.First().GetProjectTaskIdFromPrefixLink();
+            //         }
+            //         catch (InvalidOperationException ex)
+            //         {
+            //             // Спарсить Id задачи с префиксом не удалось.
+            //             await _discordService.Value.SendNotificationErrorAsync(ex);
+            //             _logger?.LogError(ex, ex.Message);
+            //         }
+            //     }
+            //
+            //     // Пробуем распарсить как число, вдруг передали просто Id задачи.
+            //     else
+            //     {
+            //         // Если не получится как число, значит там текст и продолжим выполнять логику.
+            //         if (long.TryParse(splitedConditions.First(), out parsedProjectTaskId))
+            //         {
+            //             parsedProjectTaskId = long.Parse(splitedConditions.First());
+            //         }
+            //     }
+            // }
+            
+            // Если есть признак поиска по Id и если сплитованная строка содержит Id задачи с префиксом.
+            // То отделяем Id задачи от название или описания.
+            if (isSearchByProjectTaskId && splitedConditions
+                    .Select(x => x.Contains(projectTaskPrefix))
+                    .Any(x => x))
             {
-                var projectTaskPrefix = settings.Find(x =>
-                        x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_PROJECT_NAME_PREFIX))!
-                    .ParamValue;
-
-                // Если есть признак поиска по Id и если сплитованная строка содержит Id задачи с префиксом.
-                // То отделяем Id задачи от название или описания.
-                if (isSearchByProjectTaskId && splitedConditions
-                        .Select(x => x.Contains(projectTaskPrefix))
-                        .Any(x => x))
+                try
                 {
-                    try
-                    {
-                        // Успешно спарсили Id задачи с префиксом.
-                        parsedProjectTaskId = splitedConditions.First().GetProjectTaskIdFromPrefixLink();
-                    }
-                    catch (InvalidOperationException ex)
-                    {
-                        // Спарсить Id задачи с префиксом не удалось.
-                        await _discordService.Value.SendNotificationErrorAsync(ex);
-                        _logger?.LogError(ex, ex.Message);
-                    }
+                    // Успешно спарсили Id задачи с префиксом.
+                    parsedProjectTaskId = splitedConditions.First().GetProjectTaskIdFromPrefixLink();
                 }
-
-                // Пробуем распарсить как число, вдруг передали просто Id задачи.
-                else
+                catch (InvalidOperationException ex)
                 {
-                    // Если не получится как число, значит там текст и продолжим выполнять логику.
-                    if (long.TryParse(splitedConditions.First(), out parsedProjectTaskId))
-                    {
-                        parsedProjectTaskId = long.Parse(splitedConditions.First());
-                    }
+                    // Спарсить Id задачи с префиксом не удалось.
+                    await _discordService.Value.SendNotificationErrorAsync(ex);
+                    _logger?.LogError(ex, ex.Message);
+                }
+            }
+
+            // Пробуем распарсить как число, вдруг передали просто Id задачи.
+            else
+            {
+                // Если не получится как число, значит там текст и продолжим выполнять логику.
+                if (long.TryParse(splitedConditions.First(), out parsedProjectTaskId))
+                {
+                    parsedProjectTaskId = long.Parse(splitedConditions.First());
                 }
             }
             
