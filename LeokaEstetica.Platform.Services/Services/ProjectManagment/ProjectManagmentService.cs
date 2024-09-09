@@ -1103,7 +1103,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             var listUserTagInProject = await _projectManagmentRepository.GetProjectTagsAsync(projectId);
             if (listUserTagInProject.Any(t => t.TagSysName == tagSysName))
             {
-                throw new ArgumentException("Метка уже существует");
+                throw new ArgumentException("Такая метка уже существует у проекта");
             }
 
             // TODO: Для чего вообще использовать класс сущности?
@@ -1123,7 +1123,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
         catch (ArgumentException tagExistsEx)
         {
-            if (tagExistsEx.Message.Equals("Метка уже существует"))
+            if (tagExistsEx.Message.Equals("Такая метка уже существует у проекта"))
             {
                 var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -1135,7 +1135,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
                 await _hubNotificationService.Value.SendNotificationAsync("Внимание",
-                    "Проект уже имеет метку с таким именем.",
+                    "Такая метка уже существует у проекта",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotifyErrorCreateProjectTag", userCode,
                     UserConnectionModuleEnum.ProjectManagement);
             }
