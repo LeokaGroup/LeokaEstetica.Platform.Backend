@@ -244,17 +244,19 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         // Если применили любой фильтр.
         var isFiltedApplied = false;
 
+        catalogProjectInput.Filters ??= new FilterProjectInput();
+
         // Фильтр по стадиям проекта.
-        if (!string.IsNullOrWhiteSpace(catalogProjectInput.StageValues))
+        if (!string.IsNullOrWhiteSpace(catalogProjectInput.Filters.StageValues))
         {
-	        parameters.Add("@stages", catalogProjectInput.StageValues);
+	        parameters.Add("@stages", catalogProjectInput.Filters.StageValues);
 	        // Приходит в строке через запятую, поэтому можем через IN.
             query += " AND p0.\"StageSysName\" IN (@stages) ";
             isFiltedApplied = true;
         }
 
         // Фильтр с наличием вакансий.
-        if (catalogProjectInput.IsAnyVacancies)
+        if (catalogProjectInput.Filters.IsAnyVacancies)
         {
 	        query += " AND EXISTS ( " +
 	                 "SELECT 1 " +
@@ -272,7 +274,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 			isFiltedApplied = true;
 		}
 
-		if (catalogProjectInput.LastId.HasValue)
+		if (catalogProjectInput.IsPagination && catalogProjectInput.LastId.HasValue)
         {
 	        parameters.Add("@lastId", catalogProjectInput.LastId);
 	        
@@ -324,8 +326,8 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
         var result = new CatalogProjectResultOutput
         {
-	        CatalogProjects = !string.IsNullOrWhiteSpace(catalogProjectInput.Date)
-	                          && !catalogProjectInput.Date.Equals("None")
+	        CatalogProjects = !string.IsNullOrWhiteSpace(catalogProjectInput.Filters.Date)
+	                          && !catalogProjectInput.Filters.Date.Equals("None")
 		        ? items.OrderByDescending(o => o.DateCreated)
 		        : items.OrderBy(o => o.DateCreated),
 	        Total = !isFiltedApplied ? calcCount : items.Count,
