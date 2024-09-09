@@ -187,7 +187,7 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
 
-        var query = "SELECT pi.\"UserId\", " +
+        var query = "SELECT DISTINCT (pi.\"UserId\"), " +
                     "pi.\"LastName\", " +
                     "pi.\"FirstName\", " +
                     "pi.\"Patronymic\" AS \"SecondName\", " +
@@ -212,7 +212,8 @@ internal sealed class ProjectManagementSettingsRepository : BaseRepository, IPro
                     "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
                     "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
                     "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
-                    "WHERE pt.\"ProjectId\" = @projectId)";
+                    "WHERE pt.\"ProjectId\" = @projectId) " +
+                    "ORDER BY Role";
 
         var result = await connection.QueryAsync<ProjectSettingUserOutput>(query, parameters);
 
