@@ -231,7 +231,6 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     "INNER JOIN \"Subscriptions\".\"UserSubscriptions\" AS u0 ON u.\"UserId\" = u0.\"UserId\" " +
                     "INNER JOIN \"Subscriptions\".\"Subscriptions\" AS s ON u0.\"SubscriptionId\" = s.\"ObjectId\" " +
                     "INNER JOIN \"Projects\".\"UserProjectsStages\" AS u1 ON u.\"ProjectId\" = u1.\"ProjectId\" " +
-                    "INNER JOIN \"Projects\".\"UserProjects\" AS u2 ON c.\"ProjectId\" = u2.\"ProjectId\" " +
                     "INNER JOIN \"Projects\".\"ProjectStages\" AS p0 ON p0.\"StageId\" = u1.\"StageId\" " +
                     "WHERE " +
                     "(NOT (EXISTS ( " +
@@ -242,38 +241,35 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
                     "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
 
-        var isFilterApplied = false;
+        // Если применили любой фильтр.
+        var isFiltedApplied = false;
 
         // Фильтр по стадиям проекта.
-        if (catalogProjectInput.ProjectStages is not null && 
-            catalogProjectInput.ProjectStages.Count > 0 && 
-            !catalogProjectInput.ProjectStages.Contains(FilterProjectStageTypeEnum.None))
+        if (!string.IsNullOrWhiteSpace(catalogProjectInput.StageValues))
         {
-	        var stageList = catalogProjectInput.ProjectStages?.Select(e => e.ToString()).AsList();
-            parameters.Add("@stageList", stageList);
-            query += " AND p0.\"StageSysName\" = ANY (@stageList) ";
-
-            isFilterApplied = true;
+	        parameters.Add("@stages", catalogProjectInput.StageValues);
+	        // Приходит в строке через запятую, поэтому можем через IN.
+            query += " AND p0.\"StageSysName\" IN (@stages) ";
+            isFiltedApplied = true;
         }
 
         // Фильтр с наличием вакансий.
         if (catalogProjectInput.IsAnyVacancies)
         {
-	        query += "  AND EXISTS ( " +
-	                 "    SELECT 1 " +
-	                 "    FROM \"Projects\".\"ProjectVacancies\" AS ppv " +
-	                 "    WHERE ppv.\"ProjectId\" = u.\"ProjectId\") ";
-	                 
-	        isFilterApplied = true;
+	        query += " AND EXISTS ( " +
+	                 "SELECT 1 " +
+	                 "FROM \"Projects\".\"ProjectVacancies\" AS ppv " +
+	                 "WHERE ppv.\"ProjectId\" = u.\"ProjectId\") ";
+	        isFiltedApplied = true;
         }
 
 		// Поисковой запрос названия/описания проекта
 		if (!string.IsNullOrWhiteSpace(catalogProjectInput.SearchText))
 		{
-			parameters.Add("@SearchText", "%"+ catalogProjectInput.SearchText + "%");
-			query+=
-				" AND u.\"ProjectName\" ILIKE @searchText " +
-				" OR u.\"ProjectDetails\" ILIKE @searchText ";
+			parameters.Add("@searchText", string.Concat(catalogProjectInput.SearchText, "%"));
+			query+= " AND (u.\"ProjectName\" ILIKE @searchText " +
+			        " OR u.\"ProjectDetails\" ILIKE @searchText) ";
+			isFiltedApplied = true;
 		}
 
 		if (catalogProjectInput.LastId.HasValue)
@@ -288,11 +284,12 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         parameters.Add("@countRows", 20);
 
         // Фильтр по дате.
-        query += "ORDER BY c.\"CatalogProjectId\", u2.\"DateCreated\" ";
+        query += "ORDER BY c.\"CatalogProjectId\", u.\"DateCreated\" DESC ";
         query += "LIMIT @countRows";
 
         var items = (await connection.QueryAsync<CatalogProjectOutput>(query, parameters))?.AsList();
 
+        // Нет данных, значит каталог проектов еще пуст.
         if (items is null || items.Count == 0)
         {
 	        return new CatalogProjectResultOutput
@@ -303,30 +300,27 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 	        };
         }
 
-        long calcCount = 0;
-
-        if (!isFilterApplied)
-        {
-	        var calcCountQuery = "SELECT COUNT (c.\"CatalogProjectId\") " +
-	                             "FROM \"Projects\".\"CatalogProjects\" AS c " +
-	                             "INNER JOIN \"Projects\".\"UserProjects\" AS u ON c.\"ProjectId\" = u.\"ProjectId\" " +
-	                             "LEFT JOIN \"Moderation\".\"Projects\" AS p ON u.\"ProjectId\" = p.\"ProjectId\" " +
-	                             "INNER JOIN \"Subscriptions\".\"UserSubscriptions\" AS u0 ON u.\"UserId\" = u0.\"UserId\" " +
-	                             "INNER JOIN \"Subscriptions\".\"Subscriptions\" AS s ON u0.\"SubscriptionId\" = s.\"ObjectId\" " +
-	                             "INNER JOIN \"Projects\".\"UserProjectsStages\" AS u1 ON u.\"ProjectId\" = u1.\"ProjectId\" " +
-	                             "INNER JOIN \"Projects\".\"UserProjects\" AS u2 ON c.\"ProjectId\" = u2.\"ProjectId\" " +
-	                             "INNER JOIN \"Projects\".\"ProjectStages\" AS p0 ON p0.\"StageId\" = u1.\"StageId\" " +
-	                             "WHERE " +
-	                             "(NOT (EXISTS ( " +
-	                             "SELECT 1 " +
-	                             "FROM \"Projects\".\"ArchivedProjects\" AS a " +
-	                             "WHERE a.\"ProjectId\" = u.\"ProjectId\")) " +
-	                             "AND u.\"IsPublic\") " +
-	                             "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
-	                             "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
+        var calcCountQuery =
+	        "SELECT COUNT (c.\"CatalogProjectId\") AS Total " +
+	        "FROM \"Projects\".\"CatalogProjects\" AS c " +
+	        "INNER JOIN \"Projects\".\"UserProjects\" AS u ON c.\"ProjectId\" = u.\"ProjectId\" " +
+	        "LEFT JOIN \"Moderation\".\"Projects\" AS p ON u.\"ProjectId\" = p.\"ProjectId\" " +
+	        "INNER JOIN \"Subscriptions\".\"UserSubscriptions\" AS u0 ON u.\"UserId\" = u0.\"UserId\" " +
+	        "INNER JOIN \"Subscriptions\".\"Subscriptions\" AS s ON u0.\"SubscriptionId\" = s.\"ObjectId\" " +
+	        "INNER JOIN \"Projects\".\"UserProjectsStages\" AS u1 ON u.\"ProjectId\" = u1.\"ProjectId\" " +
+	        "INNER JOIN \"Projects\".\"UserProjects\" AS u2 ON c.\"ProjectId\" = u2.\"ProjectId\" " +
+	        "INNER JOIN \"Projects\".\"ProjectStages\" AS p0 ON p0.\"StageId\" = u1.\"StageId\" " +
+	        "WHERE " +
+	        "(NOT (EXISTS ( " +
+	        "SELECT 1 " +
+	        "FROM \"Projects\".\"ArchivedProjects\" AS a " +
+	        "WHERE a.\"ProjectId\" = u.\"ProjectId\")) " +
+	        "AND u.\"IsPublic\") " +
+	        "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
+	        "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
         
-	        calcCount = await connection.ExecuteScalarAsync<long>(calcCountQuery);
-        }
+        // Всего записей в каталоге - нужно для пагинации фронта.
+        var calcCount = await connection.ExecuteScalarAsync<long>(calcCountQuery);
 
         var result = new CatalogProjectResultOutput
         {
@@ -334,7 +328,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 	                          && !catalogProjectInput.Date.Equals("None")
 		        ? items.OrderByDescending(o => o.DateCreated)
 		        : items.OrderBy(o => o.DateCreated),
-	        Total = calcCount > 0 ? calcCount : items.Count,
+	        Total = !isFiltedApplied ? calcCount : items.Count,
 	        LastId = items.LastOrDefault()?.CatalogProjectId
         };
 

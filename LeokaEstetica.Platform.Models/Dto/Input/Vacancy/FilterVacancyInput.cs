@@ -30,9 +30,4 @@ public class FilterVacancyInput
     /// <seealso cref="FilterEmploymentTypeEnum"/>.
     /// </summary>
     public string? EmploymentsValues { get; set; }
-
-    /// <summary>
-    /// Список значений после парсинга списка знчений.
-    /// </summary>
-    public List<FilterEmploymentTypeEnum>? Employments { get; set; }
 }

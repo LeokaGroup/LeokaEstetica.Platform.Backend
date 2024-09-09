@@ -16,19 +16,19 @@ public class CatalogVacancyOutput
     /// <summary>
     /// Название вакансии.
     /// </summary>
-    public string VacancyName { get; set; }
+    public string? VacancyName { get; set; }
 
     /// <summary>
     /// Описание вакансии.
     /// </summary>
-    public string VacancyText { get; set; }
+    public string? VacancyText { get; set; }
 
     /// <summary>
     /// Опыт работы.
     /// Указывается текстом в виде: Требуемый опыт работы: 1–3 года.
     /// Если не указано, то выводится "Без опыта работы".
     /// </summary>
-    public string WorkExperience { get; set; }
+    public string? WorkExperience { get; set; }
 
     /// <summary>
     /// Занятость у вакансии.
@@ -36,7 +36,7 @@ public class CatalogVacancyOutput
     /// Разделяется сепаратором через запятую.
     /// Если не указано, то выводится текст "Занятость не указана".
     /// </summary>
-    public string Employment { get; set; }
+    public string? Employment { get; set; }
 
     /// <summary>
     /// Дата создания вакансии.
@@ -47,7 +47,7 @@ public class CatalogVacancyOutput
     /// Оплата у вакансии.
     /// Если не указано, то выводится текст "Не указана".
     /// </summary>
-    public string Payment { get; set; }
+    public string? Payment { get; set; }
 
     /// <summary>
     /// Id пользователя.
@@ -63,15 +63,20 @@ public class CatalogVacancyOutput
     /// <summary>
     /// Цвет тега.
     /// </summary>
-    public string TagColor { get; set; }
+    public string? TagColor { get; set; }
 
     /// <summary>
     /// Значение тега.
     /// </summary>
-    public string TagValue { get; set; }
+    public string? TagValue { get; set; }
 
     /// <summary>
     /// Отображаемая дата.
     /// </summary>
     public string DisplayDateCreated => DateCreated.ToString("d", CultureInfo.GetCultureInfo("ru"));
+    
+    /// <summary>
+    /// Id вакансии в каталоге.
+    /// </summary>
+    public long CatalogVacancyId { get; set; }
 }

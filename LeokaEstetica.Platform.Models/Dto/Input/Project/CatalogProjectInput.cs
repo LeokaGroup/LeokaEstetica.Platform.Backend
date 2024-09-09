@@ -1,6 +1,4 @@
-﻿using LeokaEstetica.Platform.Models.Enums;
-
-namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
+﻿namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
 
 /// <summary>
 /// Класс входной модели каталога проектов.
@@ -36,12 +34,7 @@ public class CatalogProjectInput
     public string? StageValues { get; set; }
 
     /// <summary>
-    /// Список стадий проекта.
-    /// </summary>
-    public List<FilterProjectStageTypeEnum>? ProjectStages { get; set; }
-
-	/// <summary>
 	/// Строка для поискового запроса проектов
 	/// </summary>
-	public string SearchText { get; set; }
+	public string? SearchText { get; set; }
 }

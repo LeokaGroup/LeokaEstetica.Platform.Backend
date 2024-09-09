@@ -66,6 +66,7 @@ public class ProjectController : BaseController
 
 	/// <summary>
 	/// Метод получает список проектов для каталога.
+	/// Также метод применяет фильтрацию, поиск и пагинацию - если переданы соответствующие поля.
 	/// </summary>
 	/// <param name="catalogProjectInput">Входная модель.</param>
 	/// <returns>Список результатов.</returns>

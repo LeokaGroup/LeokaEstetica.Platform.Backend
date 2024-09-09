@@ -32,13 +32,6 @@ public interface IVacancyRepository
     Task<UserVacancyEntity> UpdateVacancyAsync(VacancyInput vacancyInput);
 
     /// <summary>
-    /// TODO: userId возможно нужкн будет использовать, если будет монетизация в каталоге вакансий. Если доступ будет только у тех пользователей, которые приобрели подписку.
-    /// Метод получает список вакансий для каталога.
-    /// </summary>
-    /// <returns>Список вакансий.</returns>
-    Task<List<CatalogVacancyOutput>> CatalogVacanciesAsync();
-
-    /// <summary>
     /// Метод получает названия полей для таблицы вакансий проектов пользователя.
     /// Все названия столбцов этой таблицы одинаковые у всех пользователей.
     /// </summary>
@@ -125,10 +118,11 @@ public interface IVacancyRepository
     /// <returns>Список архивированных вакансий.</returns>
     Task<IEnumerable<ArchivedVacancyEntity>> GetUserVacanciesArchiveAsync(long userId);
 
-	/// <summary>
-	/// Метод получает каталог вакансий после фильтрации и пагинации.
-	/// </summary>
-	/// <param name="VacancyCatalogInput">Фильтры с пагинацией.</param>
-	/// <returns>Каталог вакансий после фильтрации и пагинации.</returns>
-	Task<IEnumerable<CatalogVacancyOutput>> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput);
+    /// <summary>
+    /// Метод получает список вакансий для каталога.
+    /// Также метод применяет фильтрацию, поиск и пагинацию - если переданы соответствующие поля.
+    /// </summary>
+    /// <param name="vacancyCatalogInput">Входная модель.</param>
+    /// <returns>Список вакансий.</returns>
+	Task<CatalogVacancyResultOutput> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput);
 }
