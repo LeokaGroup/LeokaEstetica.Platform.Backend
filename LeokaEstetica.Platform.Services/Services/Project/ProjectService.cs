@@ -265,7 +265,7 @@ internal sealed class ProjectService : IProjectService
 
             var ifExistsCompany = await _projectManagmentRepository.IfExistsCompanyByOwnerIdAsync(userId);
 
-            long companyId;
+            long companyId; 
 
             // Сначала создаем компанию, затем добавляем в нее проект.
             if (!ifExistsCompany)
