@@ -1123,7 +1123,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
         catch (ArgumentException tagExistsEx)
         {
-            if (tagExistsEx.Message.Equals("Такая метка уже существует у проекта"))
+            if (tagExistsEx.Message == "Такая метка уже существует у проекта")
             {
                 var userId = await _userRepository.GetUserByEmailAsync(account);
 
@@ -1141,7 +1141,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             }
             Exception exception = tagExistsEx;
             _logger.LogError(exception.Message, exception);
-            throw;
         }
 
         catch (Npgsql.PostgresException postgresEx)
