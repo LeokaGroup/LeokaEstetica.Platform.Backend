@@ -2527,8 +2527,9 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         projectWorkSpaceParameters.Add("@companyId", companyId);
         projectWorkSpaceParameters.Add("@isActive", true);
 
-        var projectWorkSpaceQuery = "INSERT INTO project_management.organization_projects (organization_id, project_id, is_active) " +
-                    "VALUES (@companyId, @projectId, @isActive)";
+        var projectWorkSpaceQuery = "INSERT INTO project_management.organization_projects " +
+                                    "(organization_id, project_id, is_active) " +
+                                    "VALUES (@companyId, @projectId, @isActive)";
 
         await connection.ExecuteAsync(projectWorkSpaceQuery, projectWorkSpaceParameters);
 
