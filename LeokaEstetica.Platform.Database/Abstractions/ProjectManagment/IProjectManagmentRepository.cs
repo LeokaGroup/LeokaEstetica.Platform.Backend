@@ -679,14 +679,6 @@ public interface IProjectManagmentRepository
     Task<bool> IfExistsCompanyByOwnerIdAsync(long userId);
     
     /// <summary>
-    /// Метод создает общее пространство компании.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="companyId">Id компании.</param>
-    /// <returns>Id общего пространства компании.</returns>
-    Task<long> CreateCompanyWorkSpaceAsync(long projectId, long companyId);
-
-    /// <summary>
     /// Метод добавляет проект в пространство компании.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
