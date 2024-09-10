@@ -1142,7 +1142,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
             Exception exception = tagExistsEx;
 			_logger.LogError(exception.Message, exception);
 			throw;
-
         }
 
 		catch (Npgsql.PostgresException postgresEx)
