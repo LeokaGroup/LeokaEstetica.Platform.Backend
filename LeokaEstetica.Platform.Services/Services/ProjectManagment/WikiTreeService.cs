@@ -67,8 +67,8 @@ internal sealed class WikiTreeService : IWikiTreeService
             var foldersLinkedList = new LinkedList<WikiTreeItem>(folders);
 
             // Наполняем папки вложенными элементами (страницами или другими папками).
-            var pages = (await _wikiTreeRepository.GetPageItemsAsync(folders.Select(x => x.FolderId).Distinct(),
-                folders.Select(x => x.WikiTreeId).Distinct()))?.AsList();
+            var pages = (await _wikiTreeRepository.GetPageItemsAsync(folders.Select(x => x.FolderId),
+                folders.Select(x => x.WikiTreeId)))?.AsList();
 
             // Рекурсивно обходим дерево и заполняем папки.
             await RecursiveBuildTreeAsync(foldersLinkedList.First!, folders, pages);
@@ -289,10 +289,11 @@ internal sealed class WikiTreeService : IWikiTreeService
     /// <param name="folder">Папка текущего узла.</param>
     /// <param name="folders">Все папки проекта.</param>
     /// <param name="pages">Все страницы папок проекта.</param>
-    private async Task RecursiveBuildTreeAsync(LinkedListNode<WikiTreeItem> folder,
-        List<WikiTreeItem> folders, List<WikiTreeItem>? pages)
+    private async Task RecursiveBuildTreeAsync(LinkedListNode<WikiTreeItem>? folder, List<WikiTreeItem> folders,
+        List<WikiTreeItem>? pages)
     {
-        if (folder.Next?.Value is not null)
+        // Если папка не пуста, то смотрим ее и ее детей.
+        if (folder is not null)
         {
             // Родительская папка.
             folder.Value.Children ??= new List<WikiTreeItem>();
@@ -301,6 +302,7 @@ internal sealed class WikiTreeService : IWikiTreeService
             // Работаем с дочерними папки в рамках родительской папки.
             var childFolders = folders.Where(x => x.ParentId == folder.Value.FolderId && !x.IsPage)?.AsList();
 
+            // Если у текущей папки есть дочерние папки.
             if (childFolders is not null && childFolders.Count > 0)
             {
                 // Перебираем дочерние папки родителя.
@@ -346,18 +348,58 @@ internal sealed class WikiTreeService : IWikiTreeService
                 }
             }
 
+            // Если у текущей папки есть страницы.
+            else
+            {
+                if (pages is not null && pages.Count > 0)
+                {
+                    // Добавляем страницы текущей папки.
+                    var folderPages = pages.Where(x => x.FolderId == folder.Value.FolderId && x.IsPage)
+                        .Select(c => new WikiTreeItem
+                    {
+                        Name = c.Name,
+                        WikiTreeId = c.WikiTreeId,
+                        PageId = c.PageId,
+                        Icon = "pi pi-file"
+                    })?.AsList();
+
+                    folder.Value.Children ??= new List<WikiTreeItem>();
+
+                    if (folderPages is not null && folderPages.Count > 0)
+                    {
+                        folder.Value.Children.AddRange(folderPages);
+                    }
+
+                    // Добавляем текущую папку и ее дочерние страницы (если есть) в дерево.
+                    _treeItems.Add(new WikiTreeItem
+                    {
+                        Name = folder.Value.Name,
+                        WikiTreeId = folder.Value.WikiTreeId,
+                        Icon = "pi pi-folder",
+                        Children = folder.Value.Children,
+                        FolderId = folder.Value.FolderId,
+                        ProjectId = folder.Value.ProjectId,
+                        CreatedBy = folder.Value.CreatedBy,
+                        CreatedAt = folder.Value.CreatedAt
+                    }); 
+                }
+            }
+
             // Переходим к следующему узлу, если его нет, то прекратим рекурсивный обход дерева.
             await RecursiveBuildTreeAsync(folder.Next!, folders, pages);
         }
 
-        // Добавляем на 1 уровень дерева страницы, которые без родителя.
-        _treeItems.AddRange(pages!.Where(b => b.FolderId is null).Select(c => new WikiTreeItem
+        if (pages is not null && pages.Count > 0)
         {
-            Name = c.Name,
-            WikiTreeId = c.WikiTreeId,
-            PageId = c.PageId,
-            Icon = "pi pi-file"
-        }));
+            // Добавляем на 1 уровень дерева страницы, которые без родителя.
+            _treeItems.AddRange(pages.Where(b => b.FolderId is null).Select(c => new WikiTreeItem
+            {
+                Name = c.Name,
+                WikiTreeId = c.WikiTreeId,
+                PageId = c.PageId,
+                Icon = "pi pi-file"
+            })); 
+        }
     }
 
     /// <summary>
