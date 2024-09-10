@@ -267,7 +267,8 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
 
             await FillAndDistributionStatusTaskAsync(taskByStatus, page, tags, types, resolutions,
                 priorities, watchers, authors, statuseNames, executors, ps,
-                strategy, paginatorStatusId, epicStatusesDict, storyStatusesDict, avatarFilesDict);
+                strategy, paginatorStatusId, epicStatusesDict, storyStatusesDict,avatarFilesDict,
+                modifyTaskStatuseType);
         }
 
         if (tasksWithStoryAndEpic is null || tasksWithStoryAndEpic.Count == 0)
@@ -293,7 +294,8 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
 
             await FillAndDistributionStatusTaskAsync(taskByStatus, page, tags, types, resolutions,
                 priorities, watchers, authors, statuseNames, executors, systemStatus,
-                strategy, paginatorStatusId, epicStatusesDict, storyStatusesDict, avatarFilesDict);
+                strategy, paginatorStatusId, epicStatusesDict, storyStatusesDict, avatarFilesDict,
+                modifyTaskStatuseType);
         }
 
         // Используется вне этого сервиса.
@@ -313,7 +315,8 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
         ProjectManagmentTaskStatusTemplateOutput ps, string strategy, int? paginatorStatusId,
         IDictionary<long, StoryAndEpicSystemStatusOutput> epicStatusesDict,
         IDictionary<long, StoryAndEpicSystemStatusOutput> storyStatusesDict,
-        IDictionary<long, FileContentResult>? avatarFilesDict)
+        IDictionary<long, FileContentResult>? avatarFilesDict,
+        ModifyTaskStatuseTypeEnum modifyTaskStatuseType)
     {
         var mapTasks = _mapper.Map<List<ProjectManagmentTaskOutput>>(taskByStatus);
 
@@ -421,7 +424,7 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
 
                         // Если такое бахнуло, то не добавляем в список, но и не ломаем приложение.
                         // Просто логируем такое.
-                        if (watcher is null)
+                        if (watcher is null && modifyTaskStatuseType != ModifyTaskStatuseTypeEnum.Backlog)
                         {
                             var ex = new InvalidOperationException("Не найден наблюдатель задачи. " +
                                                                    $"WatcherId: {w}");
