@@ -273,9 +273,6 @@ internal sealed class ProjectService : IProjectService
 				// Заводим компанию, если она не существует.
 				companyId = await _projectManagmentRepository.CreateCompanyAsync(userId);
 
-				// Заводим общее пространство для компании.
-				await _projectManagmentRepository.CreateCompanyWorkSpaceAsync(projectId, companyId);
-
 				// Добавляем текущего пользователи в участники компании с ролью владельца.
 				await _projectManagmentRepository.AddCompanyMemberAsync(companyId, userId, "Владелец");
 
