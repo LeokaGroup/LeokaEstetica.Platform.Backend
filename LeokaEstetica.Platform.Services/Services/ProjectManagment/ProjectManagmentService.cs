@@ -1140,10 +1140,12 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                     UserConnectionModuleEnum.ProjectManagement);
             }
             Exception exception = tagExistsEx;
-            _logger.LogError(exception.Message, exception);
+			_logger.LogError(exception.Message, exception);
+			throw;
+
         }
 
-        catch (Npgsql.PostgresException postgresEx)
+		catch (Npgsql.PostgresException postgresEx)
         {
             if (postgresEx.SqlState.Equals("23505"))
             {
