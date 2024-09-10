@@ -7,6 +7,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -25,12 +26,6 @@ internal sealed class WikiTreeService : IWikiTreeService
     /// Элементы дерева.
     /// </summary>
     private readonly List<WikiTreeItem> _treeItems = new();
-
-    /// <summary>
-    /// Список папок, которые удаляем из дерева на 1 уровне, так как они есть на 2 уровне и ниже.
-    /// Во избежание дублей на 1 уровне дерева.
-    /// </summary>
-    private readonly List<long> _removedFolderIds = new();
 
     #region Публичные методы.
 
@@ -331,74 +326,70 @@ internal sealed class WikiTreeService : IWikiTreeService
                     
                     if (pages is not null && pages.Count > 0)
                     {
-                        // Заполняем страницы дочерней папки.
-                        await BuildFolderPagesAsync(cf, pages);
+                        // Если страницы принадлежат текущей папке, то добавляем их в нее.
+                        if (pages.All(x => x.FolderId == folder.Value.FolderId))
+                        {
+                            // Добавляем страницы текущей папки.
+                            folder.Value.Children.AddRange(pages.Select(x => new WikiTreeItem
+                            {
+                                Name = x.Name,
+                                WikiTreeId = x.WikiTreeId,
+                                PageId = x.PageId,
+                                Icon = "pi pi-file",
+                                FolderId = x.FolderId,
+                                ProjectId = x.ProjectId,
+                                CreatedBy = x.CreatedBy,
+                                CreatedAt = x.CreatedAt,
+                                ParentId = x.ParentId
+                            }));
+                        }
+
+                        else
+                        {
+                            throw new InvalidOperationException("Не все страницы принадлежат папке. " +
+                                                                "Требуется корректировка логики построения дерева. " +
+                                                                $"FolderId: {folder.Value.FolderId}. " +
+                                                                $"Pages: {JsonConvert.SerializeObject(pages)}.");
+                        }
                     }
                 }
-
-                _removedFolderIds.AddRange(childFolders.Select(x => x.FolderId!.Value));
 
                 folder.Value.Children.AddRange(childFolders);
-
-                if (!_treeItems.Select(x => x.FolderId).Contains(folder.Value.FolderId)
-                    && !folder.Value.ParentId.HasValue)
-                {
-                    // Добавляем родительскую папку в результат.
-                    _treeItems.Add(folder.Value);
-                }
+                
+                // Добавляем текущую папку и ее детей в дерево.
+                _treeItems.Add(folder.Value);
             }
 
-            // Если у текущей папки есть страницы.
-            else
+            // У папки нету детей, добавляем просто текущую папку в дерево.
+            if (!_treeItems.Select(x => x.FolderId).Contains(folder.Value.FolderId))
             {
-                if (pages is not null && pages.Count > 0)
+                _treeItems.Add(new WikiTreeItem
                 {
-                    // Добавляем страницы текущей папки.
-                    var folderPages = pages.Where(x => x.FolderId == folder.Value.FolderId && x.IsPage)
-                        .Select(c => new WikiTreeItem
-                    {
-                        Name = c.Name,
-                        WikiTreeId = c.WikiTreeId,
-                        PageId = c.PageId,
-                        Icon = "pi pi-file"
-                    })?.AsList();
+                    Name = folder.Value.Name,
+                    WikiTreeId = folder.Value.WikiTreeId,
+                    Icon = "pi pi-folder",
+                    Children = folder.Value.Children,
+                    FolderId = folder.Value.FolderId,
+                    ProjectId = folder.Value.ProjectId,
+                    CreatedBy = folder.Value.CreatedBy,
+                    CreatedAt = folder.Value.CreatedAt
+                });
+            }
 
-                    folder.Value.Children ??= new List<WikiTreeItem>();
-
-                    if (folderPages is not null && folderPages.Count > 0)
-                    {
-                        folder.Value.Children.AddRange(folderPages);
-                    }
-
-                    // Добавляем текущую папку и ее дочерние страницы (если есть) в дерево.
-                    _treeItems.Add(new WikiTreeItem
-                    {
-                        Name = folder.Value.Name,
-                        WikiTreeId = folder.Value.WikiTreeId,
-                        Icon = "pi pi-folder",
-                        Children = folder.Value.Children,
-                        FolderId = folder.Value.FolderId,
-                        ProjectId = folder.Value.ProjectId,
-                        CreatedBy = folder.Value.CreatedBy,
-                        CreatedAt = folder.Value.CreatedAt
-                    }); 
-                }
+            if (pages is not null && pages.Count > 0)
+            {
+                // Добавляем на 1 уровень дерева страницы, которые без родителя.
+                _treeItems.AddRange(pages.Where(b => b.FolderId is null).Select(c => new WikiTreeItem
+                {
+                    Name = c.Name,
+                    WikiTreeId = c.WikiTreeId,
+                    PageId = c.PageId,
+                    Icon = "pi pi-file"
+                })); 
             }
 
             // Переходим к следующему узлу, если его нет, то прекратим рекурсивный обход дерева.
-            await RecursiveBuildTreeAsync(folder.Next!, folders, pages);
-        }
-
-        if (pages is not null && pages.Count > 0)
-        {
-            // Добавляем на 1 уровень дерева страницы, которые без родителя.
-            _treeItems.AddRange(pages.Where(b => b.FolderId is null).Select(c => new WikiTreeItem
-            {
-                Name = c.Name,
-                WikiTreeId = c.WikiTreeId,
-                PageId = c.PageId,
-                Icon = "pi pi-file"
-            })); 
+            await RecursiveBuildTreeAsync(folder.Next, folders, pages);
         }
     }
 
@@ -465,7 +456,7 @@ internal sealed class WikiTreeService : IWikiTreeService
         if (treeItem.Children is null)
         {
             throw new InvalidOperationException(
-                "Дочерние элементы папки оказались NULL, но к этому моменту должна была пройти инициализация." +
+                "Дочерние элементы папки оказались NULL, но к этому моменту должна была пройти инициализацию." +
                 $"FolderId: {treeItem.FolderId}.");
         }
 
@@ -484,6 +475,33 @@ internal sealed class WikiTreeService : IWikiTreeService
         }
 
         await Task.CompletedTask;
+    }
+
+    private async Task<bool> CanAddTreeItemAsync(WikiTreeItem item)
+    {
+        foreach (var treeItem in _treeItems)
+        {
+            if (!item.IsPage)
+            {
+                if (treeItem.ChildId.HasValue && treeItem.ChildId.Value == item.FolderId)
+                {
+                    return await Task.FromResult(false);
+                }
+
+                // Смотрим ниже по уровням.
+                treeItem.Children ??= new List<WikiTreeItem>();
+                
+                foreach (var childItem in treeItem.Children)
+                {
+                    if (childItem.ChildId.HasValue && childItem.ChildId == item.FolderId)
+                    {
+                        return await Task.FromResult(false);
+                    }
+                }
+            }
+        }
+        
+        return await Task.FromResult(true);
     }
 
     #endregion
