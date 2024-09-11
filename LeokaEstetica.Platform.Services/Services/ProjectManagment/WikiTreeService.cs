@@ -544,32 +544,5 @@ internal sealed class WikiTreeService : IWikiTreeService
         await Task.CompletedTask;
     }
 
-    private async Task<bool> CanAddTreeItemAsync(WikiTreeItem item)
-    {
-        foreach (var treeItem in _treeItems)
-        {
-            if (!item.IsPage)
-            {
-                if (treeItem.ChildId.HasValue && treeItem.ChildId.Value == item.FolderId)
-                {
-                    return await Task.FromResult(false);
-                }
-
-                // Смотрим ниже по уровням.
-                treeItem.Children ??= new List<WikiTreeItem>();
-                
-                foreach (var childItem in treeItem.Children)
-                {
-                    if (childItem.ChildId.HasValue && childItem.ChildId == item.FolderId)
-                    {
-                        return await Task.FromResult(false);
-                    }
-                }
-            }
-        }
-        
-        return await Task.FromResult(true);
-    }
-
     #endregion
 }
