@@ -22,7 +22,7 @@ internal sealed class WikiTreeService : IWikiTreeService
     private readonly IWikiTreeRepository _wikiTreeRepository;
     private readonly IUserRepository _userRepository;
     private const string FOLDER_ICON = "pi pi-folder";
-    private const string FOLDER_FILE = "pi pi-file";
+    private const string FILE_ICON = "pi pi-file";
 
     /// <summary>
     /// Элементы дерева.
@@ -337,7 +337,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                                 Name = x.Name,
                                 WikiTreeId = x.WikiTreeId,
                                 PageId = x.PageId,
-                                Icon = FOLDER_FILE,
+                                Icon = FILE_ICON,
                                 FolderId = x.FolderId,
                                 ProjectId = x.ProjectId,
                                 CreatedBy = x.CreatedBy,
@@ -414,7 +414,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                     Name = c.Name,
                     WikiTreeId = c.WikiTreeId,
                     PageId = c.PageId,
-                    Icon = FOLDER_FILE
+                    Icon = FILE_ICON
                 })); 
             }
 
@@ -493,7 +493,7 @@ internal sealed class WikiTreeService : IWikiTreeService
         // Перебираем страницы, которыми будем наполнять папки.
         foreach (var p in pages.Where(x => x.FolderId == treeItem.FolderId && x.IsPage))
         {
-            p.Icon = FOLDER_FILE;
+            p.Icon = FILE_ICON;
 
             if (treeItem.Children.Select(x => x.PageId).Contains(p.PageId))
             {
