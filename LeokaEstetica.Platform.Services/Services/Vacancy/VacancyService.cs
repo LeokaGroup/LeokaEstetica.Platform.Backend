@@ -271,8 +271,9 @@ internal sealed class VacancyService : IVacancyService
 
             var result = new VacancyOutput();
 
-			if (!isOwner && moderationVacancy is not null &&
-	(moderationVacancy.ModerationStatus.StatusName == _moderationVacancy || moderationVacancy.ModerationStatus.StatusName == _archiveVacancy))
+            if (!isOwner && moderationVacancy is not null &&
+                (moderationVacancy.ModerationStatus.StatusName == _moderationVacancy
+                 || moderationVacancy.ModerationStatus.StatusName == _archiveVacancy))
 			{
 				result.IsAccess = false;
 				result.IsSuccess = false;
@@ -307,10 +308,6 @@ internal sealed class VacancyService : IVacancyService
             result.IsSuccess = true;
             result.IsAccess = true;
 
-            result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
-            result.Demands = ClearHtmlBuilder.Clear(result.Demands);
-            result.VacancyText = ClearHtmlBuilder.Clear(result.VacancyText);
-            
             return result;
         }
 

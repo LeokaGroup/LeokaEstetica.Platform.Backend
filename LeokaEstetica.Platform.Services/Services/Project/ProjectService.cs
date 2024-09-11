@@ -539,8 +539,6 @@ internal sealed class ProjectService : IProjectService
 			var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
 			result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
 
-			await ClearProjectFieldsHtmlTagsAsync(result);
-
 			return result;
 		}
 
@@ -1451,10 +1449,7 @@ internal sealed class ProjectService : IProjectService
         
         await DeleteIfProjectRemarksAsync(projects);
 
-        // Очистка описания от тегов список проектов для каталога.
-        await ClearCatalogVacanciesHtmlTagsAsync(projects.ToList());
-
-		return projects;
+        return projects;
 	}
 
 	/// <summary>
@@ -1903,48 +1898,6 @@ internal sealed class ProjectService : IProjectService
         
         _ = await _projectRepository.AddProjectTeamMemberAsync(userId, null, team.TeamId, "Владелец");
     }
-    
-    /// <summary>
-    /// Метод чистит описание от тегов список проектов для каталога.
-    /// </summary>
-    /// <param name="projects">Список проектов.</param>
-    /// <returns>Список проектов после очистки.</returns>
-    private async Task ClearCatalogVacanciesHtmlTagsAsync(List<CatalogProjectOutput> projects)
-    {
-        // Чистим описание проекта от html-тегов.
-        foreach (var prj in projects)
-        {
-            prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
-        }
-
-        await Task.CompletedTask;
-    }
-
-
-	/// <summary>
-	/// Метод чистит поля проекта от html-тегов.
-	/// </summary>
-	/// <param name="project">Данные проекта.</param>
-	/// <returns>Данные проекта после очистки.</returns>
-	private async Task ClearProjectFieldsHtmlTagsAsync(ProjectOutput project)
-    {
-        if (!string.IsNullOrWhiteSpace(project.ProjectDetails))
-        {
-            project.ProjectDetails = ClearHtmlBuilder.Clear(project.ProjectDetails).Trim();
-        }
-        
-        if (!string.IsNullOrWhiteSpace(project.Demands))
-        {
-             project.Demands= ClearHtmlBuilder.Clear(project.Demands).Trim();
-        }
-        
-        if (!string.IsNullOrWhiteSpace(project.Conditions))
-        {
-            project.Conditions= ClearHtmlBuilder.Clear(project.Conditions).Trim();
-        }
-
-		await Task.CompletedTask;
-	}
 
 	/// <summary>
 	/// Метод отправляет пользователю уведомление на почту о приглашении его в проект.

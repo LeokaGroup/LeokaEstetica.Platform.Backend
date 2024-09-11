@@ -3,7 +3,6 @@ using AutoMapper;
 using Dapper;
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
-using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Constants;
@@ -2536,12 +2535,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
 			var result = _mapper.Map<IEnumerable<TaskCommentOutput>>(items);
 
-            foreach (var elemnt in result)
-            {
-                elemnt.Comment = ClearHtmlBuilder.Clear(elemnt.Comment);
-            }
-
-            return result;
+			return result;
         }
         
         catch (Exception ex)
@@ -2718,15 +2712,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 		try
 		{
 			var result = await _projectManagmentRepository.GetAvailableEpicsAsync(projectId);
-
-			foreach (var epic in result)
-			{
-				epic.EpicName = ClearHtmlBuilder.Clear(epic.EpicName);
-				if (epic.EpicName.Length > 40)
-				{
-					epic.EpicName = string.Concat(epic.EpicName.Substring(0, 40), "...");
-				}
-			}
 
 			return result;
 		}
