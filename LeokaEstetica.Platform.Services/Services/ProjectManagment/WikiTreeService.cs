@@ -362,6 +362,43 @@ internal sealed class WikiTreeService : IWikiTreeService
                 _treeItems.Add(folder.Value);
             }
 
+            // У текущей папки нету дочерних папок - добавляем как отдельную папку.
+            else
+            {
+                // Смотрим, есть ли у такой папки страницы.
+                if (pages is not null && pages.Count > 0)
+                {
+                    var currentFolderPages = pages
+                        .Where(x => x.FolderId == folder.Value.FolderId)
+                        .Select(c => new WikiTreeItem
+                        {
+                            Name = c.Name,
+                            WikiTreeId = c.WikiTreeId,
+                            PageId = c.PageId,
+                            Icon = FILE_ICON
+                        })?.AsList();
+
+                    // У текущей папки есть дочерние страницы, добавим их ей.
+                    if (currentFolderPages is not null && currentFolderPages.Count > 0)
+                    {
+                        folder.Value.Children ??= new List<WikiTreeItem>();
+                        folder.Value.Children.AddRange(currentFolderPages);
+                        
+                        _treeItems.Add(new WikiTreeItem
+                        {
+                            Name = folder.Value.Name,
+                            WikiTreeId = folder.Value.WikiTreeId,
+                            Icon = FOLDER_ICON,
+                            Children = folder.Value.Children,
+                            FolderId = folder.Value.FolderId,
+                            ProjectId = folder.Value.ProjectId,
+                            CreatedBy = folder.Value.CreatedBy,
+                            CreatedAt = folder.Value.CreatedAt
+                        });
+                    }
+                }
+            }
+
             // Можно ли добавлять в дерево.
             var isCanAdd = false;
 
@@ -406,9 +443,9 @@ internal sealed class WikiTreeService : IWikiTreeService
                 });
             }
 
+            // Добавляем на 1 уровень дерева страницы, которые без родителя.
             if (pages is not null && pages.Count > 0)
             {
-                // Добавляем на 1 уровень дерева страницы, которые без родителя.
                 _treeItems.AddRange(pages.Where(b => b.FolderId is null).Select(c => new WikiTreeItem
                 {
                     Name = c.Name,
