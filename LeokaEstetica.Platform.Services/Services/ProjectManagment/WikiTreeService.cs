@@ -21,6 +21,8 @@ internal sealed class WikiTreeService : IWikiTreeService
     private readonly ILogger<WikiTreeService>? _logger;
     private readonly IWikiTreeRepository _wikiTreeRepository;
     private readonly IUserRepository _userRepository;
+    private const string FOLDER_ICON = "pi pi-folder";
+    private const string FOLDER_FILE = "pi pi-file";
 
     /// <summary>
     /// Элементы дерева.
@@ -292,7 +294,7 @@ internal sealed class WikiTreeService : IWikiTreeService
         {
             // Родительская папка.
             folder.Value.Children ??= new List<WikiTreeItem>();
-            folder.Value.Icon = "pi pi-folder";
+            folder.Value.Icon = FOLDER_ICON;
 
             // Работаем с дочерними папки в рамках родительской папки.
             var childFolders = folders.Where(x => x.ParentId == folder.Value.FolderId && !x.IsPage)?.AsList();
@@ -304,7 +306,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                 foreach (var cf in childFolders)
                 {
                     cf.Children ??= new List<WikiTreeItem>();
-                    cf.Icon = "pi pi-folder";
+                    cf.Icon = FOLDER_ICON;
 
                     // Есть ли у дочерней папки тоже дети.
                     var childChildFolders = folders.Where(x => x.ParentId == cf.FolderId && !x.IsPage)?.AsList();
@@ -335,7 +337,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                                 Name = x.Name,
                                 WikiTreeId = x.WikiTreeId,
                                 PageId = x.PageId,
-                                Icon = "pi pi-file",
+                                Icon = FOLDER_FILE,
                                 FolderId = x.FolderId,
                                 ProjectId = x.ProjectId,
                                 CreatedBy = x.CreatedBy,
@@ -360,14 +362,42 @@ internal sealed class WikiTreeService : IWikiTreeService
                 _treeItems.Add(folder.Value);
             }
 
-            // У папки нету детей, добавляем просто текущую папку в дерево.
-            if (!_treeItems.Select(x => x.FolderId).Contains(folder.Value.FolderId))
+            // Можно ли добавлять в дерево.
+            var isCanAdd = false;
+
+            foreach (var ti in _treeItems)
+            {
+                // Нет ли на 1 уровне уже такой папки.
+                if (ti.FolderId == folder.Value.FolderId)
+                {
+                    isCanAdd = false;
+                    continue;
+                }
+
+                isCanAdd = true;
+                ti.Children ??= new List<WikiTreeItem>();
+
+                // Нет ли на 2 уровне уже такой папки.
+                foreach (var child in ti.Children)
+                {
+                    if (child.FolderId == folder.Value.FolderId)
+                    {
+                        isCanAdd = false;
+                        continue;
+                    }
+                    
+                    isCanAdd = true;
+                }
+            }
+
+            // Папки еще нету на 1 уровне дерева, добавляем ее.
+            if (isCanAdd)
             {
                 _treeItems.Add(new WikiTreeItem
                 {
                     Name = folder.Value.Name,
                     WikiTreeId = folder.Value.WikiTreeId,
-                    Icon = "pi pi-folder",
+                    Icon = FOLDER_ICON,
                     Children = folder.Value.Children,
                     FolderId = folder.Value.FolderId,
                     ProjectId = folder.Value.ProjectId,
@@ -384,7 +414,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                     Name = c.Name,
                     WikiTreeId = c.WikiTreeId,
                     PageId = c.PageId,
-                    Icon = "pi pi-file"
+                    Icon = FOLDER_FILE
                 })); 
             }
 
@@ -404,13 +434,13 @@ internal sealed class WikiTreeService : IWikiTreeService
     {
         // Родительская папка.
         folder.Children ??= new List<WikiTreeItem>();
-        folder.Icon = "pi pi-folder";
+        folder.Icon = FOLDER_ICON;
 
         // Перебираем дочерние папки родителя.
         foreach (var cf in folders)
         {
             cf.Children ??= new List<WikiTreeItem>();
-            cf.Icon = "pi pi-folder";
+            cf.Icon = FOLDER_ICON;
 
             // Есть ли у дочерней папки тоже дети.
             var childFolders = folders.Where(x => x.ParentId == cf.FolderId && !x.IsPage)?.AsList();
@@ -419,7 +449,7 @@ internal sealed class WikiTreeService : IWikiTreeService
             {
                 foreach (var chf in childFolders)
                 {
-                    chf.Icon = "pi pi-folder";
+                    chf.Icon = FOLDER_ICON;
                 }
 
                 // TODO: А если еще есть дети ниже? То рекурсивно обходить, пока есть дети.
@@ -463,7 +493,7 @@ internal sealed class WikiTreeService : IWikiTreeService
         // Перебираем страницы, которыми будем наполнять папки.
         foreach (var p in pages.Where(x => x.FolderId == treeItem.FolderId && x.IsPage))
         {
-            p.Icon = "pi pi-file";
+            p.Icon = FOLDER_FILE;
 
             if (treeItem.Children.Select(x => x.PageId).Contains(p.PageId))
             {
