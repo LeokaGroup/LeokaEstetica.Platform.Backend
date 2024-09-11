@@ -412,7 +412,7 @@ internal sealed class WikiTreeService : IWikiTreeService
 
             foreach (var ti in _treeItems)
             {
-                // Нет ли на 1 уровне уже такой папки.
+                // Если есть на 1 уровне уже такая папка, то запрещаем добавление в результат.
                 if (ti.FolderId == folder.Value.FolderId)
                 {
                     isCanAdd = false;
@@ -422,7 +422,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                 isCanAdd = true;
                 ti.Children ??= new List<WikiTreeItem>();
 
-                // Нет ли на 2 уровне уже такой папки.
+                // Если есть на 2 уровне уже такая папка, то запрещаем добавление в результат.
                 foreach (var child in ti.Children)
                 {
                     if (child.FolderId == folder.Value.FolderId)
@@ -435,8 +435,11 @@ internal sealed class WikiTreeService : IWikiTreeService
                 }
             }
 
-            // Папки еще нету на 1 уровне дерева, добавляем ее.
-            if (isCanAdd)
+            // Папки еще нету на 1 уровне дерева, добавляем ее, если ее нету среди дочерних папок.
+            if (isCanAdd && !_treeItems
+                    .SelectMany(a => a.Children ?? new List<WikiTreeItem>())
+                    .Select(b => b.FolderId)
+                    .Contains(folder.Value.FolderId))
             {
                 _treeItems.Add(new WikiTreeItem
                 {
