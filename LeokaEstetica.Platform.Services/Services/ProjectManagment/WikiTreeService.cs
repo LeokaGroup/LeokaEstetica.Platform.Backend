@@ -331,8 +331,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                         // Если страницы принадлежат текущей папке, то добавляем их в нее.
                         if (pages.All(x => x.FolderId == folder.Value.FolderId))
                         {
-                            // Добавляем страницы текущей папки.
-                            folder.Value.Children.AddRange(pages.Select(x => new WikiTreeItem
+                            var folderPages = pages.Select(x => new WikiTreeItem
                             {
                                 Name = x.Name,
                                 WikiTreeId = x.WikiTreeId,
@@ -343,7 +342,16 @@ internal sealed class WikiTreeService : IWikiTreeService
                                 CreatedBy = x.CreatedBy,
                                 CreatedAt = x.CreatedAt,
                                 ParentId = x.ParentId
-                            }));
+                            });
+                            
+                            // Добавляем страницы текущей папки.
+                            foreach (var page in folderPages)
+                            {
+                                if (!folder.Value.Children.Select(x => x.PageId).Contains(page.PageId))
+                                {
+                                    folder.Value.Children.Add(page);
+                                }
+                            }
                         }
 
                         else
