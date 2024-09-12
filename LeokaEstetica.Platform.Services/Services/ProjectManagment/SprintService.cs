@@ -92,13 +92,13 @@ internal sealed class SprintService : ISprintService
     #region Публичные методы
 
     /// <inheritdoc />
-    public async Task<IEnumerable<TaskSprintExtendedOutput>> GetSprintsAsync(long projectId)
+    public async Task<IEnumerable<IEnumerable<TaskSprintExtendedOutput>>> GetSprintsAsync(long projectId)
     {
         try
         {
             var result = await _sprintRepository.GetSprintsAsync(projectId);
 
-            return result ?? Enumerable.Empty<TaskSprintExtendedOutput>();
+            return result ?? Enumerable.Empty<IEnumerable<TaskSprintExtendedOutput>>();
         }
         
         catch (Exception ex)
