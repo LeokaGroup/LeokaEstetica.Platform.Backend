@@ -48,13 +48,12 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
 
-        var query = "SELECT tf.folder_id," +
+        var query = "SELECT DISTINCT (tf.folder_id)," +
                     "tf.wiki_tree_id," +
                     "tf.folder_name AS Name," +
                     "tf.created_by," +
                     "tf.created_at," +
                     "t.project_id ," +
-                    "fl.child_id, " +
                     "fl.parent_id," +
                     "tf.is_system " +
                     "FROM project_management.wiki_tree_folders AS tf " +
