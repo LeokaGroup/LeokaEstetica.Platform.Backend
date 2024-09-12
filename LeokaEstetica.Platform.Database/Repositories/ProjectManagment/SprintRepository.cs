@@ -3,6 +3,7 @@ using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
@@ -26,13 +27,13 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
     #region Публичные методы.
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<TaskSprintExtendedOutput>?> GetSprintsAsync(long projectId)
+    public async Task<IEnumerable<IEnumerable<TaskSprintExtendedOutput>?>> GetSprintsAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
-        
+
         var query = "SELECT s.sprint_id," +
                     " to_char(s.date_start, 'dd.MM.yyyy HH24:MI:SS') AS DateStart," +
                     " to_char(s.date_end, 'dd.MM.yyyy HH24:MI:SS') AS DateEnd," +
@@ -50,7 +51,34 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
 
         var result = await connection.QueryAsync<TaskSprintExtendedOutput>(query, parameters);
 
-        return result;
+        var sprintsNew = new List<TaskSprintExtendedOutput>();
+        var sprintsInWork = new List<TaskSprintExtendedOutput>();
+        var sprintsCompleted = new List<TaskSprintExtendedOutput>();
+
+        foreach (var sprint in result)
+        {
+            switch (sprint.SprintStatusId)
+            {
+                case (int)SprintStatusEnum.New:
+                    sprintsNew.Add(sprint);
+                    break;
+                case (int)SprintStatusEnum.InWork:
+                    sprintsInWork.Add(sprint);
+                    break;
+                case (int)SprintStatusEnum.Completed:
+                    sprintsCompleted.Add(sprint);
+                    break;
+            }
+        }
+
+        var sprints = new List<List<TaskSprintExtendedOutput>>()
+        {
+            sprintsNew,
+            sprintsInWork,
+            sprintsCompleted
+        };
+
+        return sprints;
     }
 
     /// <inheritdoc/>
