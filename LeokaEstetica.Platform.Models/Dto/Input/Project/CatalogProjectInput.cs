@@ -1,6 +1,4 @@
-﻿using LeokaEstetica.Platform.Models.Enums;
-
-namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
+﻿namespace LeokaEstetica.Platform.Models.Dto.Input.Project;
 
 /// <summary>
 /// Класс входной модели каталога проектов.
@@ -19,29 +17,19 @@ public class CatalogProjectInput
     /// По дефолту 20.
     /// </summary>
     public short PaginationRows { get; set; }
-    
-    /// <summary>
-    /// Фильтр по дате.
-    /// </summary>
-    public string? Date { get; set; }
 
     /// <summary>
-    /// Признак проектов с наличием вакансий.
+    /// Класс входной модели фильтрации проектов.
     /// </summary>
-    public bool IsAnyVacancies { get; set; }
+    public FilterProjectInput? Filters { get; set; }
 
     /// <summary>
-    /// Фильтр стадий проекта (может содержать несколько значений).
-    /// </summary>
-    public string? StageValues { get; set; }
-
-    /// <summary>
-    /// Список стадий проекта.
-    /// </summary>
-    public List<FilterProjectStageTypeEnum>? ProjectStages { get; set; }
-
-	/// <summary>
 	/// Строка для поискового запроса проектов
 	/// </summary>
-	public string SearchText { get; set; }
+	public string? SearchText { get; set; }
+
+    /// <summary>
+    /// Признак использования пагинации.
+    /// </summary>
+    public bool IsPagination { get; set; }
 }

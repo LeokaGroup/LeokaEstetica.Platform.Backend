@@ -16,7 +16,6 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Redis.Abstractions.Vacancy;
 using LeokaEstetica.Platform.Redis.Models.Vacancy;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Services.Builders;
 using VacancyItems = LeokaEstetica.Platform.Redis.Models.Vacancy.VacancyItems;
 using LeokaEstetica.Platform.Base.Extensions.PriceExtensions;
 using LeokaEstetica.Platform.Core.Enums;
@@ -272,8 +271,9 @@ internal sealed class VacancyService : IVacancyService
 
             var result = new VacancyOutput();
 
-			if (!isOwner && moderationVacancy is not null &&
-	(moderationVacancy.ModerationStatus.StatusName == _moderationVacancy || moderationVacancy.ModerationStatus.StatusName == _archiveVacancy))
+            if (!isOwner && moderationVacancy is not null &&
+                (moderationVacancy.ModerationStatus.StatusName == _moderationVacancy
+                 || moderationVacancy.ModerationStatus.StatusName == _archiveVacancy))
 			{
 				result.IsAccess = false;
 				result.IsSuccess = false;
@@ -308,10 +308,6 @@ internal sealed class VacancyService : IVacancyService
             result.IsSuccess = true;
             result.IsAccess = true;
 
-            result.Conditions = ClearHtmlBuilder.Clear(result.Conditions);
-            result.Demands = ClearHtmlBuilder.Clear(result.Demands);
-            result.VacancyText = ClearHtmlBuilder.Clear(result.VacancyText);
-            
             return result;
         }
 
@@ -371,24 +367,12 @@ internal sealed class VacancyService : IVacancyService
         }
     }
 
-	/// <summary>
-	/// Метод получает каталог вакансий с учетом фильтров и пагинации
-	/// </summary>
-	/// <param name="vacancyCatalogInput">Фильтры с пагинацией.</param>
-	/// <returns>Каталог вакансий после фильтрации и пагинации.</returns>
+    /// <inheritdoc />
 	public async Task<CatalogVacancyResultOutput> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput)
     {
         try
         {
-            var result = new CatalogVacancyResultOutput
-            {
-                CatalogVacancies = new List<CatalogVacancyOutput>()
-            };
-
-			// Разбиваем строку занятости, так как там может приходить несколько значений в строке.
-			vacancyCatalogInput.Filters.Employments = CreateEmploymentsBuilder.CreateEmploymentsResult(vacancyCatalogInput.Filters.EmploymentsValues);
-
-            result.CatalogVacancies = await _vacancyRepository.GetCatalogVacanciesAsync(vacancyCatalogInput);
+            var result = await _vacancyRepository.GetCatalogVacanciesAsync(vacancyCatalogInput);
 
             return result;
         }

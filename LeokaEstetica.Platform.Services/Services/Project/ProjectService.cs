@@ -31,7 +31,6 @@ using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Vacancy;
-using LeokaEstetica.Platform.Services.Builders;
 using LeokaEstetica.Platform.Services.Consts;
 using LeokaEstetica.Platform.Services.Strategies.Project.Team;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
@@ -266,16 +265,13 @@ internal sealed class ProjectService : IProjectService
 
 			var ifExistsCompany = await _projectManagmentRepository.IfExistsCompanyByOwnerIdAsync(userId);
 
-			long companyId;
+            long companyId;
 
 			// Сначала создаем компанию, затем добавляем в нее проект.
 			if (!ifExistsCompany)
 			{
 				// Заводим компанию, если она не существует.
 				companyId = await _projectManagmentRepository.CreateCompanyAsync(userId);
-
-				// Заводим общее пространство для компании.
-				await _projectManagmentRepository.CreateCompanyWorkSpaceAsync(projectId, companyId);
 
 				// Добавляем текущего пользователи в участники компании с ролью владельца.
 				await _projectManagmentRepository.AddCompanyMemberAsync(companyId, userId, "Владелец");
@@ -403,13 +399,10 @@ internal sealed class ProjectService : IProjectService
     public async Task<CatalogProjectResultOutput> GetCatalogProjectsAsync(CatalogProjectInput catalogProjectInput)
     {
         try
-        { 
-	        // Разбиваем строку стадий проекта, так как там может приходить несколько значений в строке.
-	        catalogProjectInput.ProjectStages = CreateProjectStagesBuilder.CreateProjectStagesResult(
-		        catalogProjectInput.StageValues);
-
+        {
 	        var result = await _projectRepository.GetCatalogProjectsAsync(catalogProjectInput);
 
+	        // TODO: Делать все это в запросе метода GetCatalogProjectsAsync.
             result.CatalogProjects = await ExecuteCatalogConditionsAsync(result.CatalogProjects.AsList());
 
             return result;
@@ -545,8 +538,6 @@ internal sealed class ProjectService : IProjectService
 
 			var remarks = await _projectModerationRepository.GetProjectRemarksAsync(projectId);
 			result.ProjectRemarks = _mapper.Map<IEnumerable<ProjectRemarkOutput>>(remarks);
-
-			await ClearProjectFieldsHtmlTagsAsync(result);
 
 			return result;
 		}
@@ -1442,6 +1433,7 @@ internal sealed class ProjectService : IProjectService
 	}
 
     /// <summary>
+    /// TODO: Делать все это в запросе метода GetCatalogProjectsAsync.
     /// Метод запускает проверки на разные условия прежде чем вывести проекты в каталог.
     /// Проекты могут быть отсеяны, если не проходят по условиям.
     /// </summary>
@@ -1457,10 +1449,7 @@ internal sealed class ProjectService : IProjectService
         
         await DeleteIfProjectRemarksAsync(projects);
 
-        // Очистка описания от тегов список проектов для каталога.
-        await ClearCatalogVacanciesHtmlTagsAsync(projects.ToList());
-
-		return projects;
+        return projects;
 	}
 
 	/// <summary>
@@ -1634,7 +1623,7 @@ internal sealed class ProjectService : IProjectService
 		var moderationVacancies = await _vacancyModerationService.VacanciesModerationAsync();
 
         // Получаем список вакансий из каталога вакансий.
-        var catalogVacancies = await _vacancyRepository.CatalogVacanciesAsync();
+        var catalogVacancies = await _vacancyRepository.GetCatalogVacanciesAsync(new VacancyCatalogInput());
         
         // Находим вакансии в архиве.
         var archivedVacancies = (await _vacancyRepository.GetUserVacanciesArchiveAsync(userId)).AsList();
@@ -1666,7 +1655,8 @@ internal sealed class ProjectService : IProjectService
             // Ищем вакансию в каталоге вакансий.
             else
             {
-                var isCatalogVacancy = catalogVacancies.Any(v => v.VacancyId == pv.VacancyId);
+	            catalogVacancies.CatalogVacancies ??= new List<CatalogVacancyOutput>();
+                var isCatalogVacancy = catalogVacancies.CatalogVacancies.Any(v => v.VacancyId == pv.VacancyId);
 
                 if (isCatalogVacancy)
                 {
@@ -1908,48 +1898,6 @@ internal sealed class ProjectService : IProjectService
         
         _ = await _projectRepository.AddProjectTeamMemberAsync(userId, null, team.TeamId, "Владелец");
     }
-    
-    /// <summary>
-    /// Метод чистит описание от тегов список проектов для каталога.
-    /// </summary>
-    /// <param name="projects">Список проектов.</param>
-    /// <returns>Список проектов после очистки.</returns>
-    private async Task ClearCatalogVacanciesHtmlTagsAsync(List<CatalogProjectOutput> projects)
-    {
-        // Чистим описание проекта от html-тегов.
-        foreach (var prj in projects)
-        {
-            prj.ProjectDetails = ClearHtmlBuilder.Clear(prj.ProjectDetails);
-        }
-
-        await Task.CompletedTask;
-    }
-
-
-	/// <summary>
-	/// Метод чистит поля проекта от html-тегов.
-	/// </summary>
-	/// <param name="project">Данные проекта.</param>
-	/// <returns>Данные проекта после очистки.</returns>
-	private async Task ClearProjectFieldsHtmlTagsAsync(ProjectOutput project)
-    {
-        if (!string.IsNullOrWhiteSpace(project.ProjectDetails))
-        {
-            project.ProjectDetails = ClearHtmlBuilder.Clear(project.ProjectDetails).Trim();
-        }
-        
-        if (!string.IsNullOrWhiteSpace(project.Demands))
-        {
-             project.Demands= ClearHtmlBuilder.Clear(project.Demands).Trim();
-        }
-        
-        if (!string.IsNullOrWhiteSpace(project.Conditions))
-        {
-            project.Conditions= ClearHtmlBuilder.Clear(project.Conditions).Trim();
-        }
-
-		await Task.CompletedTask;
-	}
 
 	/// <summary>
 	/// Метод отправляет пользователю уведомление на почту о приглашении его в проект.

@@ -2518,32 +2518,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<long> CreateCompanyWorkSpaceAsync(long projectId, long companyId)
-    {
-        using var connection = await ConnectionProvider.GetConnectionAsync();
-
-        var lastWorkSpaceIdQuery = "SELECT workspace_id " +
-                                   "FROM project_management.workspaces " +
-                                   "ORDER BY workspace_id DESC " +
-                                   "LIMIT 1";
-                                   
-        var lastWorkSpaceId = await connection.ExecuteScalarAsync<long>(lastWorkSpaceIdQuery);
-        
-        var parameters = new DynamicParameters();
-        parameters.Add("@projectId", projectId);
-        parameters.Add("@companyId", companyId);
-        parameters.Add("@workspaceId", ++lastWorkSpaceId);
-
-        var query = "INSERT INTO project_management.workspaces (workspace_id, project_id, organization_id) " +
-                    "VALUES (@workspaceId, @projectId, @companyId) " +
-                    "RETURNING workspace_id";
-
-        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
-
-        return result;
-    }
-
-    /// <inheritdoc/>
     public async Task AddProjectWorkSpaceAsync(long projectId, long companyId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
@@ -2553,18 +2527,19 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         projectWorkSpaceParameters.Add("@companyId", companyId);
         projectWorkSpaceParameters.Add("@isActive", true);
 
-        var projectWorkSpaceQuery = "INSERT INTO project_management.organization_projects (organization_id, project_id, is_active) " +
-                    "VALUES (@companyId, @projectId, @isActive)";
+        var projectWorkSpaceQuery = "INSERT INTO project_management.organization_projects " +
+                                    "(organization_id, project_id, is_active) " +
+                                    "VALUES (@companyId, @projectId, @isActive)";
 
         await connection.ExecuteAsync(projectWorkSpaceQuery, projectWorkSpaceParameters);
 
         var parametersWorkSpace = new DynamicParameters();
         parametersWorkSpace.Add("@projectId", projectId);
         parametersWorkSpace.Add("@companyId", companyId);
-        
+
         var WorkSpaceQuery = "INSERT INTO project_management.workspaces (project_id, organization_id) " +
                              "VALUES (@projectId, @companyId)";
-        
+
         await connection.ExecuteAsync(WorkSpaceQuery, parametersWorkSpace);
     }
 

@@ -3,7 +3,6 @@ using AutoMapper;
 using Dapper;
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
-using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Constants;
@@ -2536,12 +2535,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
 			var result = _mapper.Map<IEnumerable<TaskCommentOutput>>(items);
 
-            foreach (var elemnt in result)
-            {
-                elemnt.Comment = ClearHtmlBuilder.Clear(elemnt.Comment);
-            }
-
-            return result;
+			return result;
         }
         
         catch (Exception ex)
@@ -2719,15 +2713,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 		{
 			var result = await _projectManagmentRepository.GetAvailableEpicsAsync(projectId);
 
-			foreach (var epic in result)
-			{
-				epic.EpicName = ClearHtmlBuilder.Clear(epic.EpicName);
-				if (epic.EpicName.Length > 40)
-				{
-					epic.EpicName = string.Concat(epic.EpicName.Substring(0, 40), "...");
-				}
-			}
-
 			return result;
 		}
 
@@ -2739,7 +2724,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 	}
 
 	/// <inheritdoc />
-	public async Task IncludeTaskEpicAsync(long projectEpicId, IEnumerable<string> projectTaskIds, string account,
+	public async Task IncludeTaskEpicAsync(long epicId, IEnumerable<string> projectTaskIds, string account,
 		long projectId)
 	{
 		var userId = await _userRepository.GetUserByEmailAsync(account);
@@ -2755,8 +2740,6 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 		try
 		{
 			var projectTaskIdToNumbers = projectTaskIds.Select(x => x.GetProjectTaskIdFromPrefixLink());
-
-			var epicId = await _projectManagmentRepository.GetEpicIdByProjectEpicIdAsync(projectId, projectEpicId);
 
 			// Добавляем задачу в эпик.
 			await _projectManagmentRepository.IncludeTaskEpicAsync(epicId, projectTaskIdToNumbers);
