@@ -30,6 +30,8 @@ internal sealed class WikiTreeService : IWikiTreeService
 
     /// <summary>
     /// Список Id элементов дерева, которые есть на дочерних узлах.
+    /// Применяется пока что лишь для исключения Id папок.
+    /// Со страницами не наблюдались пока дубли.
     /// </summary>
     private readonly HashSet<long> _excludedTreeItemIds = new();
 
@@ -337,42 +339,79 @@ internal sealed class WikiTreeService : IWikiTreeService
                     if (pages is not null && pages.Count > 0)
                     {
                         // Если страницы принадлежат текущей папке, то добавляем их в нее.
-                        if (pages.All(x => x.FolderId == folder.Value.FolderId))
+                        if (pages.Any(x => x.FolderId == folder.Value.FolderId))
                         {
-                            var folderPages = pages.Select(x => new WikiTreeItem
-                            {
-                                Name = x.Name,
-                                WikiTreeId = x.WikiTreeId,
-                                PageId = x.PageId,
-                                Icon = FILE_ICON,
-                                FolderId = x.FolderId,
-                                ProjectId = x.ProjectId,
-                                CreatedBy = x.CreatedBy,
-                                CreatedAt = x.CreatedAt,
-                                ParentId = x.ParentId
-                            });
-
-                            // Добавляем страницы текущей папки.
-                            foreach (var page in folderPages)
+                            // Добавляем страницы текущей папки 1 уровня.
+                            foreach (var page in pages)
                             {
                                 if (!folder.Value.Children.Select(x => x.PageId).Contains(page.PageId)
                                     && !_excludedTreeItemIds.Contains(folder.Value.FolderId!.Value))
                                 {
-                                    _excludedTreeItemIds.Add(page.FolderId!.Value);
-                                    folder.Value.Children.Add(page);
+                                    // Страница текущей папки.
+                                    if (folder.Value.FolderId == page.FolderId)
+                                    {
+                                        folder.Value.Children.Add(new WikiTreeItem
+                                        {
+                                            Name = page.Name,
+                                            WikiTreeId = page.WikiTreeId,
+                                            PageId = page.PageId,
+                                            Icon = FILE_ICON,
+                                            FolderId = page.FolderId,
+                                            ProjectId = page.ProjectId,
+                                            CreatedBy = page.CreatedBy,
+                                            CreatedAt = page.CreatedAt,
+                                            ParentId = page.ParentId
+                                        });
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
+                // Дочерние папки начиная со 2 уровня.
                 foreach (var cf in childFolders)
                 {
+                    cf.Children ??= new List<WikiTreeItem>();
+                    
                     if (!_excludedTreeItemIds.Contains(cf.FolderId!.Value))
                     {
-                        _excludedTreeItemIds.Add(cf.FolderId!.Value);
+                        if (pages is not null && pages.Count > 0)
+                        {
+                            // Если страницы принадлежат текущей папке, то добавляем их в нее.
+                            if (pages.Any(x => x.FolderId == cf.FolderId))
+                            {
+                                // Добавляем страницы текущей папки 1 уровня.
+                                foreach (var page in pages)
+                                {
+                                    if (!cf.Children.Select(x => x.PageId).Contains(page.PageId)
+                                        && !_excludedTreeItemIds.Contains(cf.FolderId!.Value))
+                                    {
+                                        // Страница папки ниже 2 уровня. В данном контексте она является текущей.
+                                        if (cf.FolderId == page.FolderId)
+                                        {
+                                            cf.Children.Add(new WikiTreeItem
+                                            {
+                                                Name = page.Name,
+                                                WikiTreeId = page.WikiTreeId,
+                                                PageId = page.PageId,
+                                                Icon = FILE_ICON,
+                                                FolderId = page.FolderId,
+                                                ProjectId = page.ProjectId,
+                                                CreatedBy = page.CreatedBy,
+                                                CreatedAt = page.CreatedAt,
+                                                ParentId = page.ParentId
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
                         folder.Value.Children.Add(cf);
                     }
+                    
+                    _excludedTreeItemIds.Add(cf.FolderId!.Value);
                 }
 
                 if (_treeItems.Count == 0 && !_excludedTreeItemIds.Contains(folder.Value.FolderId!.Value))
@@ -390,12 +429,14 @@ internal sealed class WikiTreeService : IWikiTreeService
                 {
                     var currentFolderPages = pages
                         .Where(x => x.FolderId == folder.Value.FolderId)
-                        .Select(c => new WikiTreeItem
+                        .Select(x => new WikiTreeItem
                         {
-                            Name = c.Name,
-                            WikiTreeId = c.WikiTreeId,
-                            PageId = c.PageId,
-                            Icon = FILE_ICON
+                            Name = x.Name,
+                            WikiTreeId = x.WikiTreeId,
+                            PageId = x.PageId,
+                            Icon = FILE_ICON,
+                            FolderId = x.FolderId,
+                            ProjectId = x.ProjectId
                         })?.AsList();
 
                     // У текущей папки есть дочерние страницы, добавим их ей.
@@ -481,13 +522,15 @@ internal sealed class WikiTreeService : IWikiTreeService
             if (pages is not null && pages.Count > 0)
             {
                 var otherPages = pages
-                    .Where(b => b.FolderId is null)
-                    .Select(c => new WikiTreeItem
+                    .Where(x => x.FolderId is null)
+                    .Select(x => new WikiTreeItem
                     {
-                        Name = c.Name,
-                        WikiTreeId = c.WikiTreeId,
-                        PageId = c.PageId,
-                        Icon = FILE_ICON
+                        Name = x.Name,
+                        WikiTreeId = x.WikiTreeId,
+                        PageId = x.PageId,
+                        Icon = FILE_ICON,
+                        FolderId = x.FolderId,
+                        ProjectId = x.ProjectId
                     }).AsList();
 
                 if (otherPages.Count > 0 && !_excludedTreeItemIds.Contains(folder.Value.FolderId!.Value))
