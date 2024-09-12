@@ -20,7 +20,8 @@ public class CreateUserValidator : AbstractValidator<UserSignUpInput>
             .WithMessage(ValidationConsts.NOT_VALID_EMAIL_ERROR)
             .NotEmpty()
             .WithMessage(ValidationConsts.NOT_VALID_EMAIL_ERROR)
-            .Matches(@"^[^@\s]+@(mail\.ru|gmail\.com|inbox\.ru|bk\.ru|list\.ru|yandex\.ru)${2,6}", RegexOptions.IgnoreCase);
+            .Matches(@"^[^@\s]+@(mail\.ru|gmail\.com|inbox\.ru|bk\.ru|list\.ru|yandex\.ru)${2,6}", RegexOptions.IgnoreCase)
+            .WithMessage(ValidationConsts.NOT_VALID_EMAIL_ERROR);
 
         RuleFor(p => p.Password)
             .NotNull()
