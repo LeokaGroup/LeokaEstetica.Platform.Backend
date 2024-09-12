@@ -7,7 +7,6 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -353,21 +352,23 @@ internal sealed class WikiTreeService : IWikiTreeService
                                 }
                             }
                         }
-
-                        else
-                        {
-                            throw new InvalidOperationException("Не все страницы принадлежат папке. " +
-                                                                "Требуется корректировка логики построения дерева. " +
-                                                                $"FolderId: {folder.Value.FolderId}. " +
-                                                                $"Pages: {JsonConvert.SerializeObject(pages)}.");
-                        }
                     }
                 }
 
                 folder.Value.Children.AddRange(childFolders);
+
+                if (_treeItems.Count == 0)
+                {
+                     _treeItems.Add(folder.Value);
+                }
                 
                 // Добавляем текущую папку и ее детей в дерево.
-                _treeItems.Add(folder.Value);
+                // Если ее нету среди дочерних в дереве.
+                else if (_treeItems.Count > 0
+                         && await CanAddFolderTreeAsync(new LinkedList<WikiTreeItem>(_treeItems).First!))
+                {
+                    _treeItems.Add(folder.Value);
+                }
             }
 
             // У текущей папки нету дочерних папок - добавляем как отдельную папку.
@@ -436,10 +437,25 @@ internal sealed class WikiTreeService : IWikiTreeService
             }
 
             // Папки еще нету на 1 уровне дерева, добавляем ее, если ее нету среди дочерних папок.
-            if (isCanAdd && !_treeItems
-                    .SelectMany(a => a.Children ?? new List<WikiTreeItem>())
-                    .Select(b => b.FolderId)
-                    .Contains(folder.Value.FolderId))
+            // if (isCanAdd && !_treeItems
+            //         .SelectMany(a => a.Children ?? new List<WikiTreeItem>())
+            //         .Select(b => b.FolderId)
+            //         .Contains(folder.Value.FolderId))
+            // {
+            //     _treeItems.Add(new WikiTreeItem
+            //     {
+            //         Name = folder.Value.Name,
+            //         WikiTreeId = folder.Value.WikiTreeId,
+            //         Icon = FOLDER_ICON,
+            //         Children = folder.Value.Children,
+            //         FolderId = folder.Value.FolderId,
+            //         ProjectId = folder.Value.ProjectId,
+            //         CreatedBy = folder.Value.CreatedBy,
+            //         CreatedAt = folder.Value.CreatedAt
+            //     });
+            // }
+
+            if (isCanAdd && await CanAddFolderTreeAsync(new LinkedList<WikiTreeItem>(_treeItems).First!))
             {
                 _treeItems.Add(new WikiTreeItem
                 {
@@ -553,6 +569,38 @@ internal sealed class WikiTreeService : IWikiTreeService
         }
 
         await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Метод рекурсивно обходит дочерние папки дерева, чтобы выяснить, есть ли текущая папка среди дочерних в дереве.
+    /// Если да, то запрещаем добавление папки в результат во избежание дублей.
+    /// </summary>
+    /// <param name="folders">Список папок.</param>
+    /// <returns>Признак проверки.</returns>
+    private async Task<bool> CanAddFolderTreeAsync(LinkedListNode<WikiTreeItem> folders)
+    {
+        if (folders.Value.Children is not null && folders.Value.Children.Count > 0)
+        {
+            while (folders.Value.Children.Count > 0)
+            {
+                foreach (var folder in folders.Value.Children)
+                {
+                    if (folder.FolderId == folders.Value.FolderId)
+                    {
+                        return false;
+                    }
+                
+                    return true;
+                }
+            }
+        }
+
+        if (folders.Next is not null)
+        {
+            await CanAddFolderTreeAsync(folders.Next);
+        }
+        
+        return true;
     }
 
     #endregion
