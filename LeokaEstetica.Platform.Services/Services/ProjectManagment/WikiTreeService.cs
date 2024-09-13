@@ -62,10 +62,16 @@ internal sealed class WikiTreeService : IWikiTreeService
 
             if (folders is null || folders.Count == 0)
             {
-                throw new InvalidOperationException("У проекта нет ни одной папки. " +
-                                                    "Должны быть минимум системные папки." +
-                                                    $"ProjectId: {projectId}.");
+                return Enumerable.Empty<WikiTreeItem>();
             }
+
+            // TODO: Пока оставил, вдруг решим иметь системные папки и страницы.
+            // if (folders is null || folders.Count == 0)
+            // {
+            //     throw new InvalidOperationException("У проекта нет ни одной папки. " +
+            //                                         "Должны быть минимум системные папки." +
+            //                                         $"ProjectId: {projectId}.");
+            // }
 
             var foldersLinkedList = new LinkedList<WikiTreeItem>(folders);
 
