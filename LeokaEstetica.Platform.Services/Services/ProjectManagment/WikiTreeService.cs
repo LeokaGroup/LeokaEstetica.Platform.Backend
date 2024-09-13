@@ -71,7 +71,7 @@ internal sealed class WikiTreeService : IWikiTreeService
             //     throw new InvalidOperationException("У проекта нет ни одной папки. " +
             //                                         "Должны быть минимум системные папки." +
             //                                         $"ProjectId: {projectId}.");
-            // }
+            // } 
 
             var foldersLinkedList = new LinkedList<WikiTreeItem>(folders); 
 
