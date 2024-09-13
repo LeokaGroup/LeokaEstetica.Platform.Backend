@@ -73,7 +73,7 @@ internal sealed class WikiTreeService : IWikiTreeService
             //                                         $"ProjectId: {projectId}.");
             // }
 
-            var foldersLinkedList = new LinkedList<WikiTreeItem>(folders);
+            var foldersLinkedList = new LinkedList<WikiTreeItem>(folders); 
 
             // Наполняем папки вложенными элементами (страницами или другими папками).
             var pages = (await _wikiTreeRepository.GetPageItemsAsync(folders.Select(x => x.FolderId),
