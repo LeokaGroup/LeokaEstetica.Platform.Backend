@@ -51,9 +51,9 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
 
         var result = await connection.QueryAsync<TaskSprintExtendedOutput>(query, parameters);
 
-        var sprintsNew = new List<TaskSprintExtendedOutput>();
-        var sprintsInWork = new List<TaskSprintExtendedOutput>();
-        var sprintsCompleted = new List<TaskSprintExtendedOutput>();
+        var sprintsNew = new List<TaskSprintExtendedOutput>(result.Count(s => s.SprintStatusId == 1));
+        var sprintsInWork = new List<TaskSprintExtendedOutput>(result.Count(s => s.SprintStatusId == 2));
+        var sprintsCompleted = new List<TaskSprintExtendedOutput>(result.Count(s => s.SprintStatusId == 3));
 
         foreach (var sprint in result)
         {
@@ -62,9 +62,11 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                 case (int)SprintStatusEnum.New:
                     sprintsNew.Add(sprint);
                     break;
+
                 case (int)SprintStatusEnum.InWork:
                     sprintsInWork.Add(sprint);
                     break;
+
                 case (int)SprintStatusEnum.Completed:
                     sprintsCompleted.Add(sprint);
                     break;
