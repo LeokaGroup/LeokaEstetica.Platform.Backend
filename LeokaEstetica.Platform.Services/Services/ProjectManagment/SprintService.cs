@@ -132,12 +132,7 @@ internal sealed class SprintService : ISprintService
                 SprintsCompleted = sprintsCompleted.OrderByDescending(s => s.CreatedAt)
             };
 
-            return sprints ?? new TaskSprintListResult
-            {
-                SprintsNew = new List<TaskSprintExtendedOutput>(),
-                SprintsInWork = new List<TaskSprintExtendedOutput>(),
-                SprintsCompleted = new List<TaskSprintExtendedOutput>()
-            };
+            return sprints;
         }
         
         catch (Exception ex)
