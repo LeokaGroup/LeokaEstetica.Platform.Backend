@@ -27,7 +27,7 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
     #region Публичные методы.
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<IEnumerable<TaskSprintExtendedOutput>?>> GetSprintsAsync(long projectId)
+    public async Task<TaskSprintListResult?> GetSprintsAsync(long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -71,11 +71,11 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
             }
         }
 
-        var sprints = new List<List<TaskSprintExtendedOutput>>()
+        var sprints = new TaskSprintListResult()
         {
-            sprintsNew,
-            sprintsInWork,
-            sprintsCompleted
+            SprintsNew = sprintsNew.OrderByDescending(s => s.CreatedAt),
+            SprintsInWork = sprintsInWork.OrderByDescending(s => s.CreatedAt),
+            SprintsCompleted = sprintsCompleted.OrderByDescending(s => s.CreatedAt)
         };
 
         return sprints;
