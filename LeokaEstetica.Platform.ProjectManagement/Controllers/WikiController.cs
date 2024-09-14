@@ -352,7 +352,7 @@ public class WikiController : BaseController
       }
 
       await _wikiTreeService.CreatePageAsync(createWikiPageInput.ParentId, createWikiPageInput.PageName,
-         GetUserName(), createWikiPageInput.WikiTreeId);
+         GetUserName(), createWikiPageInput.WikiTreeId, createWikiPageInput.ProjectId);
    }
 
    /// <summary>
