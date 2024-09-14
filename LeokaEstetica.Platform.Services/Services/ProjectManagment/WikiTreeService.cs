@@ -194,7 +194,8 @@ internal sealed class WikiTreeService : IWikiTreeService
     }
 
     /// <inheritdoc />
-    public async Task CreateFolderAsync(long? parentId, string? folderName, string account, long treeId)
+    public async Task CreateFolderAsync(long? parentId, string? folderName, string account, long? treeId,
+        long projectId)
     {
         try
         {
@@ -206,7 +207,20 @@ internal sealed class WikiTreeService : IWikiTreeService
                 throw ex;
             }
 
-            await _wikiTreeRepository.CreateFolderAsync(parentId, folderName, userId, treeId);
+            // Если не передали, значит создаем папку вне дерева как родителя или отдельную страницу.
+            if (!treeId.HasValue)
+            {
+                treeId = await _wikiTreeRepository.GetWikiTreeIdByProjectIdAsync(projectId);
+
+                if (!treeId.HasValue)
+                {
+                    throw new InvalidOperationException("У дерева вики проекта не задан WikiTreeId. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        "Ошибка создания папки или страницы вне дерева.");
+                }
+            }
+
+            await _wikiTreeRepository.CreateFolderAsync(parentId, folderName, userId, treeId.Value);
         }
 
         catch (Exception ex)
@@ -475,6 +489,28 @@ internal sealed class WikiTreeService : IWikiTreeService
                                 CreatedAt = folder.Value.CreatedAt
                             });
                         }
+                    }
+                }
+
+                // У папки нет ни дочерних папок, ни дочерних страниц.
+                // Добавляем как родительскую папку в дерево.
+                else
+                {
+                    if (!_excludedTreeItemIds.Contains(folder.Value.FolderId!.Value))
+                    {
+                        _excludedTreeItemIds.Add(folder.Value.FolderId!.Value);
+
+                        _treeItems.Add(new WikiTreeItem
+                        {
+                            Name = folder.Value.Name,
+                            WikiTreeId = folder.Value.WikiTreeId,
+                            Icon = FOLDER_ICON,
+                            Children = folder.Value.Children,
+                            FolderId = folder.Value.FolderId,
+                            ProjectId = folder.Value.ProjectId,
+                            CreatedBy = folder.Value.CreatedBy,
+                            CreatedAt = folder.Value.CreatedAt
+                        });
                     }
                 }
             }

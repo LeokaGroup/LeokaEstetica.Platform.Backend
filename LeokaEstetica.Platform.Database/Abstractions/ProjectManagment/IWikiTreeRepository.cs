@@ -91,7 +91,7 @@ public interface IWikiTreeRepository
     /// <param name="folderName">Название папки.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <param name="treeId">Id дерева.</param>
-    Task CreateFolderAsync(long? parentId, string? folderName, long userId, long treeId);
+    Task CreateFolderAsync(long? parentId, string? folderName, long userId, long? treeId);
 
     /// <summary>
     /// Метод получает список папок по их Id.
@@ -129,4 +129,11 @@ public interface IWikiTreeRepository
     /// </summary>
     /// <param name="pageId">Id страницы.</param>
     Task RemovePageAsync(long pageId);
+
+    /// <summary>
+    /// Метод получает Id дерева wiki проекта по Id проекта.
+    /// </summary>
+    /// <param name="projectId">Id проекта.</param>
+    /// <returns>Id дерева wiki проекта.</returns>
+    Task<long?> GetWikiTreeIdByProjectIdAsync(long projectId);
 }
