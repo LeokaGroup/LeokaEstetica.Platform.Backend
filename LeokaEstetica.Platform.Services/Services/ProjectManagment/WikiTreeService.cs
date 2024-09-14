@@ -73,11 +73,12 @@ internal sealed class WikiTreeService : IWikiTreeService
             //                                         $"ProjectId: {projectId}.");
             // } 
 
-            var foldersLinkedList = new LinkedList<WikiTreeItem>(folders); 
+            var foldersLinkedList = new LinkedList<WikiTreeItem>(folders);
+            var folderIds = folders.Select(x => x.FolderId);
+            var wikiTreeIds = folders.Select(x => x.WikiTreeId);
 
             // Наполняем папки вложенными элементами (страницами или другими папками).
-            var pages = (await _wikiTreeRepository.GetPageItemsAsync(folders.Select(x => x.FolderId),
-                folders.Select(x => x.WikiTreeId)))?.AsList();
+            var pages = (await _wikiTreeRepository.GetPageItemsAsync(folderIds, wikiTreeIds, projectId))?.AsList();
 
             // Рекурсивно обходим дерево и заполняем его уровни.
             await RecursiveBuildTreeAsync(foldersLinkedList.First!, folders, pages);
@@ -107,14 +108,21 @@ internal sealed class WikiTreeService : IWikiTreeService
             childFolderIds.Add(folderId);
 
             var childFolders = (await _wikiTreeRepository.GetFoldersByFolderIdsAsync(childFolderIds))?.AsList();
+            
+            var folderIds = childFolders is not null && childFolders.Count > 0
+                ? childFolders.Select(x => x.FolderId)
+                : Enumerable.Empty<long?>();
+                
+            var wikiTreeIds = childFolders is not null && childFolders.Count > 0
+                ? childFolders.Select(x => x.WikiTreeId)
+                : Enumerable.Empty<long>();
 
             // Наполняем папки вложенными элементами (страницами или другими папками).
-            var pages = (await _wikiTreeRepository.GetPageItemsAsync(childFolders.Select(x => x.FolderId).Distinct(),
-                childFolders.Select(x => x.WikiTreeId).Distinct()))?.AsList();
+            var pages = (await _wikiTreeRepository.GetPageItemsAsync(folderIds, wikiTreeIds, projectId))?.AsList();
 
             // Обходим дерево и заполняем папки.
-            await BuildTreeAsync(childFolders.First(x => x.FolderId == folderId),
-                childFolders.Where(x => x.FolderId != folderId).AsList(), pages);
+            await BuildTreeAsync((childFolders ?? Enumerable.Empty<WikiTreeItem>()).First(x => x.FolderId == folderId),
+                (childFolders ?? Enumerable.Empty<WikiTreeItem>()).Where(x => x.FolderId != folderId).AsList(), pages);
 
             return _treeItems;
         }
