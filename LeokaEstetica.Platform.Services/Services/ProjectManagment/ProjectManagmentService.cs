@@ -1719,9 +1719,24 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 				var ex = new NotFoundUserIdByAccountException(account);
 				throw ex;
 			}
+			
+			var projectTaskId = taskId.GetProjectTaskIdFromPrefixLink();
 
-			await _projectManagmentRepository.UpdateTaskDetailsAsync(projectId, taskId.GetProjectTaskIdFromPrefixLink(),
-				changedTaskDetails);
+			var taskType = await _projectManagmentRepository.GetTaskTypeByProjectIdProjectTaskIdAsync(projectId,
+				projectTaskId);
+
+			// Если не удалось определить тип задачи.
+			if (taskType == TaskDetailTypeEnum.Undefined)
+			{
+				throw new InvalidOperationException("Неизвестный тип детализации. " +
+				                                    "Описание задачи не было обновлено. " +
+				                                    $"TaskType: {taskType}. " +
+				                                    $"ProjectId: {projectId}. " +
+				                                    $"ProjectTaskId: {taskId}.");
+			}
+
+			await _projectManagmentRepository.UpdateTaskDetailsAsync(projectId, projectTaskId, changedTaskDetails,
+				taskType);
 
 			// TODO: Тут добавить запись активности пользователя по userId.
 		}
@@ -1746,8 +1761,22 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 				throw ex;
 			}
 
-			await _projectManagmentRepository.UpdateTaskNameAsync(projectId, taskId.GetProjectTaskIdFromPrefixLink(),
-				changedTaskName);
+			var projectTaskId = taskId.GetProjectTaskIdFromPrefixLink();
+
+			var taskType = await _projectManagmentRepository.GetTaskTypeByProjectIdProjectTaskIdAsync(projectId,
+				projectTaskId);
+
+			// Если не удалось определить тип задачи.
+			if (taskType == TaskDetailTypeEnum.Undefined)
+			{
+				throw new InvalidOperationException("Неизвестный тип детализации. " +
+				                                    "Название задачи не было обновлено. " +
+				                                    $"TaskType: {taskType}. " +
+				                                    $"ProjectId: {projectId}. " +
+				                                    $"ProjectTaskId: {taskId}.");
+			}
+
+			await _projectManagmentRepository.UpdateTaskNameAsync(projectId, projectTaskId, changedTaskName, taskType);
 
 			// TODO: Тут добавить запись активности пользователя по userId.
 		}
