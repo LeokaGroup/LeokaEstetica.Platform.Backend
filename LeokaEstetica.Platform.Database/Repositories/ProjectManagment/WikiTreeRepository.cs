@@ -90,13 +90,14 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
     /// <inheritdoc />
     public async Task<IEnumerable<WikiTreeItem>?> GetPageItemsAsync(IEnumerable<long?> folderIds,
-        IEnumerable<long> treeIds)
+        IEnumerable<long> treeIds, long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
         var parameters = new DynamicParameters();
         parameters.Add("@folderIds", folderIds.AsList());
         parameters.Add("@treeIds", treeIds.AsList());
+        parameters.Add("@projectId", projectId);
 
         var query = "SELECT p.page_id," +
                     "p.folder_id," +
@@ -104,12 +105,16 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "p.page_description," +
                     "p.wiki_tree_id," +
                     "p.created_by," +
-                    "p.created_at " +
+                    "p.created_at," +
+                    "wt.project_id " +
                     "FROM project_management.wiki_tree_folders AS tf " +
+                    "INNER JOIN project_management.wiki_tree AS wt " +
+                    "ON tf.wiki_tree_id = wt.wiki_tree_id " +
                     "LEFT JOIN project_management.wiki_tree_pages AS p " +
                     "ON tf.folder_id = p.folder_id " +
                     "WHERE p.folder_id = ANY(@folderIds) " +
                     "AND p.wiki_tree_id = ANY(@treeIds) " +
+                    "AND wt.project_id = @projectId " +
                     "UNION " +
                     "SELECT p.page_id," +
                     "p.folder_id," +
@@ -117,9 +122,15 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "p.page_description," +
                     "p.wiki_tree_id," +
                     "p.created_by," +
-                    "p.created_at " +
+                    "p.created_at," +
+                    "wt.project_id " +
                     "FROM project_management.wiki_tree_pages AS p " +
-                    "WHERE p.folder_id IS NULL;";
+                    "LEFT JOIN project_management.wiki_tree_folders AS tf " +
+                    "ON (p.folder_id = tf.folder_id OR p.folder_id IS NULL)" +
+                    "LEFT JOIN project_management.wiki_tree AS wt " +
+                    "ON p.wiki_tree_id = wt.wiki_tree_id " +
+                    "WHERE p.folder_id IS NULL " +
+                    "AND wt.project_id = @projectId;";
 
         var result = await connection.QueryAsync<WikiTreeItem>(query, parameters);
 
