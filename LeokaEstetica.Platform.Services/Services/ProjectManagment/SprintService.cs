@@ -98,7 +98,12 @@ internal sealed class SprintService : ISprintService
         {
             var result = await _sprintRepository.GetSprintsAsync(projectId);
 
-            return result ?? new TaskSprintListResult();
+            return result ?? new TaskSprintListResult()
+            {
+                SprintsNew = new List<TaskSprintExtendedOutput>(),
+                SprintsInWork = new List<TaskSprintExtendedOutput>(),
+                SprintsCompleted = new List<TaskSprintExtendedOutput>()
+            };
         }
         
         catch (Exception ex)
