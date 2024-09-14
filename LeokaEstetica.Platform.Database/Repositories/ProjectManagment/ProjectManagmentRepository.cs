@@ -966,21 +966,48 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task UpdateTaskDetailsAsync(long projectId, long taskId, string changedTaskDetails)
+    public async Task UpdateTaskDetailsAsync(long projectId, long taskId, string changedTaskDetails,
+        TaskDetailTypeEnum taskType)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
-        parameters.Add("@project_id", projectId);
-        parameters.Add("@task_id", taskId);
+        parameters.Add("@projectId", projectId);
         parameters.Add("@details", changedTaskDetails);
-
-        var sql = @"UPDATE project_management.project_tasks 
-                    SET details = @details 
-                    WHERE project_id = @project_id 
-                      AND project_task_id = @task_id";
         
-        await connection.ExecuteAsync(sql, parameters);
+        string? query = null;
+
+        if (taskType is TaskDetailTypeEnum.Task or TaskDetailTypeEnum.Error)
+        {
+            parameters.Add("@taskId", taskId);
+
+            query = @"UPDATE project_management.project_tasks 
+                    SET details = @details 
+                    WHERE project_id = @projectId 
+                      AND project_task_id = @taskId";
+        }
+        
+        else if (taskType == TaskDetailTypeEnum.Epic)
+        {
+            parameters.Add("@projectEpicId", taskId);
+
+            query = @"UPDATE project_management.epics 
+                    SET epic_description = @details 
+                    WHERE project_id = @projectId 
+                      AND project_epic_id = @projectEpicId";
+        }
+        
+        else if (taskType == TaskDetailTypeEnum.Story)
+        {
+            parameters.Add("@projectStoryId", taskId);
+
+            query = @"UPDATE project_management.user_stories 
+                    SET story_description = @details 
+                    WHERE project_id = @projectId 
+                      AND user_story_task_id = @projectStoryId";
+        }
+
+        await connection.ExecuteAsync(query!, parameters);
     }
 
     /// <inheritdoc />

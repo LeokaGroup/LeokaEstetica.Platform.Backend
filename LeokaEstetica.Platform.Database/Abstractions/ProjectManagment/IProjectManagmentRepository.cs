@@ -289,7 +289,8 @@ public interface IProjectManagmentRepository
     /// <param name="projectId">Id проекта.</param>
     /// <param name="taskId">Id задачи (здесь имеется в виду Id задачи в рамках проекта).</param>
     /// <param name="changedTaskDetails">Новое описание задачи.</param>
-    Task UpdateTaskDetailsAsync(long projectId, long taskId, string changedTaskDetails);
+    /// <param name="taskType">Тип задачи.</param>
+    Task UpdateTaskDetailsAsync(long projectId, long taskId, string changedTaskDetails, TaskDetailTypeEnum taskType);
 
     /// <summary>
     /// Метод обновления названия задачи.
