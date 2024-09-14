@@ -32,10 +32,10 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
 
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
-        
+
         var query = "SELECT s.sprint_id," +
-                    " to_char(s.date_start, 'dd.MM.yyyy HH24:MI:SS') AS DateStart," +
-                    " to_char(s.date_end, 'dd.MM.yyyy HH24:MI:SS') AS DateEnd," +
+                    " to_char(s.date_start, 'dd.MM.yyyy HH24:MI') AS DateStart," +
+                    " to_char(s.date_end, 'dd.MM.yyyy HH24:MI') AS DateEnd," +
                     " s.sprint_goal," +
                     " s.sprint_status_id," +
                     " s.project_id," +
@@ -45,12 +45,11 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "FROM project_management.sprints AS s " +
                     "INNER JOIN project_management.sprint_statuses AS ss " +
                     "ON s.sprint_status_id = ss.status_id " +
-                    "WHERE s.project_id = @projectId " +
-                    "ORDER BY s.created_at DESC";
+                    "WHERE s.project_id = @projectId";
 
-        var result = await connection.QueryAsync<TaskSprintExtendedOutput>(query, parameters);
+        var result = (await connection.QueryAsync<TaskSprintExtendedOutput>(query, parameters))?.AsList();
 
-        return result;
+        return result ?? Enumerable.Empty<TaskSprintExtendedOutput>();
     }
 
     /// <inheritdoc/>

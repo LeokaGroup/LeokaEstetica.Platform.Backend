@@ -92,13 +92,47 @@ internal sealed class SprintService : ISprintService
     #region Публичные методы
 
     /// <inheritdoc />
-    public async Task<IEnumerable<TaskSprintExtendedOutput>> GetSprintsAsync(long projectId)
+    public async Task<TaskSprintListResult> GetSprintsAsync(long projectId)
     {
         try
         {
             var result = await _sprintRepository.GetSprintsAsync(projectId);
 
-            return result ?? Enumerable.Empty<TaskSprintExtendedOutput>();
+            var sprintsNew = new List<TaskSprintExtendedOutput>(result
+                .Count(s => s.SprintStatusId == (int)SprintStatusEnum.New));
+
+            var sprintsInWork = new List<TaskSprintExtendedOutput>(result
+                .Count(s => s.SprintStatusId == (int)SprintStatusEnum.InWork));
+
+            var sprintsCompleted = new List<TaskSprintExtendedOutput>(result
+                .Count(s => s.SprintStatusId == (int)SprintStatusEnum.Completed));
+
+            foreach (var sprint in result)
+            {
+                switch (sprint.SprintStatusId)
+                {
+                    case (int)SprintStatusEnum.New:
+                        sprintsNew.Add(sprint);
+                        break;
+
+                    case (int)SprintStatusEnum.InWork:
+                        sprintsInWork.Add(sprint);
+                        break;
+
+                    case (int)SprintStatusEnum.Completed:
+                        sprintsCompleted.Add(sprint);
+                        break;
+                }
+            }
+
+            var sprints = new TaskSprintListResult
+            {
+                SprintsNew = sprintsNew.OrderByDescending(s => s.CreatedAt),
+                SprintsInWork = sprintsInWork.OrderByDescending(s => s.CreatedAt),
+                SprintsCompleted = sprintsCompleted.OrderByDescending(s => s.CreatedAt)
+            };
+
+            return sprints;
         }
         
         catch (Exception ex)
