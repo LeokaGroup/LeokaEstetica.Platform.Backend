@@ -64,7 +64,7 @@ public class SprintController : BaseController
 
             // TODO: Тут добавить уведомление через хаб для отображения на фронте.
 
-            return new TaskSprintListResult()
+            return new TaskSprintListResult
             {
                 SprintsNew = new List<TaskSprintExtendedOutput>(),
                 SprintsInWork = new List<TaskSprintExtendedOutput>(),
