@@ -14,7 +14,7 @@ public interface ISprintRepository
     /// </summary>
     /// <param name="projectId"></param>
     /// <returns>Список спринтов бэклога проекта.</returns>
-    Task<TaskSprintListResult?> GetSprintsAsync(long projectId);
+    Task<IEnumerable<TaskSprintExtendedOutput>?> GetSprintsAsync(long projectId);
     
     /// <summary>
     /// Метод получает детали спринта.
