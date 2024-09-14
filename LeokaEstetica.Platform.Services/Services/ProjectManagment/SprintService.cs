@@ -98,7 +98,41 @@ internal sealed class SprintService : ISprintService
         {
             var result = await _sprintRepository.GetSprintsAsync(projectId);
 
-            return result ?? new TaskSprintListResult()
+            var sprintsNew = new List<TaskSprintExtendedOutput>(result
+                .Count(s => s.SprintStatusId == (int)SprintStatusEnum.New));
+
+            var sprintsInWork = new List<TaskSprintExtendedOutput>(result
+                .Count(s => s.SprintStatusId == (int)SprintStatusEnum.InWork));
+
+            var sprintsCompleted = new List<TaskSprintExtendedOutput>(result
+                .Count(s => s.SprintStatusId == (int)SprintStatusEnum.Completed));
+
+            foreach (var sprint in result)
+            {
+                switch (sprint.SprintStatusId)
+                {
+                    case (int)SprintStatusEnum.New:
+                        sprintsNew.Add(sprint);
+                        break;
+
+                    case (int)SprintStatusEnum.InWork:
+                        sprintsInWork.Add(sprint);
+                        break;
+
+                    case (int)SprintStatusEnum.Completed:
+                        sprintsCompleted.Add(sprint);
+                        break;
+                }
+            }
+
+            var sprints = new TaskSprintListResult
+            {
+                SprintsNew = sprintsNew.OrderByDescending(s => s.CreatedAt),
+                SprintsInWork = sprintsInWork.OrderByDescending(s => s.CreatedAt),
+                SprintsCompleted = sprintsCompleted.OrderByDescending(s => s.CreatedAt)
+            };
+
+            return sprints ?? new TaskSprintListResult
             {
                 SprintsNew = new List<TaskSprintExtendedOutput>(),
                 SprintsInWork = new List<TaskSprintExtendedOutput>(),
