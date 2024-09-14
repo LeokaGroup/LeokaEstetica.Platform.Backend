@@ -231,7 +231,7 @@ internal sealed class WikiTreeService : IWikiTreeService
     }
 
     /// <inheritdoc />
-    public async Task CreatePageAsync(long? parentId, string? pageName, string account, long treeId)
+    public async Task CreatePageAsync(long? parentId, string? pageName, string account, long? treeId, long projectId)
     {
         try
         {
@@ -242,8 +242,21 @@ internal sealed class WikiTreeService : IWikiTreeService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
+            
+            // Если не передали, значит создаем папку вне дерева как родителя или отдельную страницу.
+            if (!treeId.HasValue)
+            {
+                treeId = await _wikiTreeRepository.GetWikiTreeIdByProjectIdAsync(projectId);
 
-            await _wikiTreeRepository.CreatePageAsync(parentId, pageName, userId, treeId);
+                if (!treeId.HasValue)
+                {
+                    throw new InvalidOperationException("У дерева вики проекта не задан WikiTreeId. " +
+                                                        $"ProjectId: {projectId}. " +
+                                                        "Ошибка создания папки или страницы вне дерева.");
+                }
+            }
+
+            await _wikiTreeRepository.CreatePageAsync(parentId, pageName, userId, treeId.Value);
         }
 
         catch (Exception ex)
@@ -515,6 +528,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                 }
             }
 
+            // TODO: Возможно не нужно, но пока оставил. Пока не протестим тщательно все дерево не убирать.
             // Можно ли добавлять в дерево.
             var isCanAdd = false;
 
@@ -543,7 +557,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                 }
             }
 
-            if (isCanAdd && !_excludedTreeItemIds.Contains(folder.Value.FolderId!.Value))
+            if (!_excludedTreeItemIds.Contains(folder.Value.FolderId!.Value))
             {
                 _excludedTreeItemIds.Add(folder.Value.FolderId!.Value);
 
@@ -575,11 +589,23 @@ internal sealed class WikiTreeService : IWikiTreeService
                         ProjectId = x.ProjectId
                     }).AsList();
 
-                if (otherPages.Count > 0 && !_excludedTreeItemIds.Contains(folder.Value.FolderId!.Value))
+                if (otherPages.Count > 0 && !_excludedTreeItemIds.Contains(folder.Value.PageId))
                 {
-                    _excludedTreeItemIds.UnionWith(otherPages.Select(x => x.FolderId!.Value));
-
-                    _treeItems.AddRange(otherPages);
+                    foreach (var p in otherPages)
+                    {
+                        // Если папка, то исключаем ее во избежание дублей.
+                        if (p.FolderId.HasValue)
+                        {
+                            _excludedTreeItemIds.Add(p.FolderId.Value);
+                        }
+                        
+                        // Если не папка, то добавляем в результат страницу если ее там еще не было.
+                        else if (!p.FolderId.HasValue && p.IsPage && !_excludedTreeItemIds.Contains(p.PageId))
+                        {
+                            _excludedTreeItemIds.Add(p.PageId);
+                            _treeItems.Add(p);
+                        }
+                    }
                 }
             }
 
