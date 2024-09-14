@@ -57,9 +57,11 @@ public interface IWikiTreeService
     /// <param name="parentId">Id родителя, если передали (родительская папка).</param>
     /// <param name="folderName">Название папки.</param>
     /// <param name="account">Аккаунт.</param>
-    /// <param name="treeId">Id дерева.</param>
-    Task CreateFolderAsync(long? parentId, string? folderName, string account, long treeId);
-    
+    /// <param name="treeId">Id дерева. Может быть не заполненно,
+    /// <param name="projectId">Id проекта.
+    /// в таком кейсе создаем папку как родителя или отдельную страницу.</param>
+    Task CreateFolderAsync(long? parentId, string? folderName, string account, long? treeId, long projectId);
+
     /// <summary>
     /// Метод создает страницу.
     /// </summary>
@@ -67,7 +69,8 @@ public interface IWikiTreeService
     /// <param name="pageName">Название страницы.</param>
     /// <param name="account">Аккаунт.</param>
     /// <param name="treeId">Id дерева.</param>
-    Task CreatePageAsync(long? parentId, string? pageName, string account, long treeId);
+    /// <param name="projectId">Id проекта.
+    Task CreatePageAsync(long? parentId, string? pageName, string account, long? treeId, long projectId);
 
     /// <summary>
     /// Метод удаляет папку.

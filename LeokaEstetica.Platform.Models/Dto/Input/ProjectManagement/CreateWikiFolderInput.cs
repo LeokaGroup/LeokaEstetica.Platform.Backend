@@ -18,5 +18,10 @@ public class CreateWikiFolderInput
     /// <summary>
     /// Id дерева.
     /// </summary>
-    public long WikiTreeId { get; set; }
+    public long? WikiTreeId { get; set; }
+
+    /// <summary>
+    /// Id проекта.
+    /// </summary>
+    public long ProjectId { get; set; }
 }

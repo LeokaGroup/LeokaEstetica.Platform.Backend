@@ -19,9 +19,9 @@ public class CreateFolderValidator : AbstractValidator<CreateWikiFolderInput>
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_CURRENT_FOLDER_NAME)
             .NotEmpty()
             .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_CURRENT_FOLDER_NAME);
-
-        RuleFor(p => p.WikiTreeId)
+        
+        RuleFor(p => p.ProjectId)
             .Must(p => p > 0)
-            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_WIKI_TREE_ID);
+            .WithMessage(ValidationConst.ProjectManagmentValidation.NOT_VALID_PROJECT_ID);
     }
 }

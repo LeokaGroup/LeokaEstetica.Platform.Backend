@@ -288,7 +288,7 @@ public class WikiController : BaseController
    /// </summary>
    /// <param name="createWikiFolderInput">Входная модель.</param>
    [HttpPost]
-   [Route("tree-item-folder-page")]
+   [Route("tree-item-folder")]
    [ProducesResponseType(200)]
    [ProducesResponseType(400)]
    [ProducesResponseType(403)]
@@ -298,7 +298,7 @@ public class WikiController : BaseController
    {
       var validator = await new CreateFolderValidator().ValidateAsync(createWikiFolderInput);
 
-      if (validator.Errors.Any())
+      if (validator.Errors.Count > 0)
       {
          var exceptions = new List<InvalidOperationException>();
 
@@ -316,7 +316,7 @@ public class WikiController : BaseController
       }
 
       await _wikiTreeService.CreateFolderAsync(createWikiFolderInput.ParentId, createWikiFolderInput.FolderName,
-         GetUserName(), createWikiFolderInput.WikiTreeId);
+         GetUserName(), createWikiFolderInput.WikiTreeId, createWikiFolderInput.ProjectId);
    }
    
    /// <summary>
@@ -352,7 +352,7 @@ public class WikiController : BaseController
       }
 
       await _wikiTreeService.CreatePageAsync(createWikiPageInput.ParentId, createWikiPageInput.PageName,
-         GetUserName(), createWikiPageInput.WikiTreeId);
+         GetUserName(), createWikiPageInput.WikiTreeId, createWikiPageInput.ProjectId);
    }
 
    /// <summary>

@@ -48,13 +48,12 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         var parameters = new DynamicParameters();
         parameters.Add("@projectId", projectId);
 
-        var query = "SELECT tf.folder_id," +
+        var query = "SELECT DISTINCT (tf.folder_id)," +
                     "tf.wiki_tree_id," +
                     "tf.folder_name AS Name," +
                     "tf.created_by," +
                     "tf.created_at," +
                     "t.project_id ," +
-                    "fl.child_id, " +
                     "fl.parent_id," +
                     "tf.is_system " +
                     "FROM project_management.wiki_tree_folders AS tf " +
@@ -372,7 +371,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
     }
 
     /// <inheritdoc />
-    public async Task CreateFolderAsync(long? parentId, string? folderName, long userId, long treeId)
+    public async Task CreateFolderAsync(long? parentId, string? folderName, long userId, long? treeId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
@@ -603,6 +602,23 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "WHERE page_id = @pageId";
 
         await connection.ExecuteAsync(query, parameters);
+    }
+
+    /// <inheritdoc />
+    public async Task<long?> GetWikiTreeIdByProjectIdAsync(long projectId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@projectId", projectId);
+
+        var query = "SELECT wiki_tree_id " +
+                    "FROM project_management.wiki_tree " +
+                    "WHERE project_id = @projectId";
+
+        var result = await connection.QuerySingleOrDefaultAsync<long?>(query, parameters);
+
+        return result;
     }
 
     #endregion
