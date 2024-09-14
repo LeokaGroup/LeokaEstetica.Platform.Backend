@@ -52,7 +52,7 @@ public class SprintController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<IEnumerable<TaskSprintExtendedOutput>>> GetSprintsAsync([FromQuery] long projectId)
+    public async Task<TaskSprintListResult> GetSprintsAsync([FromQuery] long projectId)
     {
         if (projectId <= 0)
         {
@@ -64,7 +64,7 @@ public class SprintController : BaseController
 
             // TODO: Тут добавить уведомление через хаб для отображения на фронте.
 
-            return Enumerable.Empty<IEnumerable<TaskSprintExtendedOutput>>();
+            return new TaskSprintListResult();
         }
 
         var result = await _sprintService.GetSprintsAsync(projectId);
