@@ -441,17 +441,17 @@ public class SprintController : BaseController
     }
     
     /// <summary>
-    /// Метод исключает задачи из эпика.
+    /// Метод исключает задачи из спринта.
     /// </summary>
     /// <param name="excludeEpicTaskInput">Входная модель.</param>
     [HttpPatch]
-    [Route("epic-task")]
+    [Route("sprint-task")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task ExcludeEpicTasksAsync([FromBody] ExcludeEpicSprintTaskInput excludeEpicTaskInput)
+    public async Task ExcludeSprintTasksAsync([FromBody] ExcludeEpicSprintTaskInput excludeEpicTaskInput)
     {
         if (excludeEpicTaskInput.EpicSprintId <= 0
             || excludeEpicTaskInput.ProjectTaskIds is null
