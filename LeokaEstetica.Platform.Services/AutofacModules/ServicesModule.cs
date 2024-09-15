@@ -330,5 +330,12 @@ public class ServicesModule : Module
         builder.RegisterType<WikiTreeService>()
             .As<IWikiTreeService>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterType<EpicService>()
+            .Named<IEpicService>("EpicService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<EpicService>()
+            .As<IEpicService>()
+            .InstancePerLifetimeScope();
     }
 }
