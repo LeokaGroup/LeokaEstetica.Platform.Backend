@@ -9,6 +9,6 @@ public interface IEpicService
     /// Метод исключает задачи из эпика.
     /// </summary>
     /// <param name="epicId">Id эпика.</param>
-    /// <param name="projectTaskIds">Список Id задач в рамках проекта, которые нужно исключить из эпика.</param>
-    Task ExcludeEpicTasksAsync(long epicId, IEnumerable<string>? projectTaskIds);
+    /// <param name="epicTaskIds">Список Id задач в рамках проекта, которые нужно исключить из эпика.</param>
+    Task ExcludeEpicTasksAsync(long epicId, IEnumerable<string>? epicTaskIds);
 }

@@ -2,7 +2,6 @@
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
-using LeokaEstetica.Platform.ProjectManagement.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -41,37 +40,29 @@ public class EpicController : BaseController
    /// </summary>
    /// <param name="excludeEpicTaskInput">Входная модель.</param>
    [HttpPatch]
-   [Route("epic")]
+   [Route("epic-task")]
    [ProducesResponseType(200)]
    [ProducesResponseType(400)]
    [ProducesResponseType(403)]
    [ProducesResponseType(500)]
    [ProducesResponseType(404)]
-   public async Task ExcludeEpicTasksAsync([FromBody] ExcludeEpicTaskInput excludeEpicTaskInput)
+   public async Task ExcludeEpicTasksAsync([FromBody] ExcludeEpicSprintTaskInput excludeEpicTaskInput)
    {
-      var validator = await new ExcludeEpicTaskValidator().ValidateAsync(excludeEpicTaskInput);
-
-      if (validator.Errors.Count > 0)
+      if (excludeEpicTaskInput.EpicSprintId <= 0
+          || excludeEpicTaskInput.ProjectTaskIds is null
+          || excludeEpicTaskInput.ProjectTaskIds.Any(string.IsNullOrWhiteSpace))
       {
-         var exceptions = new List<InvalidOperationException>();
-
-         foreach (var err in validator.Errors)
-         {
-            exceptions.Add(new InvalidOperationException(err.ErrorMessage));
-         }
-
-         var ex = new AggregateException(
+         var ex = new InvalidOperationException(
             "Ошибка при исключении задач из эпика. " +
-            $"EpicId: {excludeEpicTaskInput.EpicId}. " +
-            $"ProjectTaskIds: {JsonConvert.SerializeObject(excludeEpicTaskInput.ProjectTaskIds)}",
-            exceptions);
+            $"EpicSprintId: {excludeEpicTaskInput.EpicSprintId}. " +
+            $"ProjectTaskIds: {JsonConvert.SerializeObject(excludeEpicTaskInput.ProjectTaskIds)}.");
          _logger.LogError(ex, ex.Message);
-            
+
          await _discordService.Value.SendNotificationErrorAsync(ex);
-            
+
          throw ex;
       }
 
-      await _epicService.ExcludeEpicTasksAsync(excludeEpicTaskInput.EpicId, excludeEpicTaskInput.ProjectTaskIds);
+      await _epicService.ExcludeEpicTasksAsync(excludeEpicTaskInput.EpicSprintId, excludeEpicTaskInput.ProjectTaskIds);
    }
 }

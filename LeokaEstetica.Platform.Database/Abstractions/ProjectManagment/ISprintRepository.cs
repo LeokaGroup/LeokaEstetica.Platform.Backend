@@ -170,4 +170,11 @@ public interface ISprintRepository
     /// <param name="projectTaskId">Id задачи в рамках проекта.</param>
     /// <returns>Id спринта.</returns>
     Task<long?> GetSprintIdByProjectTaskIdProjectIdAsync(long projectTaskId, long projectId);
+    
+    /// <summary>
+    /// Метод исключает задачи из спринта.
+    /// </summary>
+    /// <param name="sprintId">Id спринта.</param>
+    /// <param name="sprintTaskIds">Список Id задач, которые нужно исключить из спринта.</param>
+    Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<long>? sprintTaskIds);
 }
