@@ -679,20 +679,22 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
     /// <returns>Словарь с авторами задач.</returns>
     public async Task<IDictionary<long, UserInfoOutput>> GetAuthorNamesByAuthorIdsAsync(IEnumerable<long> authorIds)
     {
-        var result = await _pgContext.Users
-            .Where(u => authorIds.Contains(u.UserId))
-            .Select(u => new UserInfoOutput
-            {
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                Email = u.Email,
-                SecondName = u.SecondName,
-                UserId = u.UserId
-            })
-            .ToDictionaryAsync(k => k.UserId, v => v);
+		using var connection = await ConnectionProvider.GetConnectionAsync();
 
-        return result;
-    }
+		var parameters = new DynamicParameters();
+		parameters.Add("@userId", authorIds);
+
+		var query =
+			"SELECT Users.\"UserId\", Users.\"Email\" , Profile.\"FirstName\" , Profile.\"LastName\" " +
+			"FROM dbo.\"Users\" as Users " +
+			"INNER JOIN \"Profile\".\"ProfilesInfo\" as Profile " +
+			"ON Users.\"UserId\" = Profile.\"UserId\" " +
+			"WHERE Users.\"UserId\" = ANY (@userId) ";
+
+		var result = (await connection.QueryAsync<UserInfoOutput>(query, parameters)).ToDictionary(k => k.UserId, v => v);
+
+		return result;
+	}
 
     /// <summary>
     /// Метод получает ФИО исполнителей задач по их Id.
