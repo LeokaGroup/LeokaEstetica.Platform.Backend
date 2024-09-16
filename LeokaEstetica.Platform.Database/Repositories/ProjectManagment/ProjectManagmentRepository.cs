@@ -2936,25 +2936,6 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc />
-    public async Task<long> GetEpicIdByProjectEpicIdAsync(long projectId, long projectEpicId)
-    {
-        using var connection = await ConnectionProvider.GetConnectionAsync();
-
-        var parameters = new DynamicParameters();
-        parameters.Add("@projectId", projectId);
-        parameters.Add("@projectEpicId", projectEpicId);
-
-        var query = "SELECT epic_id " +
-                    "FROM project_management.epics " +
-                    "WHERE project_epic_id = @projectEpicId " +
-                    "AND project_id = @projectId";
-        
-        var result = await connection.ExecuteScalarAsync<long>(query, parameters);
-
-        return result;
-    }
-
-    /// <inheritdoc />
     public async Task<TaskDetailTypeEnum> GetTaskTypeByProjectIdProjectTaskIdAsync(long projectId, long projectTaskId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();

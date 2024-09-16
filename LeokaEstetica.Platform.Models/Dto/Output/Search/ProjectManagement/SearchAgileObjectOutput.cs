@@ -8,7 +8,7 @@ public class SearchAgileObjectOutput
     /// <summary>
     /// Название задачи.
     /// </summary>
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     /// <summary>
     /// Id задачи в рамках проекта.
@@ -18,7 +18,7 @@ public class SearchAgileObjectOutput
     /// <summary>
     /// Префикс номера задачи.
     /// </summary>
-    public string TaskIdPrefix { get; set; }
+    public string? TaskIdPrefix { get; set; }
 
     /// <summary>
     /// Id задачи в рамках проекта вместе с префиксом.
@@ -33,12 +33,12 @@ public class SearchAgileObjectOutput
     /// <summary>
     /// Название статуса задачи.
     /// </summary>
-    public string StatusName { get; set; }
+    public string? StatusName { get; set; }
 
     /// <summary>
     /// Название исполнителя задачи.
     /// </summary>
-    public string ExecutorName { get; set; }
+    public string? ExecutorName { get; set; }
 
     /// <summary>
     /// Id исполнителя.
@@ -48,7 +48,7 @@ public class SearchAgileObjectOutput
     /// <summary>
     /// Тип задачи.
     /// </summary>
-    public string TaskTypeName { get; set; }
+    public string? TaskTypeName { get; set; }
 
     /// <summary>
     /// Id типа задачи.

@@ -772,14 +772,6 @@ public interface IProjectManagmentRepository
     Task<long> GetCompanyIdByProjectIdAsync(long projectId);
 
     /// <summary>
-    /// Метод получает Id эпика по Id эпика в рамках проекта.
-    /// </summary>
-    /// <param name="projectId">Id проекта.</param>
-    /// <param name="projectEpicId">Id эпика в рамках проекта.</param>
-    /// <returns>Id эпика.</returns>
-    Task<long> GetEpicIdByProjectEpicIdAsync(long projectId, long projectEpicId);
-
-    /// <summary>
     /// Метод получает статусы задач и ошибок.
     /// </summary>
     /// <param name="projectId">Id проекта.</param>
