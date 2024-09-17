@@ -270,10 +270,11 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                 strategy, paginatorStatusId, epicStatusesDict, storyStatusesDict, avatarFilesDict);
         }
 
-        if (tasksWithStoryAndEpic is null || tasksWithStoryAndEpic.Count == 0)
-        {
-            throw new InvalidOperationException("Ошибка получения системных статусов эпика и истории.");
-        }
+        // TODO: Закомментил и пока оставил, так как пока не понятно, нужны ли проверки такие для системных статусов.
+        // if (tasksWithStoryAndEpic is null || tasksWithStoryAndEpic.Count == 0)
+        // {
+        //     throw new InvalidOperationException("Ошибка получения системных статусов эпика и истории.");
+        // }
 
         var mapSystemStatuses = _mapper.Map<List<ProjectManagmentTaskStatusTemplateOutput>>(
             aggregateSystemStatuses);
