@@ -1,10 +1,13 @@
 using AutoMapper;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Controllers.ModelsValidation.Project;
 using LeokaEstetica.Platform.Controllers.Validators.Project;
 using LeokaEstetica.Platform.Core.Enums;
+using LeokaEstetica.Platform.Core.Exceptions;
+using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Finder.Abstractions.Project;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Messaging.Abstractions.Project;
@@ -15,9 +18,14 @@ using LeokaEstetica.Platform.Models.Dto.Output.Configs;
 using LeokaEstetica.Platform.Models.Dto.Output.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectTeam;
 using LeokaEstetica.Platform.Models.Dto.Output.Vacancy;
+using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Pipelines.Sockets.Unofficial.Arenas;
+using static LeokaEstetica.Platform.Core.Constants.ValidationConst;
 
 namespace LeokaEstetica.Platform.Controllers.Project;
 
@@ -37,17 +45,21 @@ public class ProjectController : BaseController
 	private readonly ILogger<ProjectController> _logger;
 	private readonly Lazy<IDiscordService> _discordService;
 
-	/// <summary>
-	/// Конструктор.
-	/// </summary>
-	/// <param name="projectService">Сервис проектов.</param>
-	/// <param name="mapper">Автомаппер.</param>
-	/// <param name="validationExcludeErrorsService">Сервис исключения валидации ошибок.</param>
-	/// <param name="projectCommentsService">Сервис комментариев проектов.</param>
-	/// <param name="projectPaginationService">Сервис пагинации проектов.</param>
-	/// <param name="logger">Сервис логера.</param>
-	/// <param name="discordService">Сервис уведомлений дискорда.</param>
-	public ProjectController(IProjectService projectService,
+    private readonly IProjectRepository _projectRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
+
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="projectService">Сервис проектов.</param>
+    /// <param name="mapper">Автомаппер.</param>
+    /// <param name="validationExcludeErrorsService">Сервис исключения валидации ошибок.</param>
+    /// <param name="projectCommentsService">Сервис комментариев проектов.</param>
+    /// <param name="projectPaginationService">Сервис пагинации проектов.</param>
+    /// <param name="logger">Сервис логера.</param>
+    /// <param name="discordService">Сервис уведомлений дискорда.</param>
+    public ProjectController(IProjectService projectService,
 		IMapper mapper,
 		IValidationExcludeErrorsService validationExcludeErrorsService,
 		IProjectCommentsService projectCommentsService,
@@ -62,7 +74,8 @@ public class ProjectController : BaseController
 		_projectPaginationService = projectPaginationService;
 		_logger = logger;
 		_discordService = discordService;
-	}
+        
+    }
 
 	/// <summary>
 	/// Метод получает список проектов для каталога.
@@ -429,34 +442,70 @@ public class ProjectController : BaseController
 		return result;
 	}
 
-    /// <summary>
-    /// Метод добавляет в команду проекта пользователя выбранным способом.
-    /// </summary>
-    /// <param name="inviteProjectMemberInput">Входная модель.</param>
-    /// <returns>Добавленный пользователь.</returns>s
-    [HttpPost]
-    [Route("invite-project-team")]
-    [ProducesResponseType(200, Type = typeof(ProjectTeamMemberOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<ProjectTeamMemberOutput> InviteProjectTeamAsync(
-        [FromBody] InviteProjectMemberInput inviteProjectMemberInput)
-    {
-        var result = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.InviteText,
-            Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), inviteProjectMemberInput.ProjectId,
-            inviteProjectMemberInput.VacancyId, GetUserName());
-
-		return new ProjectTeamMemberOutput
+	/// <summary>
+	/// Метод добавляет в команду проекта пользователя выбранным способом.
+	/// </summary>
+	/// <param name="inviteProjectMemberInput">Входная модель.</param>
+	/// <returns>Добавленный пользователь.</returns>s
+	[HttpPost]
+	[Route("invite-project-team")]
+	[ProducesResponseType(200, Type = typeof(ProjectTeamMemberOutput))]
+	[ProducesResponseType(400)]
+	[ProducesResponseType(403)]
+	[ProducesResponseType(500)]
+	[ProducesResponseType(404)]
+	public async Task<ProjectTeamMemberOutput> InviteProjectTeamAsync(
+		[FromBody] InviteProjectMemberInput inviteProjectMemberInput)
+	{
+		try
 		{
-			SuccessMessage = "Пользователь успешно приглашен в команду проекта.",
-			IsAccess = result.IsAccess,
-			ForbiddenTitle = result.ForbiddenTitle,
-			ForbiddenText = result.ForbiddenText,
-			FareRuleText = result.FareRuleText
-		};
-	}
+			var result = await _projectService.InviteProjectTeamAsync(inviteProjectMemberInput.InviteText,
+				System.Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), inviteProjectMemberInput.ProjectId,
+				inviteProjectMemberInput.VacancyId, GetUserName());
+
+			var userId = await _userRepository.GetUserIdByEmailAsync(GetUserName());
+			if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(inviteProjectMemberInput.InviteText);
+                throw ex;
+			}
+
+			var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+			var isProjectModeration = await _projectRepository.CheckProjectModerationAsync(inviteProjectMemberInput.ProjectId);
+
+			if (isProjectModeration)
+			{
+				var ex = new InvalidOperationException(
+					"Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.");
+
+				await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+					"Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.",
+					NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningProjectInviteTeam",
+					userCode, UserConnectionModuleEnum.Main);
+
+				throw ex;
+			}
+
+			return new ProjectTeamMemberOutput
+			{
+				SuccessMessage = "Пользователь успешно приглашен в команду проекта.",
+				IsAccess = result.IsAccess,
+				ForbiddenTitle = result.ForbiddenTitle,
+				ForbiddenText = result.ForbiddenText,
+				FareRuleText = result.FareRuleText
+			};
+		}
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка добавления пользователя в команду проекта. " +
+								 $"InviteText был {inviteProjectMemberInput.InviteText}. " +
+                                 $"InviteType был {inviteProjectMemberInput.InviteType}. " +
+                                 $"ProjectId был {inviteProjectMemberInput.ProjectId}. " +
+                                 $"VacancyId был {inviteProjectMemberInput.VacancyId}");
+            throw;
+        }
+    }
 
 
 	/// <summary>
