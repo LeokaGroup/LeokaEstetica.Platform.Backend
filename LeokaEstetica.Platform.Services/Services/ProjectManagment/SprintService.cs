@@ -901,11 +901,6 @@ internal sealed class SprintService : ISprintService
         var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(
             mapSprintTasks.Select(x => x.ExecutorId));
 
-        if (executors.Count == 0)
-        {
-            throw new InvalidOperationException("Не удалось получить исполнителей задач эпика.");
-        }
-
         // Заполняем задачи спринта доп.полями.
         foreach (var st in mapSprintTasks)
         {
