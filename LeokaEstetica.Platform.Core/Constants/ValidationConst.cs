@@ -363,5 +363,10 @@ public static class ValidationConst
 		/// Если передали невалидный Id компании.
 		/// </summary>
 		public const string NOT_VALID_COMPANY_ID = "Id компании не передан.";
+
+		/// <summary>
+		/// Если не передали список Id задач для исключения из эпика. 
+		/// </summary>
+		public const string EMPTY_PROJECT_TASK_IDS = "Не передан список Id задач для исключения из эпика.";
 	}
 }

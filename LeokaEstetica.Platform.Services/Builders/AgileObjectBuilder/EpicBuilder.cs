@@ -258,11 +258,8 @@ internal class EpicBuilder : BaseAgileObjectBuilder
             x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
         var templateId = Convert.ToInt32(template!.ParamValue);
 
-        var epicId = await BuilderData.ProjectManagmentRepository.GetEpicIdByProjectEpicIdAsync(BuilderData.ProjectId,
-            BuilderData.ProjectTaskId);
-
-        var epicTasks = await BuilderData.ProjectManagmentRepository.GetEpicTasksAsync(BuilderData.ProjectId, epicId,
-            templateId);
+        var epicTasks = await BuilderData.ProjectManagmentRepository.GetEpicTasksAsync(BuilderData.ProjectId,
+            BuilderData.ProjectTaskId, templateId);
 
         if (epicTasks.EpicTasks.Any())
         {

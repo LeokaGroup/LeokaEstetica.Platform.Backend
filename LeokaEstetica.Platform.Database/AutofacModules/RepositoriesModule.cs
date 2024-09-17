@@ -363,5 +363,12 @@ public class RepositoriesModule : Module
         builder.RegisterType<AccessModuleRepository>()
             .As<IAccessModuleRepository>()
             .InstancePerLifetimeScope();
+        
+        builder.RegisterType<EpicRepository>()
+            .Named<IEpicRepository>("EpicRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<EpicRepository>()
+            .As<IEpicRepository>()
+            .InstancePerLifetimeScope();
     }
 }

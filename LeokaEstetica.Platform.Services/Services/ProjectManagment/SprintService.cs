@@ -18,6 +18,7 @@ using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -673,6 +674,21 @@ internal sealed class SprintService : ISprintService
         }
     }
 
+    public async Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds)
+    {
+        try
+        {
+            await _sprintRepository.ExcludeSprintTasksAsync(sprintId,
+                sprintTaskIds!.Select(x => x.GetProjectTaskIdFromPrefixLink()));
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
@@ -884,11 +900,6 @@ internal sealed class SprintService : ISprintService
         // Получаем имена исполнителей задач.
         var executors = await _userRepository.GetExecutorNamesByExecutorIdsAsync(
             mapSprintTasks.Select(x => x.ExecutorId));
-
-        if (executors.Count == 0)
-        {
-            throw new InvalidOperationException("Не удалось получить исполнителей задач эпика.");
-        }
 
         // Заполняем задачи спринта доп.полями.
         foreach (var st in mapSprintTasks)

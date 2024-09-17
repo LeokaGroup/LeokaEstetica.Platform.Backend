@@ -616,6 +616,22 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
 
          await connection.ExecuteAsync(query, parameters);
      }
+     
+     /// <inheritdoc/>
+     public async Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<long>? sprintTaskIds)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@sprintId", sprintId);
+         parameters.Add("@sprintTaskIds", sprintTaskIds.AsList());
+
+         var query = "DELETE FROM project_management.sprint_tasks " +
+                     "WHERE project_task_id = ANY (@sprintTaskIds) " +
+                     "AND sprint_id = @sprintId";
+
+         await connection.ExecuteAsync(query, parameters);
+     }
 
      #endregion
 

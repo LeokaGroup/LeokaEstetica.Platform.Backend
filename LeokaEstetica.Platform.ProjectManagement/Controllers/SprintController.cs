@@ -6,6 +6,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagment;
 using LeokaEstetica.Platform.ProjectManagement.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.ProjectManagement.Controllers;
 
@@ -437,5 +438,37 @@ public class SprintController : BaseController
         var result = await _sprintService.GetAvailableNextSprintsAsync(projectSprintId, projectId);
 
         return result;
+    }
+    
+    /// <summary>
+    /// Метод исключает задачи из спринта.
+    /// </summary>
+    /// <param name="excludeEpicTaskInput">Входная модель.</param>
+    [HttpPatch]
+    [Route("sprint-task")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task ExcludeSprintTasksAsync([FromBody] ExcludeEpicSprintTaskInput excludeEpicTaskInput)
+    {
+        if (excludeEpicTaskInput.EpicSprintId <= 0
+            || excludeEpicTaskInput.ProjectTaskIds is null
+            || excludeEpicTaskInput.ProjectTaskIds.Any(string.IsNullOrWhiteSpace))
+        {
+            var ex = new InvalidOperationException(
+                "Ошибка при исключении задач из спринта. " +
+                $"EpicSprintId: {excludeEpicTaskInput.EpicSprintId}. " +
+                $"ProjectTaskIds: {JsonConvert.SerializeObject(excludeEpicTaskInput.ProjectTaskIds)}.");
+            _logger.LogError(ex, ex.Message);
+
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+
+            throw ex;
+        }
+
+        await _sprintService.ExcludeSprintTasksAsync(excludeEpicTaskInput.EpicSprintId,
+            excludeEpicTaskInput.ProjectTaskIds);
     }
 }
