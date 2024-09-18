@@ -663,7 +663,7 @@ public interface IProjectManagmentRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список раб.пространств.</returns>
-    Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(long userId);
+    Task<IEnumerable<WorkSpaceOutput>?> GetWorkSpacesAsync(long userId);
 
     /// <summary>
     /// Метод создает компанию.

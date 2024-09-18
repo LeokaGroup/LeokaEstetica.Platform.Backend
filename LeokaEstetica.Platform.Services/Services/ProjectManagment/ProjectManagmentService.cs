@@ -3029,7 +3029,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 	}
 
 	/// <inheritdoc />
-	public async Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(string account)
+	public async Task<WorkSpaceResult> GetWorkSpacesAsync(string account)
 	{
 		try
 		{
@@ -3040,8 +3040,26 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 				var ex = new NotFoundUserIdByAccountException(account);
 				throw ex;
 			}
+			
+			var items = (await _projectManagmentRepository.GetWorkSpacesAsync(userId))?.AsList();
 
-			var result = await _projectManagmentRepository.GetWorkSpacesAsync(userId);
+			if (items is null || items.Count == 0)
+			{
+				return new WorkSpaceResult
+				{
+					UserCompanyWorkSpaces = new List<WorkSpaceOutput>(),
+					OtherCompanyWorkSpaces = new List<WorkSpaceOutput>()
+				};
+			}
+
+			var result = new WorkSpaceResult
+			{
+				UserCompanyWorkSpaces = new List<WorkSpaceOutput>(items.Count(x => x.IsOwner)),
+				OtherCompanyWorkSpaces = new List<WorkSpaceOutput>(items.Count(x => !x.IsOwner))
+			};
+			
+			result.UserCompanyWorkSpaces.AddRange(items.Where(x => x.IsOwner));
+			result.OtherCompanyWorkSpaces.AddRange(items.Where(x => !x.IsOwner));
 
 			return result;
 		}

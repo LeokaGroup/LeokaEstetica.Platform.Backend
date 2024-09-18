@@ -2431,7 +2431,7 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync(long userId)
+    public async Task<IEnumerable<WorkSpaceOutput>?> GetWorkSpacesAsync(long userId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -2444,7 +2444,10 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "pw.organization_id AS company_id," +
                     "(SELECT organization_name " +
                     "FROM project_management.organizations " +
-                    "WHERE organization_id = pw.organization_id) AS CompanyName " +
+                    "WHERE organization_id = pw.organization_id) AS CompanyName, " +
+                    "(CASE " +
+                    "WHEN ptm.\"Role\" = 'Владелец' THEN TRUE " +
+                    "ELSE FALSE END) AS IsOwner " +
                     "FROM \"Projects\".\"UserProjects\" AS up " +
                     "INNER JOIN project_management.workspaces AS pw " +
                     "ON up.\"ProjectId\" = pw.project_id " +
