@@ -105,6 +105,8 @@ public class CompanyController : BaseController
         
         return new CalculateUserCompanyOutput
         {
+            // Если компаний 0 - то требуем создать сначала компанию.
+            // Если более 1, то требуем выбрать, к какой компании отнести проект.
             IsNeedUserAction = calcCompaniesCount is 0 or > 1,
             IfExistsAnyCompanies = calcCompaniesCount == 1,
             IfExistsMultiCompanies = calcCompaniesCount > 1
