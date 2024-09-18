@@ -475,16 +475,25 @@ public class ProjectController : BaseController
 
 			if (isProjectModeration)
 			{
-				var ex = new InvalidOperationException(
-					"Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.");
-
 				await _hubNotificationService.Value.SendNotificationAsync("Внимание",
 					"Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.",
 					NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningProjectInviteTeam",
 					userCode, UserConnectionModuleEnum.Main);
 
-				throw ex;
-			}
+                return new ProjectTeamMemberOutput
+                {
+                    SuccessMessage = "Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.",
+                    IsAccess = false,
+                    ForbiddenTitle = result.ForbiddenTitle,
+                    ForbiddenText = result.ForbiddenText,
+                    FareRuleText = result.FareRuleText
+                };
+
+                //при необходимости реализации через исклюение
+                //var ex = new InvalidOperationException(
+                //	"Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.");
+                //throw ex;
+            }
 
 			return new ProjectTeamMemberOutput
 			{
