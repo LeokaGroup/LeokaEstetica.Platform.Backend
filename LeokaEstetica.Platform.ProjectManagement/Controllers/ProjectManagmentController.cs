@@ -1894,7 +1894,7 @@ public class ProjectManagmentController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<WorkSpaceOutput>> GetWorkSpacesAsync()
+    public async Task<WorkSpaceResult> GetWorkSpacesAsync()
     {
         var result = await _projectManagmentService.GetWorkSpacesAsync(GetUserName());
 

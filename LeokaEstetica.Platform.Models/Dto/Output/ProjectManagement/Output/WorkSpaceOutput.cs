@@ -34,4 +34,9 @@ public class WorkSpaceOutput
     /// Id компании.
     /// </summary>
     public long CompanyId { get; set; }
+
+    /// <summary>
+    /// Название компании.
+    /// </summary>
+    public string? CompanyName { get; set; }
 }
