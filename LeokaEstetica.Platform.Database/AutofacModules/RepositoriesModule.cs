@@ -370,5 +370,12 @@ public class RepositoriesModule : Module
         builder.RegisterType<EpicRepository>()
             .As<IEpicRepository>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterType<CompanyRepository>()
+            .Named<ICompanyRepository>("CompanyRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<CompanyRepository>()
+            .As<ICompanyRepository>()
+            .InstancePerLifetimeScope();
     }
 }

@@ -129,6 +129,7 @@ internal class BaseServiceTest
     protected readonly ProjectManagementSettingsService ProjectManagementSettingsService;
     protected readonly WikiTreeService WikiTreeService;
     protected readonly ProjectNotificationsService ProjectNotificationsService;
+    protected readonly CompanyService CompanyService;
 
     protected BaseServiceTest()
     {
@@ -324,5 +325,8 @@ internal class BaseServiceTest
 
         var wikiTreeRepository = new WikiTreeRepository(connectionProvider);
         WikiTreeService = new WikiTreeService(null, wikiTreeRepository, userRepository);
+
+        var companyRepository = new CompanyRepository(connectionProvider);
+        CompanyService = new CompanyService(null, companyRepository, userRepository);
     }
 }
