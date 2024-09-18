@@ -171,7 +171,7 @@ internal sealed class ProjectService : IProjectService
 	/// </summary>
 	/// <param name="createProjectInput">Входная модель.</param>
 	/// <returns>Данные нового проекта.</returns>
-	public async Task<UserProjectEntity> CreateProjectAsync(CreateProjectInput createProjectInput)
+	public async Task<CreateProjectOutput> CreateProjectAsync(CreateProjectInput createProjectInput)
 	{
 		try
 		{
@@ -314,7 +314,7 @@ internal sealed class ProjectService : IProjectService
 			// Отправляем уведомление об отправленном проекте на модерацию.
 			await _discordService.SendNotificationCreatedProjectBeforeModerationAsync(projectId);
 
-			return project;
+			return _mapper.Map<CreateProjectOutput>(project);
 		}
 
 		catch (Exception ex)

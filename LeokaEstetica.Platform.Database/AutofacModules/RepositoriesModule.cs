@@ -377,5 +377,7 @@ public class RepositoriesModule : Module
         builder.RegisterType<CompanyRepository>()
             .As<ICompanyRepository>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterLazy<ICompanyRepository, CompanyRepository>();
     }
 }
