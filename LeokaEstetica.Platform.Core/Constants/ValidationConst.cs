@@ -368,5 +368,10 @@ public static class ValidationConst
 		/// Если не передали список Id задач для исключения из эпика. 
 		/// </summary>
 		public const string EMPTY_PROJECT_TASK_IDS = "Не передан список Id задач для исключения из эпика.";
+
+		/// <summary>
+		/// Если не заполнили название компании.
+		/// </summary>
+		public const string EMPTY_COMPANY_NAME = "Название компании не может быть пустым.";
 	}
 }

@@ -337,5 +337,12 @@ public class ServicesModule : Module
         builder.RegisterType<EpicService>()
             .As<IEpicService>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterType<CompanyService>()
+            .Named<ICompanyService>("CompanyService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<CompanyService>()
+            .As<ICompanyService>()
+            .InstancePerLifetimeScope();
     }
 }
