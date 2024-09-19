@@ -3,9 +3,11 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
+using LeokaEstetica.Platform.Models.Dto.Common.Cache;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement;
 using LeokaEstetica.Platform.ProjectManagement.Validators;
+using LeokaEstetica.Platform.Redis.Abstractions.ProjectManagement;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +26,7 @@ public class CompanyController : BaseController
     private readonly ICompanyService _companyService;
     private readonly Lazy<ICompanyRepository> _companyRepository;
     private readonly IUserRepository _userRepository;
+    private readonly Lazy<ICompanyRedisService> _companyRedisService;
     
     /// <summary>
     /// Конструктор.
@@ -32,18 +35,21 @@ public class CompanyController : BaseController
     /// <param name="companyService">Сервис компаний.</param>
     /// <param name="companyRepository">Репозиторий компаний.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="companyRedisService">Сервис компаний в кэше.</param>
     /// </summary>
     public CompanyController(ILogger<CompanyController> logger,
         Lazy<IDiscordService> discordService,
         ICompanyService companyService,
         Lazy<ICompanyRepository> companyRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        Lazy<ICompanyRedisService> companyRedisService)
     {
         _logger = logger;
         _discordService = discordService;
         _companyService = companyService;
         _companyRepository = companyRepository;
         _userRepository = userRepository;
+        _companyRedisService = companyRedisService;
     }
 
     /// <summary>
@@ -136,5 +142,32 @@ public class CompanyController : BaseController
         var result = await _companyRepository.Value.GetUserCompaniesAsync(userId) ?? Enumerable.Empty<CompanyOutput>();
 
         return result;
+    }
+
+    /// <summary>
+    /// Метод добавляет компанию в кэш.
+    /// </summary>
+    /// <param name="companyInput">Входная модель.</param>
+    [HttpPost]
+    [Route("company-cache")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task CreateCompanyCacheAsync([FromBody] CompanyInput companyInput)
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(GetUserName());
+
+        if (userId == 0)
+        {
+            throw new InvalidOperationException($"Id пользователя с аккаунтом {GetUserName()} не найден.");
+        }
+        
+        await _companyRedisService.Value.SetCompanyAsync(new CompanyRedis
+        {
+            CompanyName = companyInput.CompanyName,
+            CreatedBy = userId
+        });
     }
 }
