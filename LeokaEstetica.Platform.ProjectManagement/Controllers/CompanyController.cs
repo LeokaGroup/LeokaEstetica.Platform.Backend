@@ -112,4 +112,29 @@ public class CompanyController : BaseController
             IfExistsMultiCompanies = calcCompaniesCount > 1
         };
     }
+
+    /// <summary>
+    /// Метод получает список компаний пользователя.
+    /// </summary>
+    /// <returns>Список компаний пользователя.</returns>
+    [HttpGet]
+    [Route("user-companies")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<CompanyOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<CompanyOutput>?> GetUserCompaniesAsync()
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(GetUserName());
+
+        if (userId == 0)
+        {
+            throw new InvalidOperationException($"Id пользователя с аккаунтом {GetUserName()} не найден.");
+        }
+
+        var result = await _companyRepository.Value.GetUserCompaniesAsync(userId) ?? Enumerable.Empty<CompanyOutput>();
+
+        return result;
+    }
 }

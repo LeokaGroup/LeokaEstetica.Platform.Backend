@@ -1,4 +1,6 @@
-﻿namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+﻿using LeokaEstetica.Platform.Models.Dto.ProjectManagement;
+
+namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
 /// <summary>
 /// Абстракция репозитория компаний.
@@ -18,4 +20,11 @@ public interface ICompanyRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Кол-во компаний пользователя.</returns>
     Task<int?> CalculateCountUserCompaniesByCompanyMemberIdAsync(long userId);
+
+    /// <summary>
+    /// Метод получает список компаний пользователя.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Список компаний пользователя.</returns>
+    Task<IEnumerable<CompanyOutput>?> GetUserCompaniesAsync(long userId);
 }
