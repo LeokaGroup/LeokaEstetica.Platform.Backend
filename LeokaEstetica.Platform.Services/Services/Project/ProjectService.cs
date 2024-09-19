@@ -42,6 +42,7 @@ using LeokaEstetica.Platform.Services.Helpers;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Models.Dto.Output.Orders;
+using LeokaEstetica.Platform.Redis.Abstractions.ProjectManagement;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -96,6 +97,7 @@ internal sealed class ProjectService : IProjectService
     private readonly IAccessModuleService _accessModuleService;
     private readonly Lazy<IHubNotificationService> _hubNotificationService;
     private readonly IMongoDbRepository _mongoDbRepository;
+    private readonly Lazy<ICompanyRedisService> _companyRedisService;
 
     /// <summary>
     /// Конструктор.
@@ -119,27 +121,29 @@ internal sealed class ProjectService : IProjectService
     /// <param name="accessModuleService">Сервис проверки доступов.</param>
     /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     /// <param name="mongoDbRepository">Репозиторий MongoDB.</param>
+    /// <param name="companyRedisService">Сервис компаний в кэше.</param>
     public ProjectService(IProjectRepository projectRepository,
-        ILogger<ProjectService> logger,
-        IUserRepository userRepository,
-        IMapper mapper,
-        IProjectNotificationsService projectNotificationsService,
-        IVacancyService vacancyService,
-        IVacancyRepository vacancyRepository, 
-        ISubscriptionRepository subscriptionRepository, 
-        IVacancyModerationService vacancyModerationService, 
-        IProjectNotificationsRepository projectNotificationsRepository, 
-        IAccessUserService accessUserService, 
-        IMailingsService mailingsService, 
-        IProjectModerationRepository projectModerationRepository,
-        IDiscordService discordService,
-        IProjectManagementSettingsRepository projectManagementSettingsRepository,
-        IGlobalConfigRepository globalConfigRepository,
-        IProjectManagmentRepository projectManagmentRepository,
-        IWikiTreeRepository wikiTreeRepository,
-        IAccessModuleService accessModuleService,
-        Lazy<IHubNotificationService> hubNotificationService,
-         IMongoDbRepository mongoDbRepository)
+	    ILogger<ProjectService> logger,
+	    IUserRepository userRepository,
+	    IMapper mapper,
+	    IProjectNotificationsService projectNotificationsService,
+	    IVacancyService vacancyService,
+	    IVacancyRepository vacancyRepository,
+	    ISubscriptionRepository subscriptionRepository,
+	    IVacancyModerationService vacancyModerationService,
+	    IProjectNotificationsRepository projectNotificationsRepository,
+	    IAccessUserService accessUserService,
+	    IMailingsService mailingsService,
+	    IProjectModerationRepository projectModerationRepository,
+	    IDiscordService discordService,
+	    IProjectManagementSettingsRepository projectManagementSettingsRepository,
+	    IGlobalConfigRepository globalConfigRepository,
+	    IProjectManagmentRepository projectManagmentRepository,
+	    IWikiTreeRepository wikiTreeRepository,
+	    IAccessModuleService accessModuleService,
+	    Lazy<IHubNotificationService> hubNotificationService,
+	    IMongoDbRepository mongoDbRepository,
+	    Lazy<ICompanyRedisService> companyRedisService)
     {
         _projectRepository = projectRepository;
         _logger = logger;
@@ -162,6 +166,7 @@ internal sealed class ProjectService : IProjectService
         _accessModuleService = accessModuleService;
         _hubNotificationService = hubNotificationService;
         _mongoDbRepository = mongoDbRepository;
+        _companyRedisService = companyRedisService;
     }
 
 	#region Публичные методы.
@@ -265,22 +270,16 @@ internal sealed class ProjectService : IProjectService
 
 			var ifExistsCompany = await _projectManagmentRepository.IfExistsCompanyByOwnerIdAsync(userId);
 
-            long companyId;
+            long? companyId = null;
 
             // Если у пользователя не была выбрана компания, то определяем компанию пользователя либо заводим ее ему.
+            // Если у пользователя не более 1 компании, но минимум 1, то определяем компанию.
             if (!createProjectInput.CompanyId.HasValue)
             {
 	            // Сначала создаем компанию, затем добавляем в нее проект.
 	            if (!ifExistsCompany)
 	            {
-		            // Заводим компанию, если она не существует.
-		            companyId = await _projectManagmentRepository.CreateCompanyAsync(userId);
-
-		            // Добавляем текущего пользователи в участники компании с ролью владельца.
-		            await _projectManagmentRepository.AddCompanyMemberAsync(companyId, userId, "Владелец");
-
-		            // Заводим роли для компании.
-		            await _projectManagementSettingsRepository.AddCompanyMemberRolesAsync(companyId, userId);
+		            companyId = await CreateCompanyAsync(userId, null);
 	            }
 
 	            // Если компания существует, то добавляем этот проект в компанию.
@@ -298,14 +297,35 @@ internal sealed class ProjectService : IProjectService
 	            }
             }
 
+            // Иначе проверяем кэш. Так компанию могли создать в кэше.
+            // Создают в кэше, когда у пользователя еще нету компаний.
+            if (!companyId.HasValue)
+            {
+	            var key = CacheConst.Cache.PROJECT_MANAGEMENT_COMPANY_KEY + "_" + userId;
+	            var companyFromCache = await _companyRedisService.Value.GetCompanyFromCacheAsync(key);
+
+	            // Если нашли в кэше компанию, то создаем ее и сделаем текущего пользователя ее владельцем.
+	            if (companyFromCache is not null)
+	            {
+		            companyId = await CreateCompanyAsync(userId, companyFromCache.CompanyName);
+	            }
+            }
+
             // Проект создается с выбранной компанией.
+            // Компания уже была у пользователя.
             else
             {
+	            if (!createProjectInput.CompanyId.HasValue)
+	            {
+		            throw new InvalidOperationException(
+			            "Id компании не определен. Он должен был быть известен на этот момент.");
+	            }
+	            
 	            companyId = createProjectInput.CompanyId.Value;
             }
 
 			// Добавляем новый проект в общее пространство компании.
-			await _projectManagmentRepository.AddProjectWorkSpaceAsync(projectId, companyId);
+			await _projectManagmentRepository.AddProjectWorkSpaceAsync(projectId, companyId!.Value);
 
             // Заводим для проекта wiki и ознакомительную страницу.
             await _wikiTreeRepository.CreateProjectWikiAsync(projectId, userId, projectName);
@@ -2184,30 +2204,23 @@ internal sealed class ProjectService : IProjectService
 	}
 
 	/// <summary>
-	/// Метод валидирует стадии проекта. Если хоть одну не удалось определить, то логируем такое.
-	/// Но не ломаем систему, а просто фиксируем для себя.
+	/// Метод заводит компанию для пользователя.
 	/// </summary>
-	/// <param name="projects"></param>
-	private async Task ValidateProjectStages(List<CatalogProjectOutput> projects)
+	/// <param name="userId">Id пользователя.</param>
+	/// <param name="companyName">Название компании, если передали.</param>
+	/// <returns>Id компании.</returns>
+	private async Task<long> CreateCompanyAsync(long userId, string? companyName)
 	{
-		var exeptions = new List<InvalidOperationException>();
-		foreach (var p in projects)
-		{
-			if (p.ProjectStageSysName is null)
-			{
-				exeptions.Add(new InvalidOperationException(
-					$"Не удалось получить стадию проекта. ProjectId: {p.ProjectId}"));
-			}
-		}
+		// Заводим компанию, если она не существует.
+		var companyId = await _projectManagmentRepository.CreateCompanyAsync(userId, companyName);
 
-		if (exeptions.Any())
-		{
-			var aggEx = new AggregateException("Ошибка при получении стадий проектов.", exeptions);
-			_logger.LogError(aggEx, aggEx.Message);
+		// Добавляем текущего пользователи в участники компании с ролью владельца.
+		await _projectManagmentRepository.AddCompanyMemberAsync(companyId, userId, "Владелец");
 
-			// Отправляем ошибки в чат пачки.
-			await _discordService.SendNotificationErrorAsync(aggEx);
-		}
+		// Заводим роли для компании.
+		await _projectManagementSettingsRepository.AddCompanyMemberRolesAsync(companyId, userId);
+
+		return companyId;
 	}
 
 	#endregion

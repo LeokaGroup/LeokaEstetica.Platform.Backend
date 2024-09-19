@@ -1,4 +1,5 @@
 using Autofac;
+using LazyProxy.Autofac;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Redis.Abstractions.Client;
 using LeokaEstetica.Platform.Redis.Abstractions.Commerce;
@@ -99,5 +100,14 @@ public class RedisModule : Module
         builder.RegisterType<ProjectManagmentRoleRedisService>()
             .As<IProjectManagmentRoleRedisService>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterType<CompanyRedisService>()
+            .Named<ICompanyRedisService>("CompanyRedisService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<CompanyRedisService>()
+            .As<ICompanyRedisService>()
+            .InstancePerLifetimeScope();
+            
+        builder.RegisterLazy<ICompanyRedisService, CompanyRedisService>();
     }
 }

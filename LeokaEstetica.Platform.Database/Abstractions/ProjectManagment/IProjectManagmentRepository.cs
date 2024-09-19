@@ -670,8 +670,9 @@ public interface IProjectManagmentRepository
     /// Владельцем становится текущий пользователь, так как он заводит компанию.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
+    /// <param name="companyName">Название компании, если передали.</param>
     /// <returns>Id компании.</returns>
-    Task<long> CreateCompanyAsync(long userId);
+    Task<long> CreateCompanyAsync(long userId, string? companyName);
 
     /// <summary>
     /// Метод проверяет существование компании по Id владельца компании.

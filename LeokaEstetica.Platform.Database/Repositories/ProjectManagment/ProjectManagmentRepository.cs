@@ -2544,16 +2544,29 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
     }
     
     /// <inheritdoc/>
-    public async Task<long> CreateCompanyAsync(long userId)
+    public async Task<long> CreateCompanyAsync(long userId, string? companyName)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
         var parameters = new DynamicParameters();
         parameters.Add("@userId", userId);
 
-        var query = "INSERT INTO project_management.organizations (created_by) " +
+        string? query;
+
+        if (string.IsNullOrWhiteSpace(companyName))
+        {
+            query = "INSERT INTO project_management.organizations (created_by) " +
                     "VALUES (@userId) " +
                     "RETURNING organization_id";
+        }
+
+        else
+        {
+            parameters.Add("@companyName", companyName);
+            query = "INSERT INTO project_management.organizations (created_by, organization_name) " +
+                    "VALUES (@userId, @companyName) " +
+                    "RETURNING organization_id";
+        }
 
         var result = await connection.ExecuteScalarAsync<long>(query, parameters);
 
