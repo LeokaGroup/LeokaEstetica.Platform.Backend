@@ -267,32 +267,42 @@ internal sealed class ProjectService : IProjectService
 
             long companyId;
 
-			// Сначала создаем компанию, затем добавляем в нее проект.
-			if (!ifExistsCompany)
-			{
-				// Заводим компанию, если она не существует.
-				companyId = await _projectManagmentRepository.CreateCompanyAsync(userId);
+            // Если у пользователя не была выбрана компания, то определяем компанию пользователя либо заводим ее ему.
+            if (!createProjectInput.CompanyId.HasValue)
+            {
+	            // Сначала создаем компанию, затем добавляем в нее проект.
+	            if (!ifExistsCompany)
+	            {
+		            // Заводим компанию, если она не существует.
+		            companyId = await _projectManagmentRepository.CreateCompanyAsync(userId);
 
-				// Добавляем текущего пользователи в участники компании с ролью владельца.
-				await _projectManagmentRepository.AddCompanyMemberAsync(companyId, userId, "Владелец");
+		            // Добавляем текущего пользователи в участники компании с ролью владельца.
+		            await _projectManagmentRepository.AddCompanyMemberAsync(companyId, userId, "Владелец");
 
-				// Заводим роли для компании.
-				await _projectManagementSettingsRepository.AddCompanyMemberRolesAsync(companyId, userId);
-			}
+		            // Заводим роли для компании.
+		            await _projectManagementSettingsRepository.AddCompanyMemberRolesAsync(companyId, userId);
+	            }
 
-			// Если компания существует, то добавляем этот проект в компанию.
-			else
-			{
-				var isCompanyOwner = await _projectManagmentRepository.CheckCompanyOwnerByUserIdAsync(userId);
+	            // Если компания существует, то добавляем этот проект в компанию.
+	            else
+	            {
+		            var isCompanyOwner = await _projectManagmentRepository.CheckCompanyOwnerByUserIdAsync(userId);
 
-				if (!isCompanyOwner)
-				{
-					throw new InvalidOperationException("Пользователь не является владельцем никакой компании. " +
-														$"UserId: {userId}.");
-				}
+		            if (!isCompanyOwner)
+		            {
+			            throw new InvalidOperationException("Пользователь не является владельцем никакой компании. " +
+			                                                $"UserId: {userId}.");
+		            }
 
-				companyId = await _projectManagmentRepository.GetCompanyIdByOwnerIdAsync(userId);
-			}
+		            companyId = await _projectManagmentRepository.GetCompanyIdByOwnerIdAsync(userId);
+	            }
+            }
+
+            // Проект создается с выбранной компанией.
+            else
+            {
+	            companyId = createProjectInput.CompanyId.Value;
+            }
 
 			// Добавляем новый проект в общее пространство компании.
 			await _projectManagmentRepository.AddProjectWorkSpaceAsync(projectId, companyId);
