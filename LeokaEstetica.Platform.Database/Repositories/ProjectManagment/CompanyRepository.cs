@@ -59,8 +59,8 @@ internal sealed class CompanyRepository : BaseRepository, ICompanyRepository
         var parameters = new DynamicParameters();
         parameters.Add("@userId", userId);
 
-        var query = "SELECT org.organization_id, " +
-                    "org.organization_name, " +
+        var query = "SELECT org.organization_id AS CompanyId, " +
+                    "org.organization_name AS CompanyName, " +
                     "org.created_by " +
                     "FROM project_management.organization_members AS om " +
                     "INNER JOIN project_management.organizations AS org " +
