@@ -489,7 +489,8 @@ internal sealed class WikiTreeService : IWikiTreeService
                         {
                             if (!_excludedTreeItemIds.Contains(cf.FolderId!.Value))
                             {
-                                _excludedTreeItemIds.Add(cf.FolderId!.Value);
+                                // TODO: Вернем, если будет нужно, иначе выпилим.
+                                // _excludedTreeItemIds.Add(cf.FolderId!.Value);
                                 folder.Value.Children.Add(cf);
                             }
                         }
