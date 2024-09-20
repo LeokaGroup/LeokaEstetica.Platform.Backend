@@ -249,9 +249,19 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         // Фильтр по стадиям проекта.
         if (!string.IsNullOrWhiteSpace(catalogProjectInput.Filters.StageValues))
         {
-	        parameters.Add("@stages", catalogProjectInput.Filters.StageValues);
-	        // Приходит в строке через запятую, поэтому можем через IN.
-            query += " AND p0.\"StageSysName\" IN (@stages) ";
+            // Из строки делаем массив для передачи в параметр
+            var formattedValues = catalogProjectInput.Filters.StageValues.Split(',');
+
+            for (int i = 0; i < formattedValues.Length; i++)
+            {
+                parameters.Add($"@values{i}", formattedValues[i]);
+            }
+
+            // Строка с параметрами
+            var stages = string.Join(",", formattedValues.Select((_, index) => $"@values{index}"));
+
+            // Приходит в строке через запятую, поэтому можем через IN.
+            query += $" AND p0.\"StageSysName\" IN ({stages}) ";
             isFiltedApplied = true;
         }
 
