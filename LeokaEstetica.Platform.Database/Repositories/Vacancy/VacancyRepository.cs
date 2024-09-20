@@ -473,9 +473,19 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         // Фильтр по занятости.
         if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.EmploymentsValues))
         {
-            // EmploymentsValues разделены запятой в строке с фронта, поэтому можем через IN.
-            parameters.Add("@employments", vacancyCatalogInput.Filters.EmploymentsValues);
-            query += "AND u.\"Employment\" IN (@employments) ";
+            // Из строки делаем массив для передачи в параметр
+            var formattedValues = vacancyCatalogInput.Filters.EmploymentsValues.Split(',');
+
+            for (int i = 0; i < formattedValues.Length; i++)
+            {
+                parameters.Add($"@values{i}", formattedValues[i]);
+            }
+
+            // Строка с параметрами
+            var employments = string.Join(",", formattedValues.Select((_, index) => $"@values{index}"));
+
+            // EmploymentsValues разделены запятой в строке с фронта, поэтому можем через IN.        
+            query += $"AND u.\"Employment\" IN ({employments}) ";
             isFiltedApplied = true;
         }
 
