@@ -119,7 +119,6 @@ internal static class CreateProjectTaskFactory
             ProjectId = projectManagementTaskInput.ProjectId,
             TaskStatusId = projectManagementTaskInput.TaskStatusId,
             CreatedAt = DateTime.UtcNow,
-            PriorityId = projectManagementTaskInput.PriorityId!.Value,
             ProjectEpicId = maxProjectTaskId
         };
 
@@ -133,12 +132,6 @@ internal static class CreateProjectTaskFactory
         if (projectManagementTaskInput.TagIds is not null && projectManagementTaskInput.TagIds.Any())
         {
             result.TagIds = projectManagementTaskInput.TagIds;
-        }
-
-        // Если к задаче не добавили приоритет, то по дефолту проставим средний.
-        if (!projectManagementTaskInput.PriorityId.HasValue)
-        {
-            result.PriorityId = (int)TaskPriorityEnum.Medium;
         }
 
         // Если заполнили дату начала эпика.
