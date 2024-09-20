@@ -299,7 +299,7 @@ internal sealed class ProjectService : IProjectService
 
             // Иначе проверяем кэш. Так компанию могли создать в кэше.
             // Создают в кэше, когда у пользователя еще нету компаний.
-            if (!companyId.HasValue)
+            if (!companyId.HasValue && !createProjectInput.CompanyId.HasValue)
             {
 	            var key = CacheConst.Cache.PROJECT_MANAGEMENT_COMPANY_KEY + "_" + userId;
 	            var companyFromCache = await _companyRedisService.Value.GetCompanyFromCacheAsync(key);
