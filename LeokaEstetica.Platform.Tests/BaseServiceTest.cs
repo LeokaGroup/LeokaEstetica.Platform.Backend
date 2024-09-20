@@ -247,7 +247,7 @@ internal class BaseServiceTest
             ProjectNotificationsService, VacancyService, vacancyRepository,
             subscriptionRepository, VacancyModerationService, projectNotificationsRepository,
             accessUserService, null, ProjectModerationRepository, discordService, null,
-            globalConfigRepository, projectManagementRepository, wikiRepository, null, null, null);
+            globalConfigRepository, projectManagementRepository, wikiRepository, null, null, null, null);
 
         SubscriptionService = new SubscriptionService(null, userRepository, subscriptionRepository,
             FareRuleRepository);
