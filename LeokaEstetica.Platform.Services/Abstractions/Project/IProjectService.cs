@@ -22,7 +22,7 @@ public interface IProjectService
     /// </summary>
     /// <param name="createProjectInput">Входная модель.</param>
     /// <returns>Данные нового проекта.</returns>
-    Task<UserProjectEntity> CreateProjectAsync(CreateProjectInput createProjectInput);
+    Task<CreateProjectOutput> CreateProjectAsync(CreateProjectInput createProjectInput);
 
     /// <summary>
     /// Метод получает названия полей для таблицы проектов пользователя.

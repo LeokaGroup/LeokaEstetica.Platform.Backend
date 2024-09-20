@@ -32,4 +32,21 @@ internal sealed class CompanyRepository : BaseRepository, ICompanyRepository
 
         await connection.ExecuteAsync(query, parameters);
     }
+
+    /// <inheritdoc />
+    public async Task<int?> CalculateCountUserCompaniesByCompanyMemberIdAsync(long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "SELECT COUNT (organization_id) " +
+                    "FROM project_management.organization_members " +
+                    "WHERE member_id = @userId";
+
+        var result = await connection.ExecuteScalarAsync<int?>(query, parameters);
+
+        return result;
+    }
 }

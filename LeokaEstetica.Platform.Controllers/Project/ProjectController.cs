@@ -103,7 +103,7 @@ public class ProjectController : BaseController
 		var result = new CreateProjectOutput();
 		var validator = await new CreateProjectValidator().ValidateAsync(createProjectInput);
 
-		if (validator.Errors.Any())
+		if (validator.Errors.Count > 0)
 		{
 			result.Errors = await _validationExcludeErrorsService.ExcludeAsync(validator.Errors);
 
@@ -112,9 +112,7 @@ public class ProjectController : BaseController
         
         createProjectInput.Account = GetUserName();
 
-		var project = await _projectService.CreateProjectAsync(createProjectInput);
-
-		result = _mapper.Map<CreateProjectOutput>(project);
+		result = await _projectService.CreateProjectAsync(createProjectInput);
 
 		return result;
 	}

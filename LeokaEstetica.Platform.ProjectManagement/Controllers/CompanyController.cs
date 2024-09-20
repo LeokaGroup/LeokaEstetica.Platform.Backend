@@ -1,7 +1,10 @@
 ﻿using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement;
 using LeokaEstetica.Platform.ProjectManagement.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.AspNetCore.Mvc;
@@ -19,20 +22,28 @@ public class CompanyController : BaseController
     private readonly ILogger<CompanyController> _logger;
     private readonly Lazy<IDiscordService> _discordService;
     private readonly ICompanyService _companyService;
+    private readonly Lazy<ICompanyRepository> _companyRepository;
+    private readonly IUserRepository _userRepository;
     
     /// <summary>
     /// Конструктор.
     /// <param name="logger">Логгер.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="companyService">Сервис компаний.</param>
+    /// <param name="companyRepository">Репозиторий компаний.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
     /// </summary>
     public CompanyController(ILogger<CompanyController> logger,
         Lazy<IDiscordService> discordService,
-        ICompanyService companyService)
+        ICompanyService companyService,
+        Lazy<ICompanyRepository> companyRepository,
+        IUserRepository userRepository)
     {
         _logger = logger;
         _discordService = discordService;
         _companyService = companyService;
+        _companyRepository = companyRepository;
+        _userRepository = userRepository;
     }
 
     /// <summary>
@@ -67,5 +78,38 @@ public class CompanyController : BaseController
         }
 
         await _companyService.CreateCompanyAsync(companyInput.CompanyName, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод вычисляет кол-во компаний пользователя.
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("calculate-user-company")]
+    [ProducesResponseType(200, Type = typeof(CalculateUserCompanyOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CalculateUserCompanyOutput> CalculateUserCompanyAsync()
+    {
+        var userId = await _userRepository.GetUserByEmailAsync(GetUserName());
+
+        if (userId == 0)
+        {
+            throw new InvalidOperationException($"Id пользователя с аккаунтом {GetUserName()} не найден.");
+        }
+
+        var calcCompaniesCount = await _companyRepository.Value.CalculateCountUserCompaniesByCompanyMemberIdAsync(
+            userId);
+        
+        return new CalculateUserCompanyOutput
+        {
+            // Если компаний 0 - то требуем создать сначала компанию.
+            // Если более 1, то требуем выбрать, к какой компании отнести проект.
+            IsNeedUserAction = calcCompaniesCount is 0 or > 1,
+            IfExistsAnyCompanies = calcCompaniesCount == 1,
+            IfExistsMultiCompanies = calcCompaniesCount > 1
+        };
     }
 }
