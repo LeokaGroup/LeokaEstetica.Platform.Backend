@@ -27,7 +27,8 @@ internal sealed class CompanyRedisService : ICompanyRedisService
     /// <inheritdoc />
     public async Task SetCompanyAsync(CompanyRedis companyRedis)
     {
-        var key = CacheConst.Cache.PROJECT_MANAGEMENT_COMPANY_KEY + "_" + companyRedis.CreatedBy;
+        var key = CacheConst.Cache.PROJECT_MANAGEMENT_COMPANY_KEY + companyRedis.CreatedBy +
+                  "_ProjectManagementCompanies";
 
         await _redis.SetStringAsync(key,
             ProtoBufExtensions.Serialize(companyRedis), new DistributedCacheEntryOptions

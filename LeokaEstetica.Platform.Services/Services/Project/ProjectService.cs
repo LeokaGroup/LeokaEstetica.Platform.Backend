@@ -274,40 +274,41 @@ internal sealed class ProjectService : IProjectService
 
             // Если у пользователя не была выбрана компания, то определяем компанию пользователя либо заводим ее ему.
             // Если у пользователя не более 1 компании, но минимум 1, то определяем компанию.
-            if (!createProjectInput.CompanyId.HasValue)
-            {
-	            // Сначала создаем компанию, затем добавляем в нее проект.
-	            if (!ifExistsCompany)
-	            {
-		            companyId = await CreateCompanyAsync(userId, null);
-	            }
-
-	            // Если компания существует, то добавляем этот проект в компанию.
-	            else
-	            {
-		            var isCompanyOwner = await _projectManagmentRepository.CheckCompanyOwnerByUserIdAsync(userId);
-
-		            if (!isCompanyOwner)
-		            {
-			            throw new InvalidOperationException("Пользователь не является владельцем никакой компании. " +
-			                                                $"UserId: {userId}.");
-		            }
-
-		            companyId = await _projectManagmentRepository.GetCompanyIdByOwnerIdAsync(userId);
-	            }
-            }
-
-            // Иначе проверяем кэш. Так компанию могли создать в кэше.
-            // Создают в кэше, когда у пользователя еще нету компаний.
             if (!companyId.HasValue && !createProjectInput.CompanyId.HasValue)
             {
-	            var key = CacheConst.Cache.PROJECT_MANAGEMENT_COMPANY_KEY + "_" + userId;
+	            var key = CacheConst.Cache.PROJECT_MANAGEMENT_COMPANY_KEY + userId + "_ProjectManagementCompanies";
 	            var companyFromCache = await _companyRedisService.Value.GetCompanyFromCacheAsync(key);
-
+	            
+	            // Иначе проверяем кэш. Так компанию могли создать в кэше.
+	            // Создают в кэше, когда у пользователя еще нету компаний.
 	            // Если нашли в кэше компанию, то создаем ее и сделаем текущего пользователя ее владельцем.
 	            if (companyFromCache is not null)
 	            {
 		            companyId = await CreateCompanyAsync(userId, companyFromCache.CompanyName);
+	            }
+
+	            // В кэше тоже нет, работаем как обычно тогда.
+	            if (!companyId.HasValue)
+	            {
+		            // Сначала создаем компанию, затем добавляем в нее проект.
+		            if (!ifExistsCompany)
+		            {
+			            companyId = await CreateCompanyAsync(userId, null);
+		            }
+
+		            // Если компания существует, то добавляем этот проект в компанию.
+		            else
+		            {
+			            var isCompanyOwner = await _projectManagmentRepository.CheckCompanyOwnerByUserIdAsync(userId);
+
+			            if (!isCompanyOwner)
+			            {
+				            throw new InvalidOperationException("Пользователь не является владельцем никакой компании. " +
+				                                                $"UserId: {userId}.");
+			            }
+
+			            companyId = await _projectManagmentRepository.GetCompanyIdByOwnerIdAsync(userId);
+		            }
 	            }
             }
 

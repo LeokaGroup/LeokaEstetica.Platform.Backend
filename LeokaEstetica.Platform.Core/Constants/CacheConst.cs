@@ -33,6 +33,6 @@ public static class CacheConst
         /// <summary>
         /// Ключ компании.
         /// </summary>
-        public const string PROJECT_MANAGEMENT_COMPANY_KEY = "ProjectManagementCompany";
+        public const string PROJECT_MANAGEMENT_COMPANY_KEY = "ProjectManagementCompanies:";
     }
 }
