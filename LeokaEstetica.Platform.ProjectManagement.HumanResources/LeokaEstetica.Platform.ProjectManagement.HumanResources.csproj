@@ -21,9 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Abstractions" />
       <Folder Include="Loaders\Jobs" />
-      <Folder Include="Services" />
     </ItemGroup>
 
     <ItemGroup>
