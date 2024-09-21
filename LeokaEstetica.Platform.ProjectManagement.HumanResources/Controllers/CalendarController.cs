@@ -1,5 +1,6 @@
 ﻿using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
 using LeokaEstetica.Platform.ProjectManagement.HumanResources.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,4 +24,20 @@ public class CalendarController : BaseController
   {
     _calendarService = calendarService;
   }
+
+  /// <summary>
+  /// Метод получает события календаря текущего пользователя.
+  /// </summary>
+  /// <returns>Список событий.</returns>
+  // [HttpGet]
+  // [Route("events")]
+  // [ProducesResponseType(200, Type = typeof(IEnumerable<CalendarOutput>))]
+  // [ProducesResponseType(400)]
+  // [ProducesResponseType(403)]
+  // [ProducesResponseType(500)]
+  // [ProducesResponseType(404)]
+  // public async Task<IEnumerable<CalendarOutput>> GetCalendarEventsAsync()
+  // {
+  //   
+  // }
 }

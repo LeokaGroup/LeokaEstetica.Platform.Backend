@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.ProjectManagement.HumanResources.Abstractions;
+﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
+using LeokaEstetica.Platform.ProjectManagement.HumanResources.Abstractions;
 
 namespace LeokaEstetica.Platform.ProjectManagement.HumanResources.Services;
 
@@ -16,5 +17,11 @@ internal sealed class CalendarService : ICalendarService
     public CalendarService(ILogger<CalendarService> logger)
     {
         _logger = logger;
+    }
+
+    /// <inheritdoc />
+    public Task<IEnumerable<CalendarOutput>> GetCalendarEventsAsync(string account)
+    {
+        throw new NotImplementedException();
     }
 }
