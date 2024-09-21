@@ -64,7 +64,10 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform.ProjectManagement" });
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Leoka.Estetica.Platform.ProjectManagement.HumanResources"
+    });
     AddSwaggerXml(c);
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -104,7 +107,7 @@ static void AddSwaggerXml(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions c)
 builder.WebHost
     .UseKestrel()
     .UseContentRoot(Directory.GetCurrentDirectory())
-    .UseUrls(configuration["UseUrls:ProjectManagementPath"])
+    .UseUrls(configuration["UseUrls:ProjectManagementHumanResourcesPath"])
     .UseEnvironment(configuration["Environment"]);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -201,7 +204,8 @@ app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform.ProjectManagement"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json",
+        "Leoka.Estetica.Platform.ProjectManagement.HumanResources"));
 }
 
 // Добавляем хаб приложения для работы через сокеты.
