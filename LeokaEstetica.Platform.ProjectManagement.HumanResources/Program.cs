@@ -5,8 +5,7 @@ using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Integrations.Filters;
-using LeokaEstetica.Platform.Notifications.Data;
-using LeokaEstetica.Platform.ProjectManagement.Loaders;
+using LeokaEstetica.Platform.ProjectManagement.HumanResources.Loaders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -160,7 +159,7 @@ builder.Services.AddQuartz(q =>
 {
     q.UseMicrosoftDependencyInjectionJobFactory();
 
-    // Запуск джоб при старте модуля УП.
+    // Запуск джоб при старте модуля HR.
     StartJobs.Start(q, configuration);
 });
 
@@ -206,7 +205,7 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 }
 
 // Добавляем хаб приложения для работы через сокеты.
-app.MapHub<ProjectManagementHub>("/project-management-notify");
+// app.MapHub<ProjectManagementHub>("/project-management-notify");
 
 // app.UseProblemDetails();
 
