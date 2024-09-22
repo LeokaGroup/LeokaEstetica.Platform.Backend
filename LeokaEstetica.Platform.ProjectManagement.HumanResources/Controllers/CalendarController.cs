@@ -14,30 +14,32 @@ namespace LeokaEstetica.Platform.ProjectManagement.HumanResources.Controllers;
 [AuthFilter]
 public class CalendarController : BaseController
 {
-  private readonly ICalendarService _calendarService;
+    private readonly ICalendarService _calendarService;
 
-  /// <summary>
-  /// Конструктор.
-  /// </summary>
-  /// <param name="calendarService">Сервис календарей.</param>
-  public CalendarController(ICalendarService calendarService)
-  {
-    _calendarService = calendarService;
-  }
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="calendarService">Сервис календарей.</param>
+    public CalendarController(ICalendarService calendarService)
+    {
+        _calendarService = calendarService;
+    }
 
-  /// <summary>
-  /// Метод получает события календаря текущего пользователя.
-  /// </summary>
-  /// <returns>Список событий.</returns>
-  // [HttpGet]
-  // [Route("events")]
-  // [ProducesResponseType(200, Type = typeof(IEnumerable<CalendarOutput>))]
-  // [ProducesResponseType(400)]
-  // [ProducesResponseType(403)]
-  // [ProducesResponseType(500)]
-  // [ProducesResponseType(404)]
-  // public async Task<IEnumerable<CalendarOutput>> GetCalendarEventsAsync()
-  // {
-  //   
-  // }
+    /// <summary>
+    /// Метод получает события календаря текущего пользователя.
+    /// </summary>
+    /// <returns>Список событий.</returns>
+    [HttpGet]
+    [Route("events")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<CalendarOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<CalendarOutput>> GetCalendarEventsAsync()
+    {
+        var result = await _calendarService.GetCalendarEventsAsync(GetUserName());
+
+        return result;
+    }
 }

@@ -20,6 +20,7 @@ using LeokaEstetica.Platform.Database.Abstractions.Press;
 using LeokaEstetica.Platform.Database.Abstractions.Profile;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagmentHumanResources;
 using LeokaEstetica.Platform.Database.Abstractions.Resume;
 using LeokaEstetica.Platform.Database.Abstractions.Search;
 using LeokaEstetica.Platform.Database.Abstractions.Subscription;
@@ -50,6 +51,7 @@ using LeokaEstetica.Platform.Database.Repositories.Press;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
+using LeokaEstetica.Platform.Database.Repositories.ProjectManagmentHumanResources;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Search;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
@@ -379,5 +381,12 @@ public class RepositoriesModule : Module
             .InstancePerLifetimeScope();
             
         builder.RegisterLazy<ICompanyRepository, CompanyRepository>();
+        
+        builder.RegisterType<CalendarRepository>()
+            .Named<ICalendarRepository>("CalendarRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<CalendarRepository>()
+            .As<ICalendarRepository>()
+            .InstancePerLifetimeScope();
     }
 }
