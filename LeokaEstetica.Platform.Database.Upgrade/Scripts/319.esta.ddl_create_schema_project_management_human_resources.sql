@@ -1,0 +1,1 @@
+﻿CREATE SCHEMA project_management_human_resources;

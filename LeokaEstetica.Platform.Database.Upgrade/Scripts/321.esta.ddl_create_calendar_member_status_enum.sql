@@ -1,0 +1,1 @@
+﻿CREATE TYPE project_management_human_resources.CALENDAR_MEMBER_STATUS_ENUM AS ENUM ('busy', 'may-be-busy', 'available');

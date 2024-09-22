@@ -1,0 +1,94 @@
+﻿using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Database.Abstractions.ProjectManagmentHumanResources;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
+using LeokaEstetica.Platform.ProjectManagement.HumanResources.Abstractions;
+
+namespace LeokaEstetica.Platform.ProjectManagement.HumanResources.Services;
+
+/// <summary>
+/// Класс реализует методы сервиса календарей.
+/// </summary>
+internal sealed class CalendarService : ICalendarService
+{
+    private readonly ILogger<CalendarService>? _logger;
+    private readonly IUserRepository _userRepository;
+    private readonly ICalendarRepository _calendarRepository;
+
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="logger">Логгер.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="calendarRepository">Репозиторий календаря.</param>
+    public CalendarService(ILogger<CalendarService>? logger,
+        IUserRepository userRepository,
+        ICalendarRepository calendarRepository)
+    {
+        _logger = logger;
+        _userRepository = userRepository;
+        _calendarRepository = calendarRepository;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<CalendarOutput>> GetCalendarEventsAsync(string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
+            {
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
+            }
+
+            // Получаем список событий, где в участниках есть текущий пользователь.
+            var events = (await _calendarRepository.GetCalendarEventsAsync(userId))?.AsList();
+
+            if (events is null || events.Count == 0)
+            {
+                return Enumerable.Empty<CalendarOutput>();
+            }
+
+            // Получаем участников событий.
+            var eventMembers = (await _calendarRepository.GetEventMembersAsync(
+                    events.Select(x => x.EventId)))
+                ?.AsList();
+
+            var isAnyEventMembers = eventMembers is not null && eventMembers.Count > 0;
+
+            // Получаем роли участников событий.
+            var eventMemberRoles = (await _calendarRepository.GetEventMemberRolesAsync(
+                    events.Select(x => x.EventId), eventMembers?.Select(x => x.EventMemberId) ?? new List<long>()))
+                ?.AsList();
+
+            var isAnyeventMemberRoles = eventMembers is not null && eventMembers.Count > 0;
+
+            // Заполняем данные каждого события.
+            foreach (var e in events)
+            {
+                if (isAnyEventMembers)
+                {
+                    e.EventMembers ??= new List<EventMemberOutput>();
+                    e.EventMembers.AddRange(eventMembers?.Where(x => x.EventId == e.EventId) ??
+                                            new List<EventMemberOutput>());
+                }
+
+                if (isAnyeventMemberRoles)
+                {
+                    e.EventMemberRoles ??= new List<EventMemberRoleOutput>();
+                    e.EventMemberRoles.AddRange(eventMemberRoles?.Where(x => x.EventId == e.EventId) ??
+                                                new List<EventMemberRoleOutput>());
+                }
+            }
+
+            return events;
+        }
+
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+}

@@ -5,8 +5,7 @@ using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Integrations.Filters;
-using LeokaEstetica.Platform.Notifications.Data;
-using LeokaEstetica.Platform.ProjectManagement.Loaders;
+using LeokaEstetica.Platform.ProjectManagement.HumanResources.Loaders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -65,7 +64,10 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Leoka.Estetica.Platform.ProjectManagement" });
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Leoka.Estetica.Platform.ProjectManagement.HumanResources"
+    });
     AddSwaggerXml(c);
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -105,7 +107,7 @@ static void AddSwaggerXml(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions c)
 builder.WebHost
     .UseKestrel()
     .UseContentRoot(Directory.GetCurrentDirectory())
-    .UseUrls(configuration["UseUrls:ProjectManagementPath"])
+    .UseUrls(configuration["UseUrls:ProjectManagementHumanResourcesPath"])
     .UseEnvironment(configuration["Environment"]);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -160,7 +162,7 @@ builder.Services.AddQuartz(q =>
 {
     q.UseMicrosoftDependencyInjectionJobFactory();
 
-    // Запуск джоб при старте модуля УП.
+    // Запуск джоб при старте модуля HR.
     StartJobs.Start(q, configuration);
 });
 
@@ -202,11 +204,12 @@ app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Leoka.Estetica.Platform.ProjectManagement"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json",
+        "Leoka.Estetica.Platform.ProjectManagement.HumanResources"));
 }
 
 // Добавляем хаб приложения для работы через сокеты.
-app.MapHub<ProjectManagementHub>("/project-management-notify");
+// app.MapHub<ProjectManagementHub>("/project-management-notify");
 
 // app.UseProblemDetails();
 

@@ -164,6 +164,7 @@ public class CompanyController : BaseController
             throw new InvalidOperationException($"Id пользователя с аккаунтом {GetUserName()} не найден.");
         }
         
+        // TODO: Если будет много полей, то через маппер кастить.
         await _companyRedisService.Value.SetCompanyAsync(new CompanyRedis
         {
             CompanyName = companyInput.CompanyName,
