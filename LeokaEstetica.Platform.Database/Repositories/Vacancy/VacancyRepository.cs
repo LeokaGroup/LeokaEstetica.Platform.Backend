@@ -465,27 +465,16 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                     "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
                     "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
 
-        vacancyCatalogInput.Filters ??= new FilterVacancyInput();
-        
         // Если применили любой фильтр.
         var isFiltedApplied = false;
 
         // Фильтр по занятости.
         if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.EmploymentsValues))
         {
-            // Из строки делаем массив для передачи в параметр
-            var formattedValues = vacancyCatalogInput.Filters.EmploymentsValues.Split(',');
-
-            for (int i = 0; i < formattedValues.Length; i++)
-            {
-                parameters.Add($"@values{i}", formattedValues[i]);
-            }
-
-            // Строка с параметрами
-            var employments = string.Join(",", formattedValues.Select((_, index) => $"@values{index}"));
-
-            // EmploymentsValues разделены запятой в строке с фронта, поэтому можем через IN.        
-            query += $"AND u.\"Employment\" IN ({employments}) ";
+            parameters.Add("@employments", vacancyCatalogInput.Filters.EmploymentsValues);
+            
+            // EmploymentsValues разделены запятой в строке с фронта, поэтому можем через IN.
+            query += "AND u.\"Employment\" IN (@employments) ";
             isFiltedApplied = true;
         }
 
@@ -516,7 +505,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                 isFiltedApplied = true;
             }
             
-            // Без оплата.
+            // Без оплаты.
             if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay) == FilterPayTypeEnum.NotPay)
             {
                 query += "AND u.\"Payment\" = REPLACE(u.\"Payment\", 'Без оплаты', 0)::NUMERIC(12, 2) = 0 ";
@@ -533,7 +522,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             isFiltedApplied = true;
         }
         
-        // Поисковой поисковый запрос.
+        // Поисковая строка.
         if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.SearchText))
         {
             parameters.Add("@searchText", string.Concat(vacancyCatalogInput.SearchText, "%"));
