@@ -75,64 +75,6 @@ internal sealed class ResumeService : IResumeService
 
     #region Публичные методы.
 
-    /// <summary>
-    /// Метод возвращает список резюме.
-    /// </summary>
-    /// <returns>Список резюме.</returns>
-    public async Task<ResumeResultOutput> GetProfileInfosAsync()
-    {
-        try
-        {
-            var profiles = await _resumeRepository.GetProfileInfosAsync();
-
-            var removedProfile = new List<ProfileInfoEntity>();
-            
-            // Исключаем анкеты, которые не проходят по условиям.
-            foreach (var p in profiles)
-            {
-                var isAccess = await _accessUserService.IsProfileEmptyAsync(p.UserId);
-                var isRemarks = await _resumeModerationRepository.GetResumeRemarksAsync(p.ProfileInfoId);
-                
-                if (isAccess || isRemarks.Any())
-                {
-                    removedProfile.Add(p);
-                }
-            }
-
-            // Удаляем из списка те анкеты, которые не прошли по условиям.
-            if (removedProfile.Any())
-            {
-                profiles.RemoveAll(p => removedProfile.Select(x => x.ProfileInfoId).Contains(p.ProfileInfoId));
-            }
-
-            var result = new ResumeResultOutput
-            {
-                // Приводим к выходной модели.
-                CatalogResumes = _mapper.Map<IEnumerable<UserInfoOutput>>(profiles)
-            };
-            
-            if (!result.CatalogResumes.Any())
-            {
-                return result;
-            }
-            
-            // TODO: Выпилить, если у нас не будет выделения цветами тарифов.
-            // result.CatalogResumes = await _fillColorResumeService.SetColorBusinessResume(result.CatalogResumes.ToList(),
-            //     _subscriptionRepository, _fareRuleRepository);
-            
-            result.CatalogResumes = await SetUserCodesAsync(result.CatalogResumes.ToList());
-            
-            result.CatalogResumes = await SetVacanciesTagsAsync(result.CatalogResumes.ToList());
-
-            return result;
-        }
-        
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            throw;
-        }
-    }
 
     /// <summary>
     /// Метод получает анкету пользователя по ее Id.

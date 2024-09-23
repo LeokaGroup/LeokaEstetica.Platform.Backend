@@ -59,31 +59,6 @@ public class ResumeController : BaseController
         _fareRuleRepository = fareRuleRepository;
     }
 
-    /// <summary>
-    /// Метод получает список резюме.
-    /// </summary>
-    /// <returns>Список резюме.</returns>
-    [HttpGet]
-    [Route("catalog")]
-    [ProducesResponseType(200, Type = typeof(ResumeResultOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<ResumeResultOutput> GetProfileInfosAsync()
-    {
-        // TODO: Закомментил ,так как у нас идет 2 вызова на получение анкет. Это надо рефачить.
-        // TODO: Сначала идет запрос на этот ендпоинт, затем на пагинацию.
-        // TODO: Этот ендпоинт приносит лишь 1 анкету, что не имеет смысла.
-        // TODO: Потому что ендпоинт пагинации анкет приносит все остальные включая те записи, что на этом ендпоинте.
-        // TODO: В митоге надо уйти скорее всего от 2 ендпоинтов и получать единым вызовом анкеты.
-        // TODO: Также надо фильтровать сначала по приоритету тарифа, затем по дате создания анкеты.
-        // TODO: А то сейчас в конце новые анкеты.
-        return new ResumeResultOutput() { CatalogResumes = new List<UserInfoOutput>() };
-        var result = await _resumeService.GetProfileInfosAsync();
-
-        return result;
-    }
 
     /// <summary>
     /// TODO: Это должно находится в контроллере поиска. Перенести.
@@ -110,16 +85,15 @@ public class ResumeController : BaseController
         return result;
     }
 
-    /// <summary>
-    /// TODO: Есть лишняя логика в GetProfileInfosAsync по отображению анкет.
-    /// TODO: Смотреть там todo и отрефачить.
-    /// Метод пагинации резюме.
-    /// </summary>
-    /// <param name="page">Номер страницы.</param>
-    /// <param name="lastId">Id Последней записи из последней выборки.</param>
-    /// <returns>Список резюме.</returns>
-    [HttpGet]
-    [Route("pagination")]
+	/// <summary>
+	/// Метод получает список резюме вместе с пагинацией.
+	/// </summary>
+	/// <returns>Список резюме.</returns>
+	/// <param name="page">Номер страницы.</param>
+	/// <param name="lastId">Id Последней записи из последней выборки.</param>
+	/// <returns>Список резюме.</returns>
+	[HttpGet]
+    [Route("catalog")]
     [ProducesResponseType(200, Type = typeof(PaginationResumeOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]

@@ -30,52 +30,6 @@ internal sealed class ResumeRepository : BaseRepository, IResumeRepository
 
     #region Публичные методы.
 
-    /// <summary>
-    /// Метод получает список резюме.
-    /// </summary>
-    /// <returns>Список резюме.</returns>
-    public async Task<List<ProfileInfoEntity>> GetProfileInfosAsync()
-    {
-        var result = await (from pi in _pgContext.ProfilesInfo
-                join us in _pgContext.UserSubscriptions
-                    on pi.UserId
-                    equals us.UserId
-                join s in _pgContext.Subscriptions
-                    on us.SubscriptionId
-                    equals s.ObjectId
-                join mp in _pgContext.ModerationResumes
-                    on pi.ProfileInfoId
-                    equals mp.ProfileInfoId
-                    into table
-                from tbl in table.DefaultIfEmpty()
-                where pi.ModerationResumes.All(a => a.ProfileInfoId != pi.ProfileInfoId)
-                      && !new[]
-                          {
-                              (int)VacancyModerationStatusEnum.ModerationVacancy,
-                              (int)VacancyModerationStatusEnum.RejectedVacancy
-                          }
-                          .Contains(tbl.ModerationStatusId)
-                orderby s.ObjectId descending
-                select new ProfileInfoEntity
-                {
-                    ProfileInfoId = pi.ProfileInfoId,
-                    Aboutme = pi.Aboutme,
-                    FirstName = pi.FirstName,
-                    IsShortFirstName = pi.IsShortFirstName,
-                    Job = pi.Job,
-                    LastName = pi.LastName,
-                    OtherLink = pi.OtherLink,
-                    WhatsApp = pi.WhatsApp,
-                    Telegram = pi.Telegram,
-                    Vkontakte = pi.Vkontakte,
-                    Patronymic = pi.Patronymic,
-                    UserId = pi.UserId,
-                    WorkExperience = pi.WorkExperience
-                })
-            .ToListAsync();
-
-        return result;
-    }
 
     /// <summary>
     /// Метод получает резюме для фильтрации без выгрузки в память.

@@ -8,11 +8,6 @@ namespace LeokaEstetica.Platform.Services.Abstractions.Resume;
 /// </summary>
 public interface IResumeService
 {
-    /// <summary>
-    /// Метод получает список резюме.
-    /// </summary>
-    /// <returns>Список резюме.</returns>
-    Task<ResumeResultOutput> GetProfileInfosAsync();
 
     /// <summary>
     /// Метод получает анкету пользователя по ее Id.
