@@ -96,21 +96,30 @@ internal sealed class SubscriptionRepository : BaseRepository, ISubscriptionRepo
     /// <param name="objectId">Id типа подписки.</param>
     public async Task AddUserSubscriptionAsync(long userId, SubscriptionTypeEnum subscriptionType, long objectId)
     {
-        // Получаем подписку, которую надо присвоить пользователю.
-        var freeSubscriptionId = await _pgContext.Subscriptions
-            .Where(s => s.ObjectId == objectId
-                        && s.SubscriptionType.Equals(subscriptionType.ToString()))
-            .Select(s => s.SubscriptionId)
-            .FirstOrDefaultAsync();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var subscriptionParameters = new DynamicParameters();
+        subscriptionParameters.Add("@subscriptionType", new Enum(subscriptionType));
+        subscriptionParameters.Add("@objectId", objectId);
 
-        // Присваиваем пользователю подписку.
-        await _pgContext.UserSubscriptions.AddAsync(new UserSubscriptionEntity
-        {
-            UserId = userId,
-            IsActive = true,
-            SubscriptionId = freeSubscriptionId
-        });
-        await _pgContext.SaveChangesAsync();
+        var subscriptionQuery = "SELECT subscription_id " +
+                                "FROM subscriptions.all_subscriptions " +
+                                "WHERE object_id = @objectId " +
+                                "AND subscription_type = @subscriptionType";
+
+        // Получаем подписку, которую надо присвоить пользователю.
+        var subscriptionId = await connection.ExecuteScalarAsync<long>(subscriptionQuery, subscriptionParameters);
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+        parameters.Add("@subscriptionId", subscriptionId);
+        parameters.Add("@isActive", true);
+
+        var query = "INSERT INTO subscriptions.user_subscriptions (user_id, is_active, subscription_id) " +
+                    "VALUES (@userId, @isActive, @subscriptionId)";
+
+        // // Присваиваем пользователю подписку.
+        await connection.ExecuteAsync(query, parameters);
     }
 
     /// <summary>
