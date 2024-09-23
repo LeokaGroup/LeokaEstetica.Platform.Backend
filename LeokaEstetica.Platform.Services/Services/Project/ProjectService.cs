@@ -592,17 +592,16 @@ internal sealed class ProjectService : IProjectService
 			var items = await _projectRepository.ProjectStagesAsync();
             var notSelectedStage = new ProjectStageOutput
 				{
-					StageId = 0,
+					//StageId = 0,
 					Position = 0,
 					StageName = "Не выбрано",
 					StageSysName = "NotSelected"
 				};
 
             var result = _mapper.Map<IEnumerable<ProjectStageOutput>>(items);
-			var resultWitchNotSelected = new List<ProjectStageOutput> { notSelectedStage };
-			resultWitchNotSelected.AddRange(result);
+            var resultWithNotSelected = result.Prepend(notSelectedStage);
 
-			return resultWitchNotSelected;
+            return resultWithNotSelected;
 		}
 
 		catch (Exception ex)
