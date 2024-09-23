@@ -521,29 +521,32 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
             // Рекурсивно удаляем детей родителя и папку, которой принадлежат дети.
             if (childFolders is not null && childFolders.Count > 0)
             {
-                var removeChildFolders = "DROP TABLE IF EXISTS temp_recursive_folder_children; " +
-                                         "WITH RECURSIVE cte_recursive_folder_children AS (SELECT f.folder_id " +
-                                         "FROM project_management.wiki_tree_folders AS f " +
-                                         "INNER JOIN project_management.wiki_tree_folder_relations AS fl " +
-                                         "ON f.folder_id = fl.folder_id " +
-                                         "WHERE fl.parent_id = @folderId " +
-                                         "UNION " +
-                                         "SELECT f.folder_id " +
-                                         "FROM project_management.wiki_tree_folders AS f " +
-                                         "INNER JOIN project_management.wiki_tree_folder_relations AS fl " +
-                                         "ON f.folder_id = fl.folder_id " +
-                                         "INNER JOIN cte_recursive_folder_children AS cte " +
-                                         "ON fl.parent_id = cte.folder_id " +
-                                         "WHERE fl.parent_id = @folderId)" +
-                                         "SELECT folder_id " +
-                                         "INTO TEMP TABLE temp_recursive_folder_children " +
-                                         "FROM cte_recursive_folder_children; " +
-                                         "DELETE FROM project_management.wiki_tree_folder_relations " +
-                                         "WHERE folder_id IN (SELECT folder_id FROM temp_recursive_folder_children); " +
-                                         "DELETE FROM project_management.wiki_tree_folders " +
-                                         "WHERE folder_id IN (SELECT folder_id FROM temp_recursive_folder_children)";
+                var removeChildFoldersQuery = "DROP TABLE IF EXISTS temp_recursive_folder_children; " +
+                                              "WITH RECURSIVE cte_recursive_folder_children AS (SELECT f.folder_id " +
+                                              "FROM project_management.wiki_tree_folders AS f " +
+                                              "INNER JOIN project_management.wiki_tree_folder_relations AS fl " +
+                                              "ON f.folder_id = fl.folder_id " +
+                                              "WHERE fl.parent_id = @folderId " +
+                                              "UNION " +
+                                              "SELECT f.folder_id " +
+                                              "FROM project_management.wiki_tree_folders AS f " +
+                                              "INNER JOIN project_management.wiki_tree_folder_relations AS fl " +
+                                              "ON f.folder_id = fl.folder_id " +
+                                              "INNER JOIN cte_recursive_folder_children AS cte " +
+                                              "ON fl.parent_id = cte.folder_id " +
+                                              "WHERE fl.parent_id = @folderId)" +
+                                              "SELECT folder_id " +
+                                              "INTO TEMP TABLE temp_recursive_folder_children " +
+                                              "FROM cte_recursive_folder_children " +
+                                              "UNION SELECT folder_id " +
+                                              "FROM project_management.wiki_tree_folders AS f " +
+                                              "WHERE f.folder_id = @folderId; " +
+                                              "DELETE FROM project_management.wiki_tree_folder_relations " +
+                                              "WHERE folder_id IN (SELECT folder_id FROM temp_recursive_folder_children); " +
+                                              "DELETE FROM project_management.wiki_tree_folders " +
+                                              "WHERE folder_id IN (SELECT folder_id FROM temp_recursive_folder_children)";
 
-                await connection.ExecuteAsync(removeChildFolders, parameters);
+                await connection.ExecuteAsync(removeChildFoldersQuery, parameters);
             }
 
             // Детей нет, удаляем только папку.
