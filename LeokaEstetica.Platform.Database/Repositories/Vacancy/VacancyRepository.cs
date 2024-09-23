@@ -469,7 +469,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         var isFiltedApplied = false;
 
         // Фильтр по занятости.
-        if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.EmploymentsValues))
+        if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters!.EmploymentsValues))
         {
             parameters.Add("@employments", vacancyCatalogInput.Filters.EmploymentsValues);
             
