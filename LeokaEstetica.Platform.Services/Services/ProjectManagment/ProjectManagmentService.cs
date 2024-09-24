@@ -2772,9 +2772,40 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
 			// Добавляем задачу в эпик.
 			await _projectManagmentRepository.IncludeTaskEpicAsync(epicId, projectTaskIdToNumbers);
+			
+			// TODO: У нас пока добавляется всегда по 1 задаче.
+			// TODO: Сделан задел на будущее дял кейса множественного добавления задач в спринт,
+			// TODO: тогда переделаем эту логику либо отдельным методом заведем для множественного добавления.
+			var taskType = await _projectManagmentRepository.GetTaskTypeByProjectIdProjectTaskIdAsync(projectId,
+				projectTaskIds.First().GetProjectTaskIdFromPrefixLink());
+
+			// Если все же не удалось определить тип задачи.
+			if (taskType == TaskDetailTypeEnum.Undefined)
+			{
+				throw new InvalidOperationException("Неизвестный тип детализации. " +
+				                                    " Заполнение Agile-объекта не будет происходить. " +
+				                                    $"TaskType: {taskType}.");
+			}
+
+			string? taskTypeNotify = null;
+
+			if (taskType == TaskDetailTypeEnum.Task)
+			{
+				taskTypeNotify = "Задача успешно добавлена";
+			}
+			
+			else if (taskType == TaskDetailTypeEnum.Error)
+			{
+				taskTypeNotify = "Ошибка успешно добавлена";
+			}
+			
+			else if (taskType == TaskDetailTypeEnum.Epic)
+			{
+				taskTypeNotify = "Эпик успешно добавлен";
+			}
 
 			await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
-				"Задачи успешно добавлены в эпик.",
+				$"{taskTypeNotify} в эпик.",
 				NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessIncludeEpicTask", userCode,
 				UserConnectionModuleEnum.ProjectManagement);
 
