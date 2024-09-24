@@ -43,7 +43,6 @@ using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Models.Dto.Output.Orders;
 using LeokaEstetica.Platform.Redis.Abstractions.ProjectManagement;
-using System.Security.Cryptography.X509Certificates;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -592,7 +591,7 @@ internal sealed class ProjectService : IProjectService
 			var items = await _projectRepository.ProjectStagesAsync();
             var notSelectedStage = new ProjectStageOutput
 				{
-					//StageId = 0,
+					StageId = 0,
 					Position = 0,
 					StageName = "Не выбрано",
 					StageSysName = "NotSelected"
