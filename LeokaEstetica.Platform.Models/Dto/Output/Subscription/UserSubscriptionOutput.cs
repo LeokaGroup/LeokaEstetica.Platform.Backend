@@ -19,4 +19,9 @@ public class UserSubscriptionOutput
     /// Id тарифа.
     /// </summary>
     public int RuleId { get; set; }
+
+    /// <summary>
+    /// Id объекта тарифа.
+    /// </summary>
+    public int ObjectId { get; set; }
 }

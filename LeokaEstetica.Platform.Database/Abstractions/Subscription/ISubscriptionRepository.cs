@@ -27,7 +27,7 @@ public interface ISubscriptionRepository
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Подписку.</returns>
-    Task<SubscriptionEntity> GetUserSubscriptionAsync(long userId);
+    Task<UserSubscriptionOutput?> GetUserSubscriptionAsync(long userId);
 
     /// <summary>
     /// Метод запишет пользователю подписку.

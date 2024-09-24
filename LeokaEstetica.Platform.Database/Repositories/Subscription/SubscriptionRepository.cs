@@ -60,30 +60,11 @@ internal sealed class SubscriptionRepository : BaseRepository, ISubscriptionRepo
     /// Метод получает подписку пользователя по его Id.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Число, означающее уровень доступа.</returns>
-    public async Task<SubscriptionEntity> GetUserSubscriptionAsync(long userId)
+    /// <returns>Выходная модель.</returns>
+    public async Task<UserSubscriptionOutput?> GetUserSubscriptionAsync(long userId)
     {
         // Получаем активную подписку пользователя.
-        var userSubscription = await _pgContext.UserSubscriptions.FirstOrDefaultAsync(s => s.UserId == userId
-            && s.IsActive);
-
-        // Повторно пробуем добавить подписку пользователю.
-        if (userSubscription is null)
-        {
-            await AddUserSubscriptionAsync(userId, SubscriptionTypeEnum.FareRule, 1);
-
-            userSubscription = await _pgContext.UserSubscriptions.FirstOrDefaultAsync(s => s.UserId == userId
-                && s.IsActive);
-        }
-
-        // Доступа нет.
-        if (userSubscription is null)
-        {
-            return null;
-        }
-        
-        var result = await _pgContext.Subscriptions
-            .FirstOrDefaultAsync(s => s.SubscriptionId == userSubscription.SubscriptionId);
+        var result = await GetUserSubscriptionByUserIdAsync(userId);
 
         return result;
     }
@@ -234,7 +215,8 @@ internal sealed class SubscriptionRepository : BaseRepository, ISubscriptionRepo
         var query = "SELECT us.subscription_id, " +
                     "us.is_active, " +
                     "us.user_id," +
-                    "asub.rule_id " +
+                    "asub.rule_id," +
+                    "asub.object_id " +
                     "FROM subscriptions.user_subscriptions AS us " +
                     "INNER JOIN subscriptions.all_subscriptions AS asub " +
                     "ON us.subscription_id = asub.subscription_id " +
