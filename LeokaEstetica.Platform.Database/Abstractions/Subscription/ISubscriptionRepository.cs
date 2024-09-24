@@ -23,13 +23,6 @@ public interface ISubscriptionRepository
     Task<List<long>> GetFillSubscriptionsAsync(long userId);
 
     /// <summary>
-    /// Метод получает подписку пользователя по его Id.
-    /// </summary>
-    /// <param name="userId">Id пользователя.</param>
-    /// <returns>Подписку.</returns>
-    Task<UserSubscriptionOutput?> GetUserSubscriptionAsync(long userId);
-
-    /// <summary>
     /// Метод запишет пользователю подписку.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
@@ -43,14 +36,6 @@ public interface ISubscriptionRepository
     /// <param name="userIds">Список Id пользователей.</param>
     /// <returns>Список подписок.</returns>
     Task<List<UserSubscriptionEntity>> GetUsersSubscriptionsAsync(IEnumerable<long> userIds);
-
-    /// <summary>
-    /// Метод получает подписку пользователя.
-    /// </summary>
-    /// <param name="subscriptionId">Id подписки.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <returns>Подписка пользователя.</returns>
-    Task<UserSubscriptionEntity> GetUserSubscriptionBySubscriptionIdAsync(long subscriptionId, long userId);
 
     /// <summary>
     /// Метод делает подписку неактивной.

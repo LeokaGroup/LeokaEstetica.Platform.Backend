@@ -265,7 +265,7 @@ internal sealed class ResumeService : IResumeService
             var userId = v.UserId;
 
             // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
 
             if (userSubscription is null)
             {

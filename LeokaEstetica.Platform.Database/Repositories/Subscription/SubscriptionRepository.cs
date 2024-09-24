@@ -118,31 +118,21 @@ internal sealed class SubscriptionRepository : BaseRepository, ISubscriptionRepo
     }
 
     /// <summary>
-    /// Метод получает подписку пользователя.
-    /// </summary>
-    /// <param name="subscriptionId">Id подписки.</param>
-    /// <param name="userId">Id пользователя.</param>
-    /// <returns>Подписка пользователя.</returns>
-    public async Task<UserSubscriptionEntity> GetUserSubscriptionBySubscriptionIdAsync(long subscriptionId,
-        long userId)
-    {
-        var result = await _pgContext.UserSubscriptions
-            .FirstOrDefaultAsync(s => s.UserId == userId
-                                      && s.IsActive
-                                      && s.SubscriptionId == subscriptionId);
-
-        return result;
-    }
-
-    /// <summary>
     /// Метод делает подписку неактивной.
     /// </summary>
     /// <param name="userId">Id пользователя.</param>
     public async Task DisableUserSubscriptionAsync(long userId)
     {
-        var result = await _pgContext.UserSubscriptions.FirstOrDefaultAsync(s => s.UserId == userId);
-        result!.IsActive = false;
-        await _pgContext.SaveChangesAsync();
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@userId", userId);
+
+        var query = "UPDATE subscriptions.user_subscriptions " +
+                    "SET is_active = FALSE " +
+                    "WHERE user_id = @userId";
+
+        await connection.ExecuteAsync(query, parameters);
     }
 
     /// <summary>
@@ -216,7 +206,8 @@ internal sealed class SubscriptionRepository : BaseRepository, ISubscriptionRepo
                     "us.is_active, " +
                     "us.user_id," +
                     "asub.rule_id," +
-                    "asub.object_id " +
+                    "asub.object_id," +
+                    "us.month_count " +
                     "FROM subscriptions.user_subscriptions AS us " +
                     "INNER JOIN subscriptions.all_subscriptions AS asub " +
                     "ON us.subscription_id = asub.subscription_id " +

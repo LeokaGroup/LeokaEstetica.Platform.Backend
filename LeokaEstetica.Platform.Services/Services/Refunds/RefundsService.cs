@@ -104,7 +104,7 @@ internal sealed class RefundsService : IRefundsService
         try
         {
             // Получаем подписку.
-            var currentSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            var currentSubscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
             
             if (currentSubscription is null)
             {
@@ -114,12 +114,8 @@ internal sealed class RefundsService : IRefundsService
                                                     $"Ошибка в {nameof(RefundsService)}");
             }
 
-            // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository
-                .GetUserSubscriptionBySubscriptionIdAsync(currentSubscription.SubscriptionId, userId);
-
             // Получаем заказ, который был оформлен на подписку.
-            var orderId = await _ordersRepository.GetUserOrderIdAsync(userSubscription.MonthCount, userId);
+            var orderId = await _ordersRepository.GetUserOrderIdAsync(currentSubscription.MonthCount.Value, userId);
 
             if (orderId <= 0)
             {

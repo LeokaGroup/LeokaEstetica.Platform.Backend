@@ -841,7 +841,7 @@ internal sealed class UserService : IUserService
     private async Task IfDisableUserSubscriptionAsync(long userId)
     {
         // Проверяем активность подписки пользователя, если она платная.
-        var subscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+        var subscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
         
         if (subscription is null)
         {
@@ -873,17 +873,6 @@ internal sealed class UserService : IUserService
         // Бесплатный тариф нас не интересует.
         if (!fareRule.IsFree)
         {
-            var subscriptionId = subscription.SubscriptionId;
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionBySubscriptionIdAsync(
-                subscriptionId, userId);
-
-            if (userSubscription is null)
-            {
-                throw new InvalidOperationException("Не удалось получить подписку пользователя." +
-                                                    $"UserId: {userId}." +
-                                                    $"SubscriptionId: {subscriptionId}");
-            }
-
             var dates = await _userRepository.GetUserSubscriptionUsedDateAsync(userId);
 
             // Отключаем пользователю подписку.

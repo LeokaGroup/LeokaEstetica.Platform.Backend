@@ -48,8 +48,7 @@ internal sealed class VacancyService : IVacancyService
     private readonly IUserRepository _userRepository;
     private readonly IVacancyModerationService _vacancyModerationService;
     private readonly ISubscriptionRepository _subscriptionRepository;
-
-    private static readonly string _approveVacancy = "Опубликована";
+    
     private static readonly string _archiveVacancy = "В архиве";
     private static readonly string _moderationVacancy = "На модерации";
 
@@ -179,7 +178,7 @@ internal sealed class VacancyService : IVacancyService
             }
 
             // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
             
             if (userSubscription is null)
             {
@@ -675,7 +674,7 @@ internal sealed class VacancyService : IVacancyService
             }
             
             // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
             
             if (userSubscription is null)
             {
@@ -892,86 +891,6 @@ internal sealed class VacancyService : IVacancyService
         return vacancies;
     }
 
-    /// <summary>
-    /// Метод проставляет флаги вакансиям пользователя в зависимости от его подписки.
-    /// </summary>
-    /// <param name="vacancies">Список вакансий каталога.</param>
-    /// <returns>Список вакансий каталога с проставленными тегами.</returns>
-    private async Task<IEnumerable<CatalogVacancyOutput>> SetVacanciesTags(List<CatalogVacancyOutput> vacancies)
-    {
-        foreach (var v in vacancies)
-        {
-            var userId = v.UserId;
-            
-            // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
-            
-            if (userSubscription is null)
-            {
-                var ex = new InvalidOperationException("Найдена невалидная подписка пользователя. " +
-                                                    $"UserId: {userId}. " +
-                                                    "Подписка была NULL или невалидная." +
-                                                    $"#2 Ошибка в {nameof(VacancyService)}");
-                
-                // Отправляем ивент в пачку.
-                await _discordService.SendNotificationErrorAsync(ex);
-                
-                // Если ошибка, то не стопаем выполнение логики, а вернем вакансии, пока будем разбираться с ошибкой.
-                // Без тегов не страшно отобразить вакансии.
-                return vacancies;
-            }
-
-            // Такая подписка не дает тегов.
-            if (userSubscription.ObjectId < 3)
-            {
-                continue;
-            }
-            
-            // Если подписка бизнес.
-            if (userSubscription.ObjectId == 3)
-            {
-                v.TagColor = "warning";
-                v.TagValue = "Бизнес";
-            }
-        
-            // Если подписка профессиональный.
-            if (userSubscription.ObjectId == 4)
-            {
-                v.TagColor = "warning";
-                v.TagValue = "Профессиональный";
-            }   
-        }
-
-        return vacancies;
-    }
-    
-    /// <summary>
-    /// Метод удаляет из результата вакансии, которые не попадут в каталог из-за замечаний.
-    /// </summary>
-    /// <param name="vacancies">Список вакансий.</param>
-    private async Task DeleteIfVacancyRemarksAsync(List<CatalogVacancyOutput> vacancies)
-    {
-        var removedVacancies = new List<CatalogVacancyOutput>();
-            
-        // Исключаем вакансии, которые имеют неисправленные замечания.
-        foreach (var vac in vacancies)
-        {
-            var isRemarks = await _vacancyModerationRepository.GetVacancyRemarksAsync(vac.VacancyId);
-                
-            if (!isRemarks.Any())
-            {
-                continue;
-            }
-                
-            removedVacancies.Add(vac);
-        }
-
-        if (removedVacancies.Any())
-        {
-            removedVacancies.RemoveAll(v => removedVacancies.Select(x => x.VacancyId).Contains(v.VacancyId));
-        }
-    }
-    
     /// <summary>
     /// Метод обновляет статус замечаниям на статус "На проверке", если есть неисправленные.
     /// </summary>

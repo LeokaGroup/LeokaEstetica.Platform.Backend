@@ -24,4 +24,9 @@ public class UserSubscriptionOutput
     /// Id объекта тарифа.
     /// </summary>
     public int ObjectId { get; set; }
+
+    /// <summary>
+    /// Кол-во мес. подписки.
+    /// </summary>
+    public short? MonthCount { get; set; }
 }

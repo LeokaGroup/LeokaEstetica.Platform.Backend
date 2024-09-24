@@ -393,7 +393,7 @@ internal sealed class CommerceService : ICommerceService
             }
 
             // Проверяем, есть ли у пользователя действующая платная подписка.
-            var subscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            var subscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
 
             if (subscription is null)
             {
@@ -403,21 +403,10 @@ internal sealed class CommerceService : ICommerceService
                                                     $"Ошибка в {nameof(CommerceService)}");
             }
 
-            var subscriptionId = subscription.SubscriptionId;
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionBySubscriptionIdAsync(
-                subscriptionId, userId);
-
-            if (userSubscription is null)
-            {
-                throw new InvalidOperationException("Не удалось получить подписку пользователя." +
-                                                    $"UserId: {userId}." +
-                                                    $"SubscriptionId: {subscriptionId}");
-            }
-
             var result = new OrderFreeOutput();
 
             // Находим Id заказа текущей подписки пользователя.
-            var orderId = await _ordersRepository.GetUserOrderIdAsync(userSubscription.MonthCount, userId);
+            var orderId = await _ordersRepository.GetUserOrderIdAsync(subscription.MonthCount.Value, userId);
 
             // Подписки нет, значит бесплатная. С бесплатной остатка не будет.
             if (orderId <= 0)

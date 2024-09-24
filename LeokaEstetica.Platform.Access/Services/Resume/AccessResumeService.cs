@@ -44,7 +44,7 @@ public class AccessResumeService : IAccessResumeService
                 throw ex;
             }
             
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
 
             // Не даем доступ.
             if (userSubscription is null)

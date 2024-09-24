@@ -208,7 +208,7 @@ internal sealed class ProjectService : IProjectService
             }
             
             // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
             
             if (userSubscription is null)
             {
@@ -1370,7 +1370,7 @@ internal sealed class ProjectService : IProjectService
             }
             
             // Получаем подписку пользователя.
-            var userSubscription = await _subscriptionRepository.GetUserSubscriptionAsync(userId);
+            var userSubscription = await _subscriptionRepository.GetUserSubscriptionByUserIdAsync(userId);
             
             if (userSubscription is null)
             {
