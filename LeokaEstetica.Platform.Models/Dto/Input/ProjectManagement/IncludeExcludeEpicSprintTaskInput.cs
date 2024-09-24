@@ -1,9 +1,9 @@
 ﻿namespace LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 
 /// <summary>
-/// Класс входной модели исключения задач из эпика или спринта.
+/// Класс входной модели включения/исключения задач из эпика или спринта.
 /// </summary>
-public class ExcludeEpicSprintTaskInput
+public class IncludeExcludeEpicSprintTaskInput
 {
     /// <summary>
     /// Id эпика или спринта.

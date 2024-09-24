@@ -651,12 +651,7 @@ internal sealed class SprintService : ISprintService
         }
     }
 
-    /// <summary>
-    /// Метод получает список спринтов доступных для переноса незавершенных задач в один из них.
-    /// </summary>
-    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
-    /// <param name="projectId">Id проекта.</param>
-    /// <returns>Список спринтов.</returns>
+    /// <inheritdoc />
     public async Task<IEnumerable<TaskSprintExtendedOutput>> GetAvailableNextSprintsAsync(long projectSprintId,
         long projectId)
     {
@@ -674,11 +669,28 @@ internal sealed class SprintService : ISprintService
         }
     }
 
+    /// <inheritdoc />
     public async Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds)
     {
         try
         {
             await _sprintRepository.ExcludeSprintTasksAsync(sprintId,
+                sprintTaskIds!.Select(x => x.GetProjectTaskIdFromPrefixLink()));
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task IncludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds)
+    {
+        try
+        {
+            await _sprintRepository.IncludeSprintTasksAsync(sprintId,
                 sprintTaskIds!.Select(x => x.GetProjectTaskIdFromPrefixLink()));
         }
         

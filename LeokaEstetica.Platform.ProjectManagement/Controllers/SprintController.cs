@@ -443,7 +443,7 @@ public class SprintController : BaseController
     /// <summary>
     /// Метод исключает задачи из спринта.
     /// </summary>
-    /// <param name="excludeEpicTaskInput">Входная модель.</param>
+    /// <param name="includeExcludeEpicSprintTaskInput">Входная модель.</param>
     [HttpPatch]
     [Route("sprint-task")]
     [ProducesResponseType(200)]
@@ -451,16 +451,17 @@ public class SprintController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task ExcludeSprintTasksAsync([FromBody] ExcludeEpicSprintTaskInput excludeEpicTaskInput)
+    public async Task ExcludeSprintTasksAsync(
+        [FromBody] IncludeExcludeEpicSprintTaskInput includeExcludeEpicSprintTaskInput)
     {
-        if (excludeEpicTaskInput.EpicSprintId <= 0
-            || excludeEpicTaskInput.ProjectTaskIds is null
-            || excludeEpicTaskInput.ProjectTaskIds.Any(string.IsNullOrWhiteSpace))
+        if (includeExcludeEpicSprintTaskInput.EpicSprintId <= 0
+            || includeExcludeEpicSprintTaskInput.ProjectTaskIds is null
+            || includeExcludeEpicSprintTaskInput.ProjectTaskIds.Any(string.IsNullOrWhiteSpace))
         {
             var ex = new InvalidOperationException(
                 "Ошибка при исключении задач из спринта. " +
-                $"EpicSprintId: {excludeEpicTaskInput.EpicSprintId}. " +
-                $"ProjectTaskIds: {JsonConvert.SerializeObject(excludeEpicTaskInput.ProjectTaskIds)}.");
+                $"EpicSprintId: {includeExcludeEpicSprintTaskInput.EpicSprintId}. " +
+                $"ProjectTaskIds: {JsonConvert.SerializeObject(includeExcludeEpicSprintTaskInput.ProjectTaskIds)}.");
             _logger.LogError(ex, ex.Message);
 
             await _discordService.Value.SendNotificationErrorAsync(ex);
@@ -468,7 +469,40 @@ public class SprintController : BaseController
             throw ex;
         }
 
-        await _sprintService.ExcludeSprintTasksAsync(excludeEpicTaskInput.EpicSprintId,
-            excludeEpicTaskInput.ProjectTaskIds);
+        await _sprintService.ExcludeSprintTasksAsync(includeExcludeEpicSprintTaskInput.EpicSprintId,
+            includeExcludeEpicSprintTaskInput.ProjectTaskIds);
+    }
+    
+    /// <summary>
+    /// Метод включает задачи в спринт.
+    /// </summary>
+    /// <param name="includeExcludeEpicSprintTaskInput">Входная модель.</param>
+    [HttpPost]
+    [Route("sprint-task")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task IncludeSprintTasksAsync(
+        [FromBody] IncludeExcludeEpicSprintTaskInput includeExcludeEpicSprintTaskInput)
+    {
+        if (includeExcludeEpicSprintTaskInput.EpicSprintId <= 0
+            || includeExcludeEpicSprintTaskInput.ProjectTaskIds is null
+            || includeExcludeEpicSprintTaskInput.ProjectTaskIds.Any(string.IsNullOrWhiteSpace))
+        {
+            var ex = new InvalidOperationException(
+                "Ошибка при включении задач в спринт. " +
+                $"EpicSprintId: {includeExcludeEpicSprintTaskInput.EpicSprintId}. " +
+                $"ProjectTaskIds: {JsonConvert.SerializeObject(includeExcludeEpicSprintTaskInput.ProjectTaskIds)}.");
+            _logger.LogError(ex, ex.Message);
+
+            await _discordService.Value.SendNotificationErrorAsync(ex);
+
+            throw ex;
+        }
+
+        await _sprintService.IncludeSprintTasksAsync(includeExcludeEpicSprintTaskInput.EpicSprintId,
+            includeExcludeEpicSprintTaskInput.ProjectTaskIds);
     }
 }

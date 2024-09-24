@@ -156,10 +156,6 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "t.task_status_id," +
                     "t.author_id," +
                     "t.watcher_ids," +
-                    "CASE " +
-                    "WHEN @strategy = 'sm' THEN LEFT(t.name, 40) " +
-                    "WHEN @strategy = 'kn' THEN LEFT(t.name, 100) " +
-                    "END AS name," +
                     "t.details AS details," +
                     "t.created," +
                     "t.updated," +
@@ -191,10 +187,6 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "es.status_id," +
                     "e.created_by AS author_id," +
                     "NULL," +
-                    "CASE " +
-                    "WHEN @strategy = 'sm' THEN LEFT(e.epic_name, 40) " +
-                    "WHEN @strategy = 'kn'THEN LEFT(e.epic_name, 100) " +
-                    "END AS name," +
                     "e.epic_description AS details," +
                     "e.created_at AS created," +
                     "e.updated_at AS updated," +
@@ -224,10 +216,6 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "us.status_id," +
                     "us.created_by AS author_id," +
                     "us.watcher_ids," +
-                    "CASE " +
-                    " WHEN @strategy = 'sm' THEN LEFT(us.story_name, 40) " +
-                    "WHEN @strategy = 'kn' THEN LEFT(us.story_name, 100) " +
-                    "END AS name," +
                     "us.story_description AS details," +
                     "us.created_at AS created," +
                     "us.updated_at AS updated," +
@@ -618,7 +606,7 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
      }
      
      /// <inheritdoc/>
-     public async Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<long>? sprintTaskIds)
+     public async Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<long> sprintTaskIds)
      {
          using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -629,6 +617,28 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
          var query = "DELETE FROM project_management.sprint_tasks " +
                      "WHERE project_task_id = ANY (@sprintTaskIds) " +
                      "AND sprint_id = @sprintId";
+
+         await connection.ExecuteAsync(query, parameters);
+     }
+
+     /// <inheritdoc/>
+     public async Task IncludeSprintTasksAsync(long sprintId, IEnumerable<long> sprintTaskIds)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new List<DynamicParameters>();
+
+         foreach (var p in sprintTaskIds)
+         {
+             var tempParameters = new DynamicParameters();
+             tempParameters.Add("@sprintId", sprintId);
+             tempParameters.Add("@projectTaskId", p);
+             
+             parameters.Add(tempParameters);
+         }
+
+         var query = "INSERT INTO project_management.sprint_tasks (sprint_id, project_task_id) " +
+                     "VALUES (@sprintId, @projectTaskId)";
 
          await connection.ExecuteAsync(query, parameters);
      }
