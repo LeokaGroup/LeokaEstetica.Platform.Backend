@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using AutoMapper;
+﻿using AutoMapper;
 using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Core.Enums;
@@ -22,14 +21,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Services.Services.ProjectManagment;
-
-class ProjectManagmentTaskStatusTemplateData
-{
-    /// <summary>
-    /// Задачи конкретного статуса.
-    /// </summary>
-    public IEnumerable<ProjectTaskExtendedEntity>? TasksByStatus { get; set; }
-}
 
 /// <summary>
 /// Класс реализует методы сервиса, который распределяет задачи по статусам.
@@ -243,12 +234,14 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
                     .Contains(x.TaskTypeId))
             ?.AsList();
 
+        // TODO: Зачем этот код? Если все таки будет нужен, то раскоментить, иначе выпилим.
+        // TODO: Он усекал список задач спринта, поэтому не понятно зачем это вообще.
         // Удаляем все кроме эпиков и историй, так как следующим этапом работаем только с ними.
         // Иначе раскидает не по тем статусам на фронте.
-        if (tasksWithStoryAndEpic is not null && tasksWithStoryAndEpic.Count > 0)
-        {
-            tasks.RemoveAll(x => tasksWithStoryAndEpic.Select(y => y.TaskId).Contains(x.TaskId));
-        }
+        // if (tasksWithStoryAndEpic is not null && tasksWithStoryAndEpic.Count > 0)
+        // {
+        //     tasks.RemoveAll(x => tasksWithStoryAndEpic.Select(y => y.TaskId).Contains(x.TaskId));
+        // }
 
         // Работаем с задачами и ошибками. Распределяем задачи и ошибки по статусам.
         // Распределение задач происходит на основе шаблона проекта.

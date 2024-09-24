@@ -156,10 +156,6 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "t.task_status_id," +
                     "t.author_id," +
                     "t.watcher_ids," +
-                    "CASE " +
-                    "WHEN @strategy = 'sm' THEN LEFT(t.name, 40) " +
-                    "WHEN @strategy = 'kn' THEN LEFT(t.name, 100) " +
-                    "END AS name," +
                     "t.details AS details," +
                     "t.created," +
                     "t.updated," +
@@ -191,10 +187,6 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "es.status_id," +
                     "e.created_by AS author_id," +
                     "NULL," +
-                    "CASE " +
-                    "WHEN @strategy = 'sm' THEN LEFT(e.epic_name, 40) " +
-                    "WHEN @strategy = 'kn'THEN LEFT(e.epic_name, 100) " +
-                    "END AS name," +
                     "e.epic_description AS details," +
                     "e.created_at AS created," +
                     "e.updated_at AS updated," +
@@ -224,10 +216,6 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     "us.status_id," +
                     "us.created_by AS author_id," +
                     "us.watcher_ids," +
-                    "CASE " +
-                    " WHEN @strategy = 'sm' THEN LEFT(us.story_name, 40) " +
-                    "WHEN @strategy = 'kn' THEN LEFT(us.story_name, 100) " +
-                    "END AS name," +
                     "us.story_description AS details," +
                     "us.created_at AS created," +
                     "us.updated_at AS updated," +
