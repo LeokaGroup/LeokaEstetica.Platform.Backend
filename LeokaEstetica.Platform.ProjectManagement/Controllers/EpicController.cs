@@ -38,7 +38,7 @@ public class EpicController : BaseController
    /// <summary>
    /// Метод исключает задачи из эпика.
    /// </summary>
-   /// <param name="excludeEpicTaskInput">Входная модель.</param>
+   /// <param name="includeExcludeEpicTaskInput">Входная модель.</param>
    [HttpPatch]
    [Route("epic-task")]
    [ProducesResponseType(200)]
@@ -46,16 +46,16 @@ public class EpicController : BaseController
    [ProducesResponseType(403)]
    [ProducesResponseType(500)]
    [ProducesResponseType(404)]
-   public async Task ExcludeEpicTasksAsync([FromBody] ExcludeEpicSprintTaskInput excludeEpicTaskInput)
+   public async Task ExcludeEpicTasksAsync([FromBody] IncludeExcludeEpicSprintTaskInput includeExcludeEpicTaskInput)
    {
-      if (excludeEpicTaskInput.EpicSprintId <= 0
-          || excludeEpicTaskInput.ProjectTaskIds is null
-          || excludeEpicTaskInput.ProjectTaskIds.Any(string.IsNullOrWhiteSpace))
+      if (includeExcludeEpicTaskInput.EpicSprintId <= 0
+          || includeExcludeEpicTaskInput.ProjectTaskIds is null
+          || includeExcludeEpicTaskInput.ProjectTaskIds.Any(string.IsNullOrWhiteSpace))
       {
          var ex = new InvalidOperationException(
             "Ошибка при исключении задач из эпика. " +
-            $"EpicSprintId: {excludeEpicTaskInput.EpicSprintId}. " +
-            $"ProjectTaskIds: {JsonConvert.SerializeObject(excludeEpicTaskInput.ProjectTaskIds)}.");
+            $"EpicSprintId: {includeExcludeEpicTaskInput.EpicSprintId}. " +
+            $"ProjectTaskIds: {JsonConvert.SerializeObject(includeExcludeEpicTaskInput.ProjectTaskIds)}.");
          _logger.LogError(ex, ex.Message);
 
          await _discordService.Value.SendNotificationErrorAsync(ex);
@@ -63,6 +63,7 @@ public class EpicController : BaseController
          throw ex;
       }
 
-      await _epicService.ExcludeEpicTasksAsync(excludeEpicTaskInput.EpicSprintId, excludeEpicTaskInput.ProjectTaskIds);
+      await _epicService.ExcludeEpicTasksAsync(includeExcludeEpicTaskInput.EpicSprintId,
+         includeExcludeEpicTaskInput.ProjectTaskIds);
    }
 }

@@ -618,7 +618,7 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
      }
      
      /// <inheritdoc/>
-     public async Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<long>? sprintTaskIds)
+     public async Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<long> sprintTaskIds)
      {
          using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -629,6 +629,28 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
          var query = "DELETE FROM project_management.sprint_tasks " +
                      "WHERE project_task_id = ANY (@sprintTaskIds) " +
                      "AND sprint_id = @sprintId";
+
+         await connection.ExecuteAsync(query, parameters);
+     }
+
+     /// <inheritdoc/>
+     public async Task IncludeSprintTasksAsync(long sprintId, IEnumerable<long> sprintTaskIds)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new List<DynamicParameters>();
+
+         foreach (var p in sprintTaskIds)
+         {
+             var tempParameters = new DynamicParameters();
+             tempParameters.Add("@sprintId", sprintId);
+             tempParameters.Add("@projectTaskId", p);
+             
+             parameters.Add(tempParameters);
+         }
+
+         var query = "INSERT INTO project_management.sprint_tasks (sprint_id, project_task_id) " +
+                     "VALUES (@sprintId, @projectTaskId)";
 
          await connection.ExecuteAsync(query, parameters);
      }

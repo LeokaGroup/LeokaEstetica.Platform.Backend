@@ -176,5 +176,12 @@ public interface ISprintRepository
     /// </summary>
     /// <param name="sprintId">Id спринта.</param>
     /// <param name="sprintTaskIds">Список Id задач, которые нужно исключить из спринта.</param>
-    Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<long>? sprintTaskIds);
+    Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<long> sprintTaskIds);
+    
+    /// <summary>
+    /// Метод включает задачи в спринт.
+    /// </summary>
+    /// <param name="sprintId">Id спринта.</param>
+    /// <param name="sprintTaskIds">Список Id задач, которые нужно включить в спринт.</param>
+    Task IncludeSprintTasksAsync(long sprintId, IEnumerable<long> sprintTaskIds);
 }
