@@ -686,14 +686,29 @@ internal sealed class SprintService : ISprintService
     }
 
     /// <inheritdoc />
-    public async Task IncludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds)
+    public async Task IncludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds, string account)
     {
         try
         {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
             await _sprintRepository.IncludeSprintTasksAsync(sprintId,
                 sprintTaskIds!.Select(x => x.GetProjectTaskIdFromPrefixLink()));
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                 $"Задача успешно включена в спринт.",
+                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessProjectTaskIncludeSprint",
+                 userCode, UserConnectionModuleEnum.ProjectManagement);
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
