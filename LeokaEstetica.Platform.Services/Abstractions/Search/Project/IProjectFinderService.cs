@@ -14,4 +14,11 @@ public interface IProjectFinderService
     /// <param name="token">Токен пользователя.</param>
     /// <returns>Список пользователей, которых можно пригласить в команду проекта.</returns>
     Task<IEnumerable<UserEntity>> SearchInviteProjectMembersAsync(string searchText, string token);
+
+    /// <summary>
+    /// Метод ищет пользователей по их почте.
+    /// </summary>
+    /// <param name="searchText">Поисковый текст.</param>
+    /// <returns>Список пользователей, которых можно пригласить в команду проекта.</returns>
+    Task<IEnumerable<UserEntity>?> SearchUserByEmailAsync(string searchText);
 }
