@@ -20,41 +20,4 @@ public static class EnumExtensions
   
         return descriptionAttributes?.Length > 0 ? descriptionAttributes[0].Description : enumValue.ToString();  
     }  
-    
-    /// <summary>
-    /// Если член перечесления содержит атрибут Description, возвращает его значение.
-    /// </summary>
-    /// <typeparam name="TEnum"> Тип перечисления. </typeparam>
-    /// <param name="instance"> Экземпляр перечисления. </param>
-    /// <param name="isExceptionSuppressed"> Если значение атрибута не найдено, подавить исключение и вернуть null. </param>
-    /// <returns> Значение атрибута EnumMember </returns>
-    /// <exception cref="InvalidEnumArgumentException"> Возникает, если значение не найдено </exception>
-    public static string? GetDescription<TEnum>(this TEnum instance, bool isExceptionSuppressed = false)
-        where TEnum : Enum
-    {
-        var enumType = typeof(TEnum);
-        var name = Enum.GetName(typeof(TEnum), instance);
-
-        if (name is null)
-        {
-            throw new InvalidEnumArgumentException($"Член {nameof(instance)} пречисления {typeof(TEnum).Name} не найден");
-        }
-
-        var descriptionAttribute = (enumType
-                .GetField(name)
-                .GetCustomAttributes(typeof(DescriptionAttribute), true) as DescriptionAttribute[])
-            .SingleOrDefault();
-
-        if (isExceptionSuppressed)
-        {
-            return descriptionAttribute?.Description;
-        }
-
-        if (descriptionAttribute is null)
-        {
-            throw new InvalidEnumArgumentException($"Член {nameof(instance)} перечисления {typeof(TEnum).Name} не содержит атрибут Description");
-        }
-
-        return descriptionAttribute.Description;
-    }
 }
