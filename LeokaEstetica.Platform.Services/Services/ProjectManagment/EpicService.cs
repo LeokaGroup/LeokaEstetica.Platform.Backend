@@ -57,7 +57,7 @@ internal sealed class EpicService : IEpicService
                 projectTaskIds!.Select(x => x.GetProjectTaskIdFromPrefixLink()));
 
             await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
-               $"Задача успешно исключена из эпика.",
+               "Задача успешно исключена из эпика.",
                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessExcludeEpicTask",
                userCode, UserConnectionModuleEnum.ProjectManagement);
         }

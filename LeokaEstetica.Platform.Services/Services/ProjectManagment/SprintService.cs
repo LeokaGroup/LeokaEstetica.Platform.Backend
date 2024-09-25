@@ -688,7 +688,7 @@ internal sealed class SprintService : ISprintService
                 sprintTaskIds!.Select(x => x.GetProjectTaskIdFromPrefixLink()));
 
             await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
-                $"Задача успешно исключена из спринта.",
+                "Задача успешно исключена из спринта.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessExcludeSprintTask",
                 userCode, UserConnectionModuleEnum.ProjectManagement);
         }
