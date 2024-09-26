@@ -5,6 +5,7 @@ using LeokaEstetica.Platform.Controllers.Validators.Profile;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -132,8 +133,8 @@ public class ProfileController : BaseController
             
             var ex = new AggregateException(exceptions);
             _logger.LogError(ex, "Ошибки при попытке сохранения данных профиля.");
-            
-            result.Errors.AddRange(validator.Errors);
+
+            result.Errors.Add(validator.Errors.First());
 
             return result;
         }
