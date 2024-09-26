@@ -45,6 +45,7 @@ public class SaveProfileInfoValidator : AbstractValidator<ProfileInfoInput>
             .WithMessage(ValidationConsts.EMPTY_PHONE_NUMBER_ERROR)
             .NotEmpty()
             .WithMessage(ValidationConsts.EMPTY_PHONE_NUMBER_ERROR)
-            .Matches(@"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$");
+            .Matches(@"^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$")
+            .WithMessage(ValidationConsts.NOT_VALID_PHONE_NUMBER_ERROR);
     }
 }
