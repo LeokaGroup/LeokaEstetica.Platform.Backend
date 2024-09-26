@@ -1,6 +1,4 @@
-﻿using LeokaEstetica.Platform.Models.Enums;
-
-namespace LeokaEstetica.Platform.Models.Dto.Input.ProjectManagementHumanResources;
+﻿namespace LeokaEstetica.Platform.Models.Dto.Input.ProjectManagementHumanResources;
 
 /// <summary>
 /// Класс входной модели календаря.
@@ -46,5 +44,5 @@ public class CalendarInput
     /// <summary>
     /// Статус.
     /// </summary>
-    public CalendarEventMemberStatusEnum CalendarEventMemberStatus { get; set; }
+    public string? CalendarEventMemberStatus { get; set; }
 }

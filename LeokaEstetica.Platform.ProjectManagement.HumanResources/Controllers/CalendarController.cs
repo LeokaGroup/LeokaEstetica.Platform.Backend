@@ -57,30 +57,30 @@ public class CalendarController : BaseController
     /// <returns>Список типов занятости.</returns>
     [HttpGet]
     [Route("busy-variants")]
-    [ProducesResponseType(200, Type = typeof(List<(int Id, string Value)>))]
+    [ProducesResponseType(200, Type = typeof(List<BusyVariantOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public Task<List<(int Id, string Value)>> GetBusyVariantsAsync()
+    public Task<List<BusyVariantOutput>> GetBusyVariantsAsync()
     {
-        return Task.FromResult(new List<(int Id, string Value)>
+        return Task.FromResult(new List<BusyVariantOutput>
         {
             new()
             {
-                Id = (int)CalendarEventMemberStatusEnum.Busy,
-                Value = CalendarEventMemberStatusEnum.Busy.GetEnumDescription()
+                Description = CalendarEventMemberStatusEnum.Busy.GetEnumDescription(),
+                SysName = CalendarEventMemberStatusEnum.Busy.ToString()
             },
             new()
             {
-                Id = (int)CalendarEventMemberStatusEnum.MayBeBusy,
-                Value = CalendarEventMemberStatusEnum.MayBeBusy.GetEnumDescription()
+                Description = CalendarEventMemberStatusEnum.MayBeBusy.GetEnumDescription(),
+                SysName = CalendarEventMemberStatusEnum.MayBeBusy.ToString()
             },
             new()
             {
-                Id = (int)CalendarEventMemberStatusEnum.Available,
-                Value = CalendarEventMemberStatusEnum.Available.GetEnumDescription()
-            }
+                Description = CalendarEventMemberStatusEnum.Available.GetEnumDescription(),
+                SysName = CalendarEventMemberStatusEnum.Available.ToString()
+            },
         });
     }
 

@@ -110,7 +110,8 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
              
              // Добавляем участников события.
              await CreateEventMembersAsync(eventId, calendarInput.EventMembers!,
-                 calendarInput.CalendarEventMemberStatus, connection);
+                 System.Enum.Parse<CalendarEventMemberStatusEnum>(calendarInput.CalendarEventMemberStatus!),
+                 connection);
              
              transaction.Commit();
          }
@@ -160,7 +161,7 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
          
         if (!string.IsNullOrWhiteSpace(calendarInput.EventDescription))
         {
-            query += ", @eventDescription";
+            query += " @eventDescription";
         }
 
         query += ", @createdBy, @eventStartDate, @eventEndDate";
@@ -195,13 +196,14 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
             tempParameters.Add("@eventId", eventId);
             tempParameters.Add("@eventMemberId", p.EventMemberId);
             tempParameters.Add("@memberStatus", new Enum(CalendarEventMemberStatus));
+            tempParameters.Add("@joined", DateTime.UtcNow);
 
             parameters.Add(tempParameters);
         }
 
         var query = "INSERT INTO project_management_human_resources.calendar_event_members " +
-                    "(event_member_id, event_id, member_status) " +
-                    "VALUES (@eventMemberId, @eventId, @memberStatus)";
+                    "(event_member_id, event_id, member_status, joined) " +
+                    "VALUES (@eventMemberId, @eventId, @memberStatus, @joined)";
 
         await connection.ExecuteAsync(query, parameters);
     }
