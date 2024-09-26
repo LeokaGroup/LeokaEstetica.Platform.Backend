@@ -374,4 +374,25 @@ public static class ValidationConst
 		/// </summary>
 		public const string EMPTY_COMPANY_NAME = "Название компании не может быть пустым.";
 	}
+
+	/// <summary>
+	/// Класс описывает ключи модуля HR.
+	/// </summary>
+	public static class HumanResources
+	{
+		/// <summary>
+		/// Если не заполнили название события.
+		/// </summary>
+		public const string EMPTY_EVENT_NAME = "Название события не заполнено.";
+		
+		/// <summary>
+		/// Если дата начала в прошлом.
+		/// </summary>
+		public const string NOT_VALID_EVENT_START_DATE = "Дата начала события не может быть в прошлом.";
+		
+		/// <summary>
+		/// Если дата окончания в прошлом.
+		/// </summary>
+		public const string NOT_VALID_EVENT_END_DATE = "Дата окончания события не может быть в прошлом.";
+	}
 }

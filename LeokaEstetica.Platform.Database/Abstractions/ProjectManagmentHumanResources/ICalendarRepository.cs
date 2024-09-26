@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
+﻿using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagementHumanResources;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagmentHumanResources;
 
@@ -29,4 +30,10 @@ public interface ICalendarRepository
     /// <returns>Роли участников событий.</returns>
     Task<IEnumerable<EventMemberRoleOutput>?> GetEventMemberRolesAsync(IEnumerable<long> eventIds,
         IEnumerable<long> eventMemberIds);
+
+    /// <summary>
+    /// Метод создает событие календаря.
+    /// </summary>
+    /// <param name="calendarInput">Входная модель.</param>
+    Task CreateCalendarEventAsync(CalendarInput calendarInput);
 }
