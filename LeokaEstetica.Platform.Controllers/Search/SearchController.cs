@@ -1,9 +1,6 @@
 using AutoMapper;
-using FluentValidation;
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
-using LeokaEstetica.Platform.Controllers.Validators.Search;
-using LeokaEstetica.Platform.Models.Dto.Input.Search.Project;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.Project;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
 using Microsoft.AspNetCore.Mvc;
@@ -36,26 +33,55 @@ public class SearchController : BaseController
     /// <summary>
     /// Метод ищет пользователей для приглашения в команду проекта.
     /// </summary>
-    /// <param name="searchProjectMemberInput">Входная модель.</param>
+    /// <param name="searchText">Поисковый текст.</param>
     /// <returns>Список пользователей, которых можно пригласить в команду проекта.</returns>
     [HttpGet]
-    [Route("project-members/{searchText}")]
+    [Route("project-members")]
     [ProducesResponseType(200, Type = typeof(IEnumerable<SearchProjectMemberOutput>))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
     public async Task<IEnumerable<SearchProjectMemberOutput>> SearchInviteProjectMembersAsync(
-        [FromRoute] SearchProjectMemberInput searchProjectMemberInput)
+        [FromQuery] string? searchText)
     {
-        // Если поисковая строка невалидна, то не дергаем поиск.
-        await new SearchInviteProjectMembersValidator().ValidateAndThrowAsync(searchProjectMemberInput);
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return Enumerable.Empty<SearchProjectMemberOutput>();
+        }
 
-        var items = await _projectFinderService.SearchInviteProjectMembersAsync(searchProjectMemberInput.SearchText,
-            GetTokenFromHeader());
+        var items = await _projectFinderService.SearchInviteProjectMembersAsync(searchText, GetTokenFromHeader());
         
+        // TODO: Мапить сразу в выходной модели и через Dapper.
         var result = _mapper.Map<IEnumerable<SearchProjectMemberOutput>>(items);
         
+        return result;
+    }
+
+    /// <summary>
+    /// Метод ищет пользователей по их почте.
+    /// </summary>
+    /// <param name="searchText">Поисковый текст.</param>
+    /// <returns>Список пользователей, которых можно пригласить в команду проекта.</returns>
+    [HttpGet]
+    [Route("search-user")]
+    [ProducesResponseType(200, Type = typeof(IEnumerable<SearchProjectMemberOutput>))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<IEnumerable<SearchProjectMemberOutput>> SearchUserByEmailAsync([FromQuery] string? searchText)
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return Enumerable.Empty<SearchProjectMemberOutput>();
+        }
+
+        var items = await _projectFinderService.SearchUserByEmailAsync(searchText);
+
+        // TODO: Мапить сразу в выходной модели и через Dapper.
+        var result = _mapper.Map<IEnumerable<SearchProjectMemberOutput>>(items);
+
         return result;
     }
 }

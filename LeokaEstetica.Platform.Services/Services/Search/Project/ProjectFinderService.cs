@@ -2,8 +2,6 @@ using System.Runtime.CompilerServices;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Resume;
 using LeokaEstetica.Platform.Models.Entities.User;
-using LeokaEstetica.Platform.Notifications.Abstractions;
-using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +16,6 @@ internal sealed class ProjectFinderService : IProjectFinderService
 {
     private readonly ILogger<ProjectFinderService> _logger;
     private readonly IUserRepository _userRepository;
-    private readonly IProjectNotificationsService _projectNotificationsService;
     private readonly IResumeModerationService _resumeModerationService;
 
     /// <summary>
@@ -26,16 +23,13 @@ internal sealed class ProjectFinderService : IProjectFinderService
     /// </summary>
     /// <param name="logger">Логгер.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
-    /// <param name="projectNotificationsService">Сервис уведомлений проектов.</param>
     /// <param name="resumeModerationService">Сервис модерации анкет.</param>
     public ProjectFinderService(ILogger<ProjectFinderService> logger,
         IUserRepository userRepository,
-        IProjectNotificationsService projectNotificationsService,
         IResumeModerationService resumeModerationService)
     {
         _logger = logger;
         _userRepository = userRepository;
-        _projectNotificationsService = projectNotificationsService;
         _resumeModerationService = resumeModerationService;
     }
 
@@ -74,6 +68,28 @@ internal sealed class ProjectFinderService : IProjectFinderService
             return users;
         }
 
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<UserEntity>?> SearchUserByEmailAsync(string searchText)
+    {
+        try
+        {
+            var users = await _userRepository.GetUserByEmailOrLoginAsync(searchText);
+            
+            if (users is null || users.Count == 0)
+            {
+                return Enumerable.Empty<UserEntity>();
+            }
+
+            return users;
+        }
+        
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);

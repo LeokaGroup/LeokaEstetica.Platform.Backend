@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagmentHumanResources;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagementHumanResources;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
 using LeokaEstetica.Platform.ProjectManagement.HumanResources.Abstractions;
 
@@ -29,6 +30,8 @@ internal sealed class CalendarService : ICalendarService
         _userRepository = userRepository;
         _calendarRepository = calendarRepository;
     }
+
+    #region Публичные методы.
 
     /// <inheritdoc />
     public async Task<IEnumerable<CalendarOutput>> GetCalendarEventsAsync(string account)
@@ -91,4 +94,49 @@ internal sealed class CalendarService : ICalendarService
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task CreateCalendarEventAsync(CalendarInput calendarInput, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
+            {
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
+            }
+
+            calendarInput.EventMembers ??= new List<EventMemberInput>();
+
+            // Добавляем в участники события текущего пользователя, который создает событие.
+            if (calendarInput.EventMembers.Count == 0
+                || !calendarInput.EventMembers.Select(x => x.EventMemberId).Contains(userId))
+            {
+                calendarInput.EventMembers.Add(new EventMemberInput
+                {
+                    EventMemberId = userId
+                });
+            }
+
+            calendarInput.CreatedBy = userId;
+            
+            // Создаем событие.
+            await _calendarRepository.CreateCalendarEventAsync(calendarInput);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }
