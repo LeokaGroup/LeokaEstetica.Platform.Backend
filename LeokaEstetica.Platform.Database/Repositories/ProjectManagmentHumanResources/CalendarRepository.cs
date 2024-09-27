@@ -123,7 +123,58 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
          }
      }
 
-    #endregion
+     /// <inheritdoc />
+     public async Task<CalendarOutput> GetEventDetailsAsync(long eventId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+
+         var parameters = new DynamicParameters();
+         parameters.Add("@eventId", eventId);
+
+         var eventQuery = "SELECT event_id, " +
+                          "event_name, " +
+                          "event_description, " +
+                          "created_by, " +
+                          "created_at, " +
+                          "event_start_date, " +
+                          "event_end_date, " +
+                          "event_location " +
+                          "FROM project_management_human_resources.calendar_events " +
+                          "WHERE event_id = @eventId";
+
+         var @event = await connection.QueryFirstOrDefaultAsync<CalendarOutput>(eventQuery, parameters);
+
+         if (@event is null)
+         {
+             throw new InvalidOperationException("Ошибка при получении данных события календаря. " +
+                                                 $"EventId: {eventId}.");
+         }
+
+         var eventMembersQuery = "SELECT em.id, " +
+                                 "em.event_member_id, " +
+                                 "em.event_id, " +
+                                 "em.member_status::project_management_human_resources.CALENDAR_MEMBER_STATUS_ENUM " +
+                                 "AS CalendarEventMemberStatusValue, " +
+                                 "em.joined," +
+                                 "u.\"Email\" " +
+                                 "FROM project_management_human_resources.calendar_event_members AS em " +
+                                 "INNER JOIN dbo.\"Users\" AS u " +
+                                 "ON em.event_member_id = u.\"UserId\" " +
+                                 "WHERE em.event_id = @eventId";
+
+         var eventMembers = (await connection.QueryAsync<EventMemberOutput>(eventMembersQuery, parameters))
+             ?.AsList();
+
+         if (eventMembers is not null && eventMembers.Count > 0)
+         {
+             @event.EventMembers ??= new List<EventMemberOutput>();
+             @event.EventMembers = eventMembers;
+         }
+
+         return @event;
+     }
+
+     #endregion
 
     #region Приватные методы.
 

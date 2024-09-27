@@ -115,4 +115,23 @@ public class CalendarController : BaseController
 
         await _calendarService.CreateCalendarEventAsync(calendarInput, GetUserName());
     }
+
+    /// <summary>
+    /// Метод получает детали события календаря.
+    /// </summary>
+    /// <param name="eventId">Id события.</param>
+    /// <returns>Детали события календаря.</returns>
+    [HttpGet]
+    [Route("event")]
+    [ProducesResponseType(200, Type = typeof(CalendarOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<CalendarOutput> GetEventDetailsAsync([FromQuery] long eventId)
+    {
+        var result = await _calendarService.GetEventDetailsAsync(eventId);
+
+        return result;
+    }
 }

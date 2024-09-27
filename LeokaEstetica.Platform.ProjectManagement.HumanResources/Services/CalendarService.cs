@@ -1,9 +1,15 @@
-﻿using Dapper;
+﻿using System.Runtime.CompilerServices;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagmentHumanResources;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagementHumanResources;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
+using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.ProjectManagement.HumanResources.Abstractions;
+using Enum = System.Enum;
+
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
 namespace LeokaEstetica.Platform.ProjectManagement.HumanResources.Services;
 
@@ -123,6 +129,31 @@ internal sealed class CalendarService : ICalendarService
             
             // Создаем событие.
             await _calendarRepository.CreateCalendarEventAsync(calendarInput);
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<CalendarOutput> GetEventDetailsAsync(long eventId)
+    {
+        try
+        {
+            var result = await _calendarRepository.GetEventDetailsAsync(eventId);
+
+            result.EventMembers ??= new List<EventMemberOutput>();
+
+            foreach (var em in result.EventMembers)
+            {
+                em.DisplayEventMemberStatus = Enum.Parse<CalendarEventMemberStatusEnum>(
+                    em.CalendarEventMemberStatusValue.ToString()).GetEnumDescription();
+            }
+
+            return result;
         }
         
         catch (Exception ex)
