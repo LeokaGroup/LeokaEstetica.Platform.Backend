@@ -26,8 +26,9 @@ public interface ICalendarService
     /// Метод получает детали события календаря.
     /// </summary>
     /// <param name="eventId">Id события.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Детали события календаря.</returns>
-    Task<CalendarOutput> GetEventDetailsAsync(long eventId);
+    Task<CalendarOutput> GetEventDetailsAsync(long eventId, string account);
 
     /// <summary>
     /// Метод обновляет событие календаря.

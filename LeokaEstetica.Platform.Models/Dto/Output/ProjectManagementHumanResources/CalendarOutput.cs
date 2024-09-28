@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using LeokaEstetica.Platform.Models.Enums;
+using Newtonsoft.Json;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
 
@@ -56,4 +57,14 @@ public class CalendarOutput
     /// Список ролей участника события.
     /// </summary>
     public List<EventMemberRoleOutput>? EventMemberRoles { get; set; }
+    
+    /// <summary>
+    /// Значение енамки статуса текущего участника события.
+    /// </summary>
+    public CalendarEventMemberStatusEnum CalendarEventMemberStatusValue { get; set; }
+    
+    /// <summary>
+    /// Название статуса для отображения у текущего участника события.
+    /// </summary>
+    public string? DisplayEventMemberStatus { get; set; }
 }

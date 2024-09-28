@@ -140,10 +140,17 @@ internal sealed class CalendarService : ICalendarService
     }
 
     /// <inheritdoc />
-    public async Task<CalendarOutput> GetEventDetailsAsync(long eventId)
+    public async Task<CalendarOutput> GetEventDetailsAsync(long eventId, string account)
     {
         try
         {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
+            {
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
+            }
+            
             var result = await _calendarRepository.GetEventDetailsAsync(eventId);
 
             result.EventMembers ??= new List<EventMemberOutput>();
@@ -152,6 +159,13 @@ internal sealed class CalendarService : ICalendarService
             {
                 em.DisplayEventMemberStatus = Enum.Parse<CalendarEventMemberStatusEnum>(
                     em.CalendarEventMemberStatusValue.ToString()).GetEnumDescription();
+
+                if (em.EventMemberId == userId)
+                {
+                    result.DisplayEventMemberStatus = Enum.Parse<CalendarEventMemberStatusEnum>(
+                        em.CalendarEventMemberStatusValue.ToString()).GetEnumDescription();
+                    result.CalendarEventMemberStatusValue = em.CalendarEventMemberStatusValue;
+                }
             }
 
             return result;

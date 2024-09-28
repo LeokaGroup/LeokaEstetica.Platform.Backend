@@ -135,7 +135,7 @@ public class CalendarController : BaseController
     [ProducesResponseType(404)]
     public async Task<CalendarOutput> GetEventDetailsAsync([FromQuery] long eventId)
     {
-        var result = await _calendarService.GetEventDetailsAsync(eventId);
+        var result = await _calendarService.GetEventDetailsAsync(eventId, GetUserName());
 
         return result;
     }
