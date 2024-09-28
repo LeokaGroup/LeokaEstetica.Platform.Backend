@@ -33,6 +33,7 @@ using LeokaEstetica.Platform.Database.Repositories.Press;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
+using LeokaEstetica.Platform.Database.Repositories.ProjectManagmentHumanResources;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Search;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
@@ -51,6 +52,7 @@ using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.Commerce;
+using LeokaEstetica.Platform.ProjectManagement.HumanResources.Services;
 using LeokaEstetica.Platform.Redis.Services.Commerce;
 using LeokaEstetica.Platform.Redis.Services.ProjectManagement;
 using LeokaEstetica.Platform.Redis.Services.User;
@@ -130,6 +132,7 @@ internal class BaseServiceTest
     protected readonly WikiTreeService WikiTreeService;
     protected readonly ProjectNotificationsService ProjectNotificationsService;
     protected readonly CompanyService CompanyService;
+    protected readonly CalendarService CalendarService;
 
     protected BaseServiceTest()
     {
@@ -328,5 +331,8 @@ internal class BaseServiceTest
 
         var companyRepository = new CompanyRepository(connectionProvider);
         CompanyService = new CompanyService(null, companyRepository, userRepository);
+
+        var calendarRepository = new CalendarRepository(connectionProvider);
+        CalendarService = new CalendarService(null, userRepository, calendarRepository);
     }
 }
