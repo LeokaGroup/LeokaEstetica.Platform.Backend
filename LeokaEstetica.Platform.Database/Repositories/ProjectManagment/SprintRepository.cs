@@ -41,11 +41,12 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
                     " s.project_id," +
                     " s.project_sprint_id," +
                     " s.sprint_name, " +
+                    " s.created_at, " +
                     " ss.status_name AS SprintStatusName " +
                     "FROM project_management.sprints AS s " +
                     "INNER JOIN project_management.sprint_statuses AS ss " +
                     "ON s.sprint_status_id = ss.status_id " +
-                    "WHERE s.project_id = @projectId";
+                    "WHERE s.project_id = @projectId ";
 
         var result = (await connection.QueryAsync<TaskSprintExtendedOutput>(query, parameters))?.AsList();
 
