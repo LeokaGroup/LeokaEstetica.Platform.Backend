@@ -200,6 +200,42 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
          }
      }
 
+     /// <inheritdoc />
+     public async Task RemoveEventAsync(long eventId)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+         using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+
+         try
+         {
+             var parameters = new DynamicParameters();
+             parameters.Add("@eventId", eventId);
+
+             var removeMemberRolesQuery = "DELETE FROM roles.calendar_event_role_members " +
+                                          "WHERE event_id = @eventId";
+             
+             await connection.ExecuteAsync(removeMemberRolesQuery, parameters);
+
+             var removeMembersQuery = "DELETE FROM project_management_human_resources.calendar_event_members " +
+                                      "WHERE event_id = @eventId";
+
+             await connection.ExecuteAsync(removeMembersQuery, parameters);
+
+             var removeEventQuery = "DELETE FROM project_management_human_resources.calendar_events " +
+                                    "WHERE event_id = @eventId";
+                                    
+             await connection.ExecuteAsync(removeEventQuery, parameters);
+             
+             transaction.Commit();
+         }
+         
+         catch
+         {
+             transaction.Rollback();
+             throw;
+         }
+     }
+
      #endregion
 
     #region Приватные методы.

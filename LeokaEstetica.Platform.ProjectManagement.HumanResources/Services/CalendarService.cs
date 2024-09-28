@@ -216,6 +216,21 @@ internal sealed class CalendarService : ICalendarService
         }
     }
 
+    /// <inheritdoc />
+    public async Task RemoveEventAsync(long eventId)
+    {
+        try
+        {
+            await _calendarRepository.RemoveEventAsync(eventId);
+        }
+        
+        catch (Exception ex)
+        {
+             _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

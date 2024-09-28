@@ -49,4 +49,10 @@ public interface ICalendarRepository
     /// </summary>
     /// <param name="calendarInput">Входная модель.</param>
     Task UpdateEventAsync(CalendarInput calendarInput);
+    
+    /// <summary>
+    /// Метод удаляет событие календаря.
+    /// </summary>
+    /// <param name="eventId">Id события.</param>
+    Task RemoveEventAsync(long eventId);
 }
