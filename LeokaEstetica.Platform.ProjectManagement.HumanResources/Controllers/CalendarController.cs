@@ -146,7 +146,7 @@ public class CalendarController : BaseController
     /// <param name="calendarInput">Входная модель.</param>
     [HttpPut]
     [Route("event")]
-    [ProducesResponseType(200, Type = typeof(CalendarOutput))]
+    [ProducesResponseType(200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
@@ -178,5 +178,21 @@ public class CalendarController : BaseController
         }
 
         await _calendarService.UpdateEventAsync(calendarInput, GetUserName());
+    }
+
+    /// <summary>
+    /// Метод удаляет событие календаря.
+    /// </summary>
+    /// <param name="eventId">Id события.</param>
+    [HttpDelete]
+    [Route("event")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RemoveEventAsync([FromQuery] long eventId)
+    {
+        await _calendarService.RemoveEventAsync(eventId);
     }
 }

@@ -8,7 +8,7 @@ internal class GetEventDetailsTest : BaseServiceTest
     [Test]
     public async Task GetEventDetailsAsyncTest()
     {
-        var result = await CalendarService.GetEventDetailsAsync(4);
+        var result = await CalendarService.GetEventDetailsAsync(4, "sierra_93@mail.ru");
         
         Assert.NotNull(result);
     }
