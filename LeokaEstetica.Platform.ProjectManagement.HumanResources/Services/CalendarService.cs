@@ -115,6 +115,8 @@ internal sealed class CalendarService : ICalendarService
 
             calendarInput.EventMembers ??= new List<EventMemberInput>();
 
+            // TODO: Подумать как сделать корректнее. По почте надо всех находить и заполнять.
+            // TODO: С фронта будет приходить теперь не UserId, а почта пользователя.
             // Добавляем в участники события текущего пользователя, который создает событие.
             if (calendarInput.EventMembers.Count == 0
                 || !calendarInput.EventMembers.Select(x => x.EventMemberId).Contains(userId))
@@ -127,7 +129,6 @@ internal sealed class CalendarService : ICalendarService
 
             calendarInput.CreatedBy = userId;
             
-            // Создаем событие.
             await _calendarRepository.CreateCalendarEventAsync(calendarInput);
         }
         
@@ -154,6 +155,44 @@ internal sealed class CalendarService : ICalendarService
             }
 
             return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateEventAsync(CalendarInput calendarInput, string account)
+    {
+        try
+        {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
+            {
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
+            }
+            
+            calendarInput.EventMembers ??= new List<EventMemberInput>();
+
+            // TODO: Подумать как сделать корректнее. По почте надо всех находить и заполнять.
+            // TODO: С фронта будет приходить теперь не UserId, а почта пользователя.
+            // Добавляем в участники события текущего пользователя, который создает событие.
+            if (calendarInput.EventMembers.Count == 0
+                || !calendarInput.EventMembers.Select(x => x.EventMemberId).Contains(userId))
+            {
+                calendarInput.EventMembers.Add(new EventMemberInput
+                {
+                    EventMemberId = userId
+                });
+            }
+
+            calendarInput.CreatedBy = userId;
+            
+            await _calendarRepository.UpdateEventAsync(calendarInput);
         }
         
         catch (Exception ex)

@@ -28,4 +28,11 @@ public interface ICalendarService
     /// <param name="eventId">Id события.</param>
     /// <returns>Детали события календаря.</returns>
     Task<CalendarOutput> GetEventDetailsAsync(long eventId);
+
+    /// <summary>
+    /// Метод обновляет событие календаря.
+    /// </summary>
+    /// <param name="calendarInput">Входная модель.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
+    Task UpdateEventAsync(CalendarInput calendarInput, string account);
 }

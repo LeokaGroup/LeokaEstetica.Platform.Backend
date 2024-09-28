@@ -174,6 +174,32 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
          return @event;
      }
 
+     /// <inheritdoc />
+     public async Task UpdateEventAsync(CalendarInput calendarInput)
+     {
+         using var connection = await ConnectionProvider.GetConnectionAsync();
+         using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+
+         try
+         {
+             // Обновляем событие.
+             await UpdateEventAsync(calendarInput, connection);
+             
+             // Обновляем участников события.
+             await ActualizeEventMembersAsync(calendarInput.EventId!.Value, calendarInput.EventMembers!,
+                 System.Enum.Parse<CalendarEventMemberStatusEnum>(calendarInput.CalendarEventMemberStatus!),
+                 connection);
+             
+             transaction.Commit();
+         }
+         
+         catch
+         {
+             transaction.Rollback();
+             throw;
+         }
+     }
+
      #endregion
 
     #region Приватные методы.
@@ -182,7 +208,7 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
     /// Метод создает событие.
     /// </summary>
     /// <param name="calendarInput">Входная модель.</param>
-    /// <param name="connection">Транзакция.</param>
+    /// <param name="connection">Подключение к БД.</param>
     /// <returns>Id события.</returns>
     private async Task<long> CreateEventAsync(CalendarInput calendarInput, IDbConnection connection)
     {
@@ -233,11 +259,11 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
     /// Метод добавляет участников события.
     /// </summary>
     /// <param name="eventId">Id события.</param>
-    /// <param name="eventMembers"></param>
-    /// <param name="CalendarEventMemberStatus"></param>
-    /// <param name="connection"></param>
+    /// <param name="eventMembers">Список участников события.</param>
+    /// <param name="calendarEventMemberStatus">Статус.</param>
+    /// <param name="connection">Подключение к БД.</param>
     private async Task CreateEventMembersAsync(long eventId, List<EventMemberInput> eventMembers,
-        CalendarEventMemberStatusEnum CalendarEventMemberStatus, IDbConnection connection)
+        CalendarEventMemberStatusEnum calendarEventMemberStatus, IDbConnection connection)
     {
         var parameters = new List<DynamicParameters>();
 
@@ -246,7 +272,7 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
             var tempParameters = new DynamicParameters();
             tempParameters.Add("@eventId", eventId);
             tempParameters.Add("@eventMemberId", p.EventMemberId);
-            tempParameters.Add("@memberStatus", new Enum(CalendarEventMemberStatus));
+            tempParameters.Add("@memberStatus", new Enum(calendarEventMemberStatus));
             tempParameters.Add("@joined", DateTime.UtcNow);
 
             parameters.Add(tempParameters);
@@ -257,6 +283,86 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
                     "VALUES (@eventMemberId, @eventId, @memberStatus, @joined)";
 
         await connection.ExecuteAsync(query, parameters);
+    }
+    
+    /// <summary>
+    /// Метод обновляет событие.
+    /// </summary>
+    /// <param name="calendarInput">Входная модель.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    /// <returns>Id события.</returns>
+    private async Task UpdateEventAsync(CalendarInput calendarInput, IDbConnection connection)
+    {
+        var parameters = new DynamicParameters();
+        parameters.Add("@eventName", calendarInput.EventName);
+
+        var query = "UPDATE project_management_human_resources.calendar_events " +
+                    "SET event_name = @eventName";
+
+        if (!string.IsNullOrWhiteSpace(calendarInput.EventDescription))
+        {
+            query += ", event_description = @eventDescription";
+            parameters.Add("@eventDescription", calendarInput.EventDescription);
+        }
+
+        query += ", created_by = @createdBy, " +
+                 "event_start_date = @eventStartDate, " +
+                 "event_end_date = @eventEndDate";
+        
+        parameters.Add("@createdBy", calendarInput.CreatedBy);
+        parameters.Add("@eventStartDate", calendarInput.EventStartDate);
+        parameters.Add("@eventEndDate", calendarInput.EventEndDate);
+         
+        if (!string.IsNullOrWhiteSpace(calendarInput.EventLocation))
+        {
+            query += " ,event_location = @eventLocation";
+            parameters.Add("@eventLocation", calendarInput.EventLocation);
+        }
+
+        parameters.Add("@eventId", calendarInput.EventId!.Value);
+        query += " WHERE event_id = @eventId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+    
+    /// <summary>
+    /// Метод актуализирует участников события.
+    /// </summary>
+    /// <param name="eventId">Id события.</param>
+    /// <param name="eventMembers">Список участников события.</param>
+    /// <param name="calendarEventMemberStatus">Статус.</param>
+    /// <param name="connection">Подключение к БД.</param>
+    private async Task ActualizeEventMembersAsync(long eventId, List<EventMemberInput> eventMembers,
+        CalendarEventMemberStatusEnum CalendarEventMemberStatus, IDbConnection connection)
+    {
+        // Удаляем старых участников события.
+        var removeParameters = new DynamicParameters();
+        removeParameters.Add("@eventId", eventId);
+
+        var removeQuery = "DELETE FROM project_management_human_resources.calendar_event_members " +
+                          "WHERE event_id = @eventId";
+        
+        await connection.ExecuteAsync(removeQuery, removeParameters);
+        
+        var addParameters = new List<DynamicParameters>();
+
+        // Добавляем новых участников события.
+        foreach (var p in eventMembers)
+        {
+            var tempParameters = new DynamicParameters();
+            tempParameters.Add("@eventId", eventId);
+            tempParameters.Add("@eventMemberId", p.EventMemberId);
+            tempParameters.Add("@memberStatus", new Enum(CalendarEventMemberStatus));
+            tempParameters.Add("@joined", DateTime.UtcNow);
+
+            addParameters.Add(tempParameters);
+        }
+
+        var addQuery = "INSERT INTO project_management_human_resources.calendar_event_members " +
+                       "(event_member_id, event_id, member_status, joined) " +
+                       "VALUES (@eventMemberId, @eventId, @memberStatus, @joined)";
+
+        await connection.ExecuteAsync(addQuery, addParameters);
     }
 
     #endregion
