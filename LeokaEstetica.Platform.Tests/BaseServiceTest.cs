@@ -327,7 +327,7 @@ internal class BaseServiceTest
             new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository));
 
         var wikiTreeRepository = new WikiTreeRepository(connectionProvider);
-        WikiTreeService = new WikiTreeService(null, wikiTreeRepository, userRepository);
+        WikiTreeService = new WikiTreeService(null, wikiTreeRepository, userRepository, null);
 
         var companyRepository = new CompanyRepository(connectionProvider);
         CompanyService = new CompanyService(null, companyRepository, userRepository);
