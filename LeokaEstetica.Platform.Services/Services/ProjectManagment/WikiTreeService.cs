@@ -249,7 +249,6 @@ internal sealed class WikiTreeService : IWikiTreeService
                 NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorCreateFolder",
                 userCode, UserConnectionModuleEnum.ProjectManagement);
 
-
             throw;
         }
     }
@@ -257,16 +256,18 @@ internal sealed class WikiTreeService : IWikiTreeService
     /// <inheritdoc />
     public async Task CreatePageAsync(long? parentId, string? pageName, string account, long? treeId, long projectId)
     {
-        try
-        {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+        var userId = await _userRepository.GetUserByEmailAsync(account);
 
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-            
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
+        try
+        {            
             // Если не передали, значит создаем папку вне дерева как родителя или отдельную страницу.
             if (!treeId.HasValue)
             {
@@ -286,6 +287,12 @@ internal sealed class WikiTreeService : IWikiTreeService
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
+
+            await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
+               "Ошибка при создании страницы.",
+               NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorCreatePage",
+               userCode, UserConnectionModuleEnum.ProjectManagement);
+
             throw;
         }
     }
