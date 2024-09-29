@@ -10,5 +10,6 @@ public interface IEpicService
     /// </summary>
     /// <param name="epicId">Id эпика.</param>
     /// <param name="epicTaskIds">Список Id задач в рамках проекта, которые нужно исключить из эпика.</param>
-    Task ExcludeEpicTasksAsync(long epicId, IEnumerable<string>? epicTaskIds);
+    /// <param name="account">Аккаунт.</param>
+    Task ExcludeEpicTasksAsync(long epicId, IEnumerable<string>? epicTaskIds, string account);
 }
