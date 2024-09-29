@@ -66,12 +66,25 @@ internal sealed class ResumeModerationRepository : IResumeModerationRepository
     /// <param name="profileInfoId">Id анкеты.</param>
     public async Task AddResumeModerationAsync(long profileInfoId)
     {
-        await _pgContext.ModerationResumes.AddAsync(new ModerationResumeEntity
+        var profileInfo = await _pgContext.ModerationResumes
+            .FirstOrDefaultAsync(p => p.ProfileInfoId == profileInfoId);
+        
+        if (profileInfo is null)
         {
-            ProfileInfoId = profileInfoId,
-            DateModeration = DateTime.UtcNow,
-            ModerationStatusId = (int)ResumeModerationStatusEnum.ModerationResume
-        });
+            await _pgContext.ModerationResumes.AddAsync(new ModerationResumeEntity
+            {
+                ProfileInfoId = profileInfoId,
+                DateModeration = DateTime.UtcNow,
+                ModerationStatusId = (int)ResumeModerationStatusEnum.ModerationResume
+            });
+        }
+        else
+        {
+            profileInfo.ProfileInfoId = profileInfoId;
+            profileInfo.DateModeration = DateTime.UtcNow;
+            profileInfo.ModerationStatusId = (int)ResumeModerationStatusEnum.ModerationResume;
+            _pgContext.ModerationResumes.Update(profileInfo);
+        }
         await _pgContext.SaveChangesAsync();
     }
 
