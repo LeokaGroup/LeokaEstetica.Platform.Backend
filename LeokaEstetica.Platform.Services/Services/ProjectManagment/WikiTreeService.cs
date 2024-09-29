@@ -238,6 +238,11 @@ internal sealed class WikiTreeService : IWikiTreeService
             }
 
             await _wikiTreeRepository.CreateFolderAsync(parentId, folderName, userId, treeId.Value);
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Папка успешно создана.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessCreateFolder",
+                userCode, UserConnectionModuleEnum.ProjectManagement);
         }
 
         catch (Exception ex)
@@ -282,6 +287,11 @@ internal sealed class WikiTreeService : IWikiTreeService
             }
 
             await _wikiTreeRepository.CreatePageAsync(parentId, pageName, userId, treeId.Value);
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+               "Страница успешно создана.",
+               NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessCreatePage",
+               userCode, UserConnectionModuleEnum.ProjectManagement);
         }
 
         catch (Exception ex)

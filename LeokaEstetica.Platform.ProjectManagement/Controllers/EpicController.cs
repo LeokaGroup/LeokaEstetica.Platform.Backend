@@ -64,6 +64,6 @@ public class EpicController : BaseController
       }
 
       await _epicService.ExcludeEpicTasksAsync(includeExcludeEpicTaskInput.EpicSprintId,
-         includeExcludeEpicTaskInput.ProjectTaskIds);
+         includeExcludeEpicTaskInput.ProjectTaskIds, GetUserName());
    }
 }
