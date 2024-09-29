@@ -503,6 +503,6 @@ public class SprintController : BaseController
         }
 
         await _sprintService.IncludeSprintTasksAsync(includeExcludeEpicSprintTaskInput.EpicSprintId,
-            includeExcludeEpicSprintTaskInput.ProjectTaskIds);
+            includeExcludeEpicSprintTaskInput.ProjectTaskIds, GetUserName());
     }
 }
