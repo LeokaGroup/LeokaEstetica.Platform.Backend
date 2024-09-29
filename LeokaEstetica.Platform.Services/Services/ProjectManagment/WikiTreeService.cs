@@ -255,16 +255,18 @@ internal sealed class WikiTreeService : IWikiTreeService
     /// <inheritdoc />
     public async Task CreatePageAsync(long? parentId, string? pageName, string account, long? treeId, long projectId)
     {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
-
             // Если не передали, значит создаем папку вне дерева как родителя или отдельную страницу.
             if (!treeId.HasValue)
             {
@@ -279,6 +281,11 @@ internal sealed class WikiTreeService : IWikiTreeService
             }
 
             await _wikiTreeRepository.CreatePageAsync(parentId, pageName, userId, treeId.Value);
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+               "Страница успешно создана.",
+               NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessCreatePage",
+               userCode, UserConnectionModuleEnum.ProjectManagement);
         }
 
         catch (Exception ex)
