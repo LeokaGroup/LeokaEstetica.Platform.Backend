@@ -5,6 +5,9 @@ using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
+using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.ProjectManagment;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +23,7 @@ internal sealed class WikiTreeService : IWikiTreeService
     private readonly ILogger<WikiTreeService>? _logger;
     private readonly IWikiTreeRepository _wikiTreeRepository;
     private readonly IUserRepository _userRepository;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
     private const string FOLDER_ICON = "pi pi-folder";
     private const string FILE_ICON = "pi pi-file";
 
@@ -43,13 +47,16 @@ internal sealed class WikiTreeService : IWikiTreeService
     /// <param name="logger">Логгер.</param>
     /// <param name="wikiTreeRepository">Репозиторий дерева.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public WikiTreeService(ILogger<WikiTreeService>? logger,
         IWikiTreeRepository wikiTreeRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _wikiTreeRepository = wikiTreeRepository;
         _userRepository = userRepository;
+        _hubNotificationService = hubNotificationService;
     }
 
     /// <inheritdoc />
@@ -205,16 +212,18 @@ internal sealed class WikiTreeService : IWikiTreeService
     public async Task CreateFolderAsync(long? parentId, string? folderName, string account, long? treeId,
         long projectId)
     {
-        try
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
 
-            if (userId <= 0)
-            {
-                var ex = new NotFoundUserIdByAccountException(account);
-                throw ex;
-            }
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
+        try
+        {            
             // Если не передали, значит создаем папку вне дерева как родителя или отдельную страницу.
             if (!treeId.HasValue)
             {
@@ -229,6 +238,11 @@ internal sealed class WikiTreeService : IWikiTreeService
             }
 
             await _wikiTreeRepository.CreateFolderAsync(parentId, folderName, userId, treeId.Value);
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Папка успешно создана.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessCreateFolder",
+                userCode, UserConnectionModuleEnum.ProjectManagement);
         }
 
         catch (Exception ex)
@@ -250,7 +264,7 @@ internal sealed class WikiTreeService : IWikiTreeService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
+
             // Если не передали, значит создаем папку вне дерева как родителя или отдельную страницу.
             if (!treeId.HasValue)
             {
