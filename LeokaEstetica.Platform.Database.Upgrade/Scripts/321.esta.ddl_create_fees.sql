@@ -1,4 +1,4 @@
-﻿CREATE TABLE commerce.fees
+﻿CREATE TABLE IF NOT EXISTS commerce.fees
 (
     fees_id           SERIAL         NOT NULL,
     fees_name         VARCHAR(150)   NOT NULL,
