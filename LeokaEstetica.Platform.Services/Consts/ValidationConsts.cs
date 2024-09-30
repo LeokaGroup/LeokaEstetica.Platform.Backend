@@ -104,6 +104,22 @@ public static class ValidationConsts
     public const string NOT_VALID_COMPONENT_ROLE = "Заполните минимум одну роль.";
 
     /// <summary>
+    /// Если не заполнена должность пользователя.
+    /// </summary>
+    public const string EMPTY_JOB_ERROR = "Должность пользователя должна быть заполнена.";
+
+    /// <summary>
+    /// Если не заполнен стаж пользователя.
+    /// </summary>
+    public const string EMPTY_WORKEXPERIANCE_ERROR = "Стаж пользователя должен быть заполнен.";
+
+    /// <summary>
+    /// Если передали невалидный стаж пользователя.
+    /// </summary>
+    public const string NOT_VALID_WORKEXPERIANCE_ERROR = "Стаж пользователя некорректен.";
+
+
+    /// <summary>
     /// Класс описывает константы валидации Google.
     /// </summary>
     public static class Google
