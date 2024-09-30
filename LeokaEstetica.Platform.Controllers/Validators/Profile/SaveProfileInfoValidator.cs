@@ -15,7 +15,7 @@ public class SaveProfileInfoValidator : AbstractValidator<ProfileInfoInput>
     /// Конструктор.
     /// </summary>
     public SaveProfileInfoValidator()
-    {//фамилия - имя - mail - номер - телефон - о себе - должность - стаж - навыки - цели
+    {
         RuleFor(p => p.FirstName)
             .NotNull()
             .WithMessage(ValidationConsts.EMPTY_FIRST_NAME_ERROR)
@@ -48,26 +48,28 @@ public class SaveProfileInfoValidator : AbstractValidator<ProfileInfoInput>
             .NotEmpty()
             .WithMessage(ValidationConsts.EMPTY_ABOUTME_ERROR);
 
-        RuleFor(p => p.Job)//должность
-           .NotNull()
-           .WithMessage(ValidationConsts.EMPTY_JOB_ERROR)
-           .NotEmpty()
-           .WithMessage(ValidationConsts.EMPTY_JOB_ERROR);
-        ;
+        RuleFor(p => p.Job)
+            .NotNull()
+            .WithMessage(ValidationConsts.EMPTY_JOB_ERROR)
+            .NotEmpty()
+            .WithMessage(ValidationConsts.EMPTY_JOB_ERROR);
 
-        RuleFor(p => p.WorkExperience)//стаж*
-           .NotNull()
-           .WithMessage(ValidationConsts.EMPTY_WORKEXPERIANCE_ERROR)
-           .NotEmpty()
-           .WithMessage(ValidationConsts.EMPTY_WORKEXPERIANCE_ERROR)
-           .Matches("^(?:[1-9]?[0-9])$")
-           .WithMessage(ValidationConsts.NOT_VALID_WORKEXPERIANCE_ERROR);
-        ;
+        RuleFor(p => p.WorkExperience)
+            .NotNull()
+            .WithMessage(ValidationConsts.EMPTY_WORKEXPERIANCE_ERROR)
+            .NotEmpty()
+            .WithMessage(ValidationConsts.EMPTY_WORKEXPERIANCE_ERROR);
 
-        RuleFor(p => p.UserSkills)//навыки* IEnumerable
-            ;
+        RuleFor(p => p.UserSkills)
+             .NotNull()
+             .WithMessage(ValidationConsts.EMPTY_SKILLS_ERROR)
+             .NotEmpty()
+             .WithMessage(ValidationConsts.EMPTY_SKILLS_ERROR);
 
-        RuleFor(p => p.UserIntents)//цели* IEnumerable
-            ;
+        RuleFor(p => p.UserIntents)
+             .NotNull()
+             .WithMessage(ValidationConsts.EMPTY_INTENTS_ERROR)
+             .NotEmpty()
+             .WithMessage(ValidationConsts.EMPTY_SKILLS_ERROR);
     }
 }

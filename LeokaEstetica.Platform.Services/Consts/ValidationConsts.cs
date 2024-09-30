@@ -118,6 +118,15 @@ public static class ValidationConsts
     /// </summary>
     public const string NOT_VALID_WORKEXPERIANCE_ERROR = "Стаж пользователя некорректен.";
 
+    /// <summary>
+    /// Если не заполнены цели пользователя.
+    /// </summary>
+    public const string EMPTY_INTENTS_ERROR = "Цели пользователя должны быть заполнены.";
+
+    /// <summary>
+    /// Если не заполнены навыки пользователя.
+    /// </summary>
+    public const string EMPTY_SKILLS_ERROR = "Навыки пользователя должны быть заполнены.";
 
     /// <summary>
     /// Класс описывает константы валидации Google.
