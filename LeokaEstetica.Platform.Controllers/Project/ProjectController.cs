@@ -24,8 +24,6 @@ using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Project;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Pipelines.Sockets.Unofficial.Arenas;
-using static LeokaEstetica.Platform.Core.Constants.ValidationConst;
 
 namespace LeokaEstetica.Platform.Controllers.Project;
 
@@ -74,7 +72,6 @@ public class ProjectController : BaseController
 		_projectPaginationService = projectPaginationService;
 		_logger = logger;
 		_discordService = discordService;
-        
     }
 
 	/// <summary>
