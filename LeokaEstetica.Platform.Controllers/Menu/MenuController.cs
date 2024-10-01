@@ -48,7 +48,7 @@ public class MenuController : BaseController
     /// </summary>
     /// <returns>Элементы верхнего меню.</returns>
     [HttpGet]
-    [Route("top-menu")]
+    [Route("left-menu")]
     [ProducesResponseType(200, Type = typeof(TopMenuOutput))]
     [ProducesResponseType(400)]
     [ProducesResponseType(403)]
