@@ -57,13 +57,21 @@ public class ProjectController : BaseController
     /// <param name="projectPaginationService">Сервис пагинации проектов.</param>
     /// <param name="logger">Сервис логера.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
+    /// <param name="projectRepository">Репозиторий проектов.</param>
+	/// <param name="userRepository">Репозиторий пользователя.</param>
+	/// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
+
     public ProjectController(IProjectService projectService,
 		IMapper mapper,
 		IValidationExcludeErrorsService validationExcludeErrorsService,
 		IProjectCommentsService projectCommentsService,
 		IProjectPaginationService projectPaginationService,
 		ILogger<ProjectController> logger,
-		Lazy<IDiscordService> discordService)
+		Lazy<IDiscordService> discordService,
+        IProjectRepository projectRepository,
+        IUserRepository userRepository,
+        Lazy<IHubNotificationService> hubNotificationService)
+
 	{
 		_projectService = projectService;
 		_mapper = mapper;
@@ -72,6 +80,9 @@ public class ProjectController : BaseController
 		_projectPaginationService = projectPaginationService;
 		_logger = logger;
 		_discordService = discordService;
+		_projectRepository = projectRepository;
+		_userRepository = userRepository;
+		_hubNotificationService = hubNotificationService;
     }
 
 	/// <summary>
@@ -460,7 +471,8 @@ public class ProjectController : BaseController
 				System.Enum.Parse<ProjectInviteTypeEnum>(inviteProjectMemberInput.InviteType), inviteProjectMemberInput.ProjectId,
 				inviteProjectMemberInput.VacancyId, GetUserName());
 
-			var userId = await _userRepository.GetUserIdByEmailAsync(GetUserName());
+			var userId = await _userRepository.GetUserIdByLoginAsync(GetUserName());
+			
 			if (userId <= 0)
             {
                 var ex = new NotFoundUserIdByAccountException(inviteProjectMemberInput.InviteText);
