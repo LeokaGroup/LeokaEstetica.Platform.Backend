@@ -19,7 +19,7 @@ namespace LeokaEstetica.Platform.Controllers.Profile;
 /// <summary>
 /// Контроллер профиля пользователя.
 /// </summary>
-//[AuthFilter]
+[AuthFilter]
 [ApiController]
 [Route("profile")]
 public class ProfileController : BaseController
@@ -131,8 +131,6 @@ public class ProfileController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    //убрать
-    [AllowAnonymous]
     public async Task<ProfileInfoOutput> SaveProfileInfoAsync([FromBody] ProfileInfoInput profileInfoInput)
     {
         var result = new ProfileInfoOutput { Errors = new List<ValidationFailure>() };
@@ -140,24 +138,39 @@ public class ProfileController : BaseController
 
         if (validator.Errors.Any())
         {
-            var exceptions = new List<InvalidOperationException>();
-            foreach (var err in validator.Errors)
+            try
             {
-                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+                var exceptions = new List<InvalidOperationException>();
+                foreach (var err in validator.Errors)
+                {
+                    exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+                }
+
+                var ex = new AggregateException(exceptions);
+                _logger.LogError(ex, "Ошибки при попытке сохранения данных профиля.");
+
+                result.Errors.AddRange(validator.Errors);
+
+                var userLogin = GetUserName();
+                var userId = await _userRepository.GetUserIdByLoginAsync(userLogin);
+
+                if (userId == 0)
+                {
+                    throw new InvalidOperationException($"Id пользователя с аккаунтом {userLogin} не найден.");
+                }
+
+                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание", "Ошибка при попытке сохранения данных профиля",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserDataForm", userCode,
+                    UserConnectionModuleEnum.Main);
+
+                return result;
             }
-            
-            var ex = new AggregateException(exceptions);
-            _logger.LogError(ex, "Ошибки при попытке сохранения данных профиля.");
-            
-            result.Errors.AddRange(validator.Errors);
-
-            var userId = await _userRepository.GetUserIdByLoginAsync(GetUserName());
-            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
-            await _hubNotificationService.Value.SendNotificationAsync("Внимание", "Ошибка при попытке сохранения данных профиля",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserDataForm", userCode,
-                UserConnectionModuleEnum.Main);
-
-            return result;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                throw;
+            }
         }
         
         result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName());
