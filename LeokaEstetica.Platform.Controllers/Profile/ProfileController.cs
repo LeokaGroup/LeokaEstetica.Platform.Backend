@@ -1,36 +1,50 @@
 using FluentValidation.Results;
 using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.Profile;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
+using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Telegram.Bot.Types;
 
 namespace LeokaEstetica.Platform.Controllers.Profile;
 
 /// <summary>
 /// Контроллер профиля пользователя.
 /// </summary>
-[AuthFilter]
+//[AuthFilter]
 [ApiController]
 [Route("profile")]
 public class ProfileController : BaseController
 {
     private readonly IProfileService _profileService;
     private readonly ILogger<ProfileController> _logger;
+    private readonly IUserRepository _userRepository;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <param name="profileService">Сервис профиля.</param>
+    /// <param name="userRepository">Репозиторий пользователя.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     /// <param name="logger">Логгер.</param>
     public ProfileController(IProfileService profileService,
-        ILogger<ProfileController> logger)
+        ILogger<ProfileController> logger,
+        IUserRepository userRepository,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
+        _userRepository = userRepository;
         _profileService = profileService;
         _logger = logger;
+        _hubNotificationService = hubNotificationService;
     }
 
     /// <summary>
@@ -117,6 +131,8 @@ public class ProfileController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
+    //убрать
+    [AllowAnonymous]
     public async Task<ProfileInfoOutput> SaveProfileInfoAsync([FromBody] ProfileInfoInput profileInfoInput)
     {
         var result = new ProfileInfoOutput { Errors = new List<ValidationFailure>() };
@@ -134,6 +150,12 @@ public class ProfileController : BaseController
             _logger.LogError(ex, "Ошибки при попытке сохранения данных профиля.");
             
             result.Errors.AddRange(validator.Errors);
+
+            var userId = await _userRepository.GetUserIdByLoginAsync(GetUserName());
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+            await _hubNotificationService.Value.SendNotificationAsync("Внимание", "Ошибка при попытке сохранения данных профиля",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserDataForm", userCode,
+                UserConnectionModuleEnum.Main);
 
             return result;
         }
