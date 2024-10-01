@@ -42,4 +42,22 @@ public class MenuController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает элементы верхнего меню.
+    /// </summary>
+    /// <returns>Элементы верхнего меню.</returns>
+    [HttpGet]
+    [Route("top-menu")]
+    [ProducesResponseType(200, Type = typeof(TopMenuOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<LeftMenuOutput> GetLeftMenuItemsAsync()
+    {
+        var result = await _menuService.GetLeftMenuItemsAsync();
+
+        return result;
+    }
 }

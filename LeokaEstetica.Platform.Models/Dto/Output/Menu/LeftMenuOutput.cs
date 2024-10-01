@@ -1,25 +1,25 @@
 ﻿namespace LeokaEstetica.Platform.Models.Dto.Output.Menu;
 
 /// <summary>
-/// Класс выходной модели верхнего меню.
+/// Класс выходной модели левого меню.
 /// </summary>
-public class TopMenuOutput
+public class LeftMenuOutput
 {
     /// <summary>
     /// Элементы меню.
     /// </summary>
-    public List<TopItem>? Items { get; set; }
+    public List<LeftItem>? Items { get; set; }
 }
 
 /// <summary>
 /// Класс элемента меню.
 /// </summary>
-public class TopItem
+public class LeftItem
 {
     /// <summary>
     /// Вложенные элементы меню.
     /// </summary>
-    public List<TopItem>? Items { get; set; }
+    public List<LeftItem>? Items { get; set; }
 
     /// <summary>
     /// Название пункта.

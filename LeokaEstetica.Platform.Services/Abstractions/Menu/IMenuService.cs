@@ -12,4 +12,10 @@ public interface IMenuService
     /// </summary>
     /// <returns>Элементы верхнего меню.</returns>
     Task<TopMenuOutput> GetTopMenuItemsAsync();
+    
+    /// <summary>
+    /// Метод получает элементы верхнего меню.
+    /// </summary>
+    /// <returns>Элементы верхнего меню.</returns>
+    Task<LeftMenuOutput> GetLeftMenuItemsAsync();
 }

@@ -30,4 +30,17 @@ internal sealed class MenuRepository : BaseRepository, IMenuRepository
 
         return result;
     }
+
+    /// <inheritdoc />
+    public async Task<string?> GetLeftMenuItemsAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var query = "SELECT items " +
+                    "FROM dbo.left_menu";
+
+        var result = await connection.QueryFirstOrDefaultAsync<string>(query);
+
+        return result;
+    }
 }

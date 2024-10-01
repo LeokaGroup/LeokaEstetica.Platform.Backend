@@ -10,4 +10,10 @@ public interface IMenuRepository
     /// </summary>
     /// <returns>Элементы верхнего меню.</returns>
     Task<string?> GetTopMenuItemsAsync();
+    
+    /// <summary>
+    /// Метод получает элементы левого меню.
+    /// </summary>
+    /// <returns>Элементы верхнего меню.</returns>
+    Task<string?> GetLeftMenuItemsAsync();
 }
