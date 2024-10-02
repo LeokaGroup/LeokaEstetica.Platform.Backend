@@ -57,6 +57,11 @@ internal sealed class MenuService : IMenuService
                 // Сортируем все сложенные элементы.
                 if (item.Items is not null && item.Items.Count > 0)
                 {
+                    foreach (var item2 in item.Items)
+                    {
+                        item2.Items = item2.Items?.OrderBy(x => x.Position).AsList();
+                    }
+                    
                     item.Items = item.Items.OrderBy(x => x.Position).AsList();
                 }
             }
@@ -103,6 +108,11 @@ internal sealed class MenuService : IMenuService
                 // Сортируем все сложенные элементы.
                 if (item.Items is not null && item.Items.Count > 0)
                 {
+                    foreach (var item2 in item.Items)
+                    {
+                        item2.Items = item2.Items?.OrderBy(x => x.Position).AsList();
+                    }
+                    
                     item.Items = item.Items.OrderBy(x => x.Position).AsList();
                 }
             }
