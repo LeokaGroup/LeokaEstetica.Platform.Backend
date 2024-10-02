@@ -41,7 +41,7 @@ VALUES ('{
       "tooltipPosition": null
     },
     {
-      "id": "Profile",
+      "id": "Modules",
       "url": null,
       "icon": null,
       "items": [
@@ -51,6 +51,42 @@ VALUES ('{
           "icon": null,
           "items": [
             {
+              "id": "CreateProject",
+              "icon": null,
+              "items": [],
+              "label": "Создать проект",
+              "command": null,
+              "tooltip": null,
+              "visible": true,
+              "disabled": false,
+              "position": 1,
+              "tooltipPosition": null
+            },
+            {
+              "id": "UserProjects",
+              "icon": null,
+              "items": [],
+              "label": "Ваши проекты",
+              "command": null,
+              "tooltip": null,
+              "visible": true,
+              "disabled": false,
+              "position": 2,
+              "tooltipPosition": null
+            },
+            {
+              "id": "ArchivedProjects",
+              "icon": null,
+              "items": [],
+              "label": "Проекты в архиве",
+              "command": null,
+              "tooltip": null,
+              "visible": true,
+              "disabled": false,
+              "position": 3,
+              "tooltipPosition": null
+            },
+            {
               "id": "WorkSpaces",
               "icon": null,
               "items": [],
@@ -59,7 +95,7 @@ VALUES ('{
               "tooltip": null,
               "visible": true,
               "disabled": false,
-              "position": 1,
+              "position": 4,
               "tooltipPosition": null
             },
             {
@@ -71,7 +107,7 @@ VALUES ('{
               "tooltip": null,
               "visible": true,
               "disabled": false,
-              "position": 2,
+              "position": 5,
               "tooltipPosition": null
             },
             {
@@ -85,7 +121,7 @@ VALUES ('{
               "tooltip": null,
               "visible": true,
               "disabled": false,
-              "position": 3,
+              "position": 6,
               "tooltipPosition": null
             },
             {
@@ -99,7 +135,7 @@ VALUES ('{
               "tooltip": null,
               "visible": true,
               "disabled": false,
-              "position": 4,
+              "position": 7,
               "tooltipPosition": null
             },
             {
@@ -113,7 +149,7 @@ VALUES ('{
               "tooltip": null,
               "visible": true,
               "disabled": false,
-              "position": 5,
+              "position": 8,
               "tooltipPosition": null
             },
             {
@@ -127,7 +163,7 @@ VALUES ('{
               "tooltip": null,
               "visible": false,
               "disabled": false,
-              "position": 6,
+              "position": 9,
               "tooltipPosition": null
             },
             {
@@ -141,7 +177,7 @@ VALUES ('{
               "tooltip": null,
               "visible": false,
               "disabled": false,
-              "position": 7,
+              "position": 10,
               "tooltipPosition": null
             },
             {
@@ -155,7 +191,7 @@ VALUES ('{
               "tooltip": null,
               "visible": false,
               "disabled": false,
-              "position": 8,
+              "position": 11,
               "tooltipPosition": null
             },
             {
@@ -169,7 +205,7 @@ VALUES ('{
               "tooltip": null,
               "visible": false,
               "disabled": false,
-              "position": 9,
+              "position": 12,
               "tooltipPosition": null
             },
             {
@@ -183,7 +219,7 @@ VALUES ('{
               "tooltip": null,
               "visible": false,
               "disabled": false,
-              "position": 10,
+              "position": 13,
               "tooltipPosition": null
             }
           ],
@@ -255,6 +291,55 @@ VALUES ('{
       "visible": true,
       "disabled": false,
       "position": 2,
+      "tooltipPosition": null
+    },
+    {
+      "id": "Catalogs",
+      "icon": null,
+      "items": [
+        {
+          "id": "CatalogProjects",
+          "icon": null,
+          "items": null,
+          "label": "Каталог проектов",
+          "command": null,
+          "tooltip": null,
+          "visible": true,
+          "disabled": false,
+          "position": 1,
+          "tooltipPosition": null
+        },
+        {
+          "id": "CatalogVacancies",
+          "icon": null,
+          "items": null,
+          "label": "Каталог вакансий",
+          "command": null,
+          "tooltip": null,
+          "visible": true,
+          "disabled": false,
+          "position": 2,
+          "tooltipPosition": null
+        },
+        {
+          "id": "CatalogVacancies",
+          "icon": null,
+          "items": null,
+          "label": "Каталог анкет",
+          "command": null,
+          "tooltip": null,
+          "visible": true,
+          "disabled": false,
+          "position": 3,
+          "tooltipPosition": null
+        }
+      ],
+      "label": "Каталоги",
+      "command": null,
+      "tooltip": null,
+      "visible": true,
+      "disabled": false,
+      "position": 3,
       "tooltipPosition": null
     }
   ]
