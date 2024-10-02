@@ -32,12 +32,6 @@ public class TopItem
     public string? Icon { get; set; }
 
     /// <summary>
-    /// TODO: Возможно лишнее, если не будет работать по дефолту route.
-    /// Путь к редиректу.
-    /// </summary>
-    public string? Url { get; set; }
-
-    /// <summary>
     /// Признак блокировки пункта.
     /// </summary>
     public bool Disabled { get; set; }
@@ -71,9 +65,4 @@ public class TopItem
     /// Команда. На бэке не используется, может использоваться на фронте для js-логики.
     /// </summary>
     public string? Command { get; set; }
-
-    /// <summary>
-    /// Дефолтный поле контрола меню для редиректа.
-    /// </summary>
-    public string? Route { get; set; }
 }
