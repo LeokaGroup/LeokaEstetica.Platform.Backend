@@ -146,14 +146,17 @@ internal sealed class ProjectManagmentRoleService : IProjectManagmentRoleService
                 
                 if (cacheRoles is not null && cacheRoles.Count > 0)
                 {
-                    // Актуализируем активность ролей.
-                    foreach (var cr in cacheRoles)
-                    {
-                        cr.IsEnabled = r.IsEnabled;
-                    }
+                    // Получаем определенную роль.
+                    var findCacheRole = cacheRoles.FirstOrDefault(c => c.RoleId == r.RoleId);
 
-                    await _projectManagmentRoleRedisService.SetUserRolesAsync(r.UserId, projectId,
-                        companyId, cacheRoles, true);
+                    // Актуализируем активность ролей.  
+                    if (findCacheRole?.IsEnabled != r.IsEnabled)
+                    {
+                        findCacheRole.IsEnabled = r.IsEnabled;
+
+                        await _projectManagmentRoleRedisService.SetUserRolesAsync(r.UserId, projectId,
+                       companyId, cacheRoles, true);
+                    }
                 }
 
                 // Иначе ищем в БД роли.

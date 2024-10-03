@@ -85,18 +85,20 @@ public interface ISprintService
     /// <param name="projectId">Id проекта.</param>
     /// <returns>Список спринтов.</returns>
     Task<IEnumerable<TaskSprintExtendedOutput>> GetAvailableNextSprintsAsync(long projectSprintId, long projectId);
-    
+
     /// <summary>
     /// Метод исключает задачи из спринта.
     /// </summary>
     /// <param name="sprintId">Id спринта.</param>
     /// <param name="sprintTaskIds">Список Id задач в рамках проекта, которые нужно исключить из спринта.</param>
-    Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds);
+    /// <param name="account">Аккаунт.</param>
+    Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds, string account);
     
     /// <summary>
     /// Метод включает задачи в спринт.
     /// </summary>
     /// <param name="sprintId">Id спринта.</param>
     /// <param name="sprintTaskIds">Список Id задач в рамках проекта, которые нужно включить в спринт.</param>
-    Task IncludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds);
+    /// <param name="account">Аккаунт.</param>
+    Task IncludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds, string account);
 }

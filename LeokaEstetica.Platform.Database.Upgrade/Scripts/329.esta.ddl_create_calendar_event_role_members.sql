@@ -1,4 +1,4 @@
-﻿CREATE TABLE roles.calendar_event_role_members
+﻿CREATE TABLE IF NOT EXISTS roles.calendar_event_role_members
 (
     role_id         BIGINT       NOT NULL,
     event_id        BIGINT       NOT NULL,

@@ -45,4 +45,9 @@ public class CalendarInput
     /// Статус.
     /// </summary>
     public string? CalendarEventMemberStatus { get; set; }
+
+    /// <summary>
+    /// Id события.
+    /// </summary>
+    public long? EventId { get; set; }
 }

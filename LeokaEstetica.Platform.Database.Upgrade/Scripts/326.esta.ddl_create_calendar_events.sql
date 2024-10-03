@@ -1,4 +1,4 @@
-﻿CREATE TABLE project_management_human_resources.calendar_events
+﻿CREATE TABLE IF NOT EXISTS project_management_human_resources.calendar_events
 (
     event_id          BIGINT       NOT NULL,
     event_name        VARCHAR(150) NOT NULL,

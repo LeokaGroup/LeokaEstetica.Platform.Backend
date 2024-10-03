@@ -36,4 +36,23 @@ public interface ICalendarRepository
     /// </summary>
     /// <param name="calendarInput">Входная модель.</param>
     Task CreateCalendarEventAsync(CalendarInput calendarInput);
+    
+    /// <summary>
+    /// Метод получает детали события календаря.
+    /// </summary>
+    /// <param name="eventId">Id события.</param>
+    /// <returns>Детали события календаря.</returns>
+    Task<CalendarOutput> GetEventDetailsAsync(long eventId);
+    
+    /// <summary>
+    /// Метод обновляет событие календаря.
+    /// </summary>
+    /// <param name="calendarInput">Входная модель.</param>
+    Task UpdateEventAsync(CalendarInput calendarInput);
+    
+    /// <summary>
+    /// Метод удаляет событие календаря.
+    /// </summary>
+    /// <param name="eventId">Id события.</param>
+    Task RemoveEventAsync(long eventId);
 }

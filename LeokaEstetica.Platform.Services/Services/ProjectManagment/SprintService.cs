@@ -670,30 +670,66 @@ internal sealed class SprintService : ISprintService
     }
 
     /// <inheritdoc />
-    public async Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds)
+    public async Task ExcludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds, string account)
     {
-        try
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
         {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
+        try
+        {          
             await _sprintRepository.ExcludeSprintTasksAsync(sprintId,
                 sprintTaskIds!.Select(x => x.GetProjectTaskIdFromPrefixLink()));
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Задача успешно исключена из спринта.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessExcludeSprintTask",
+                userCode, UserConnectionModuleEnum.ProjectManagement);
         }
         
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
+
+            await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
+                "Ошибка при исключении задачи из спринта.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorExcludeSprintTask", userCode,
+                UserConnectionModuleEnum.ProjectManagement);
+
             throw;
         }
     }
 
     /// <inheritdoc />
-    public async Task IncludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds)
+    public async Task IncludeSprintTasksAsync(long sprintId, IEnumerable<string>? sprintTaskIds, string account)
     {
         try
         {
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
             await _sprintRepository.IncludeSprintTasksAsync(sprintId,
                 sprintTaskIds!.Select(x => x.GetProjectTaskIdFromPrefixLink()));
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                 "Задача успешно включена в спринт.",
+                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessProjectTaskIncludeSprint",
+                 userCode, UserConnectionModuleEnum.ProjectManagement);
         }
-        
+
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);

@@ -1,4 +1,4 @@
-﻿CREATE TABLE roles.component_user_roles
+﻿CREATE TABLE IF NOT EXISTS roles.component_user_roles
 (
     component_user_role_id SERIAL NOT NULL,
     component_role_id      INT    NOT NULL,

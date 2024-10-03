@@ -41,4 +41,14 @@ public class EventMemberOutput
     /// Дата присоединения к событию.
     /// </summary>
     public DateTime Joined { get; set; }
+
+    /// <summary>
+    /// Почта пользователя.
+    /// </summary>
+    public string? Email { get; set; }
+
+    /// <summary>
+    /// Название статуса для отображения.
+    /// </summary>
+    public string? DisplayEventMemberStatus { get; set; }
 }

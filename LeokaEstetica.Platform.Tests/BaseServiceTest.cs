@@ -22,6 +22,7 @@ using LeokaEstetica.Platform.Database.Repositories.Config;
 using LeokaEstetica.Platform.Database.Repositories.FareRule;
 using LeokaEstetica.Platform.Database.Repositories.Knowledge;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
+using LeokaEstetica.Platform.Database.Repositories.Menu;
 using LeokaEstetica.Platform.Database.Repositories.Metrics;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
@@ -33,6 +34,7 @@ using LeokaEstetica.Platform.Database.Repositories.Press;
 using LeokaEstetica.Platform.Database.Repositories.Profile;
 using LeokaEstetica.Platform.Database.Repositories.Project;
 using LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
+using LeokaEstetica.Platform.Database.Repositories.ProjectManagmentHumanResources;
 using LeokaEstetica.Platform.Database.Repositories.Resume;
 using LeokaEstetica.Platform.Database.Repositories.Search;
 using LeokaEstetica.Platform.Database.Repositories.Subscription;
@@ -51,12 +53,14 @@ using LeokaEstetica.Platform.Messaging.Services.Chat;
 using LeokaEstetica.Platform.Messaging.Services.Project;
 using LeokaEstetica.Platform.Notifications.Services;
 using LeokaEstetica.Platform.Processing.Services.Commerce;
+using LeokaEstetica.Platform.ProjectManagement.HumanResources.Services;
 using LeokaEstetica.Platform.Redis.Services.Commerce;
 using LeokaEstetica.Platform.Redis.Services.ProjectManagement;
 using LeokaEstetica.Platform.Redis.Services.User;
 using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
 using LeokaEstetica.Platform.Services.Services.Landing;
+using LeokaEstetica.Platform.Services.Services.Menu;
 using LeokaEstetica.Platform.Services.Services.Press;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
@@ -130,6 +134,8 @@ internal class BaseServiceTest
     protected readonly WikiTreeService WikiTreeService;
     protected readonly ProjectNotificationsService ProjectNotificationsService;
     protected readonly CompanyService CompanyService;
+    protected readonly CalendarService CalendarService;
+    protected readonly MenuService MenuService;
 
     protected BaseServiceTest()
     {
@@ -324,9 +330,15 @@ internal class BaseServiceTest
             new Lazy<IProjectManagmentRoleRepository>(projectManagmentRoleRepository));
 
         var wikiTreeRepository = new WikiTreeRepository(connectionProvider);
-        WikiTreeService = new WikiTreeService(null, wikiTreeRepository, userRepository);
+        WikiTreeService = new WikiTreeService(null, wikiTreeRepository, userRepository, null);
 
         var companyRepository = new CompanyRepository(connectionProvider);
         CompanyService = new CompanyService(null, companyRepository, userRepository);
+
+        var calendarRepository = new CalendarRepository(connectionProvider);
+        CalendarService = new CalendarService(null, userRepository, calendarRepository);
+
+        var menuRepository = new MenuRepository(connectionProvider);
+        MenuService = new MenuService(null, menuRepository);
     }
 }

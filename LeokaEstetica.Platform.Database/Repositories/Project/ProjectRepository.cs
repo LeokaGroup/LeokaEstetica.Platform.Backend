@@ -1895,13 +1895,16 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         parameters.Add("@projectId", projectId);
 
         var query = "DELETE " +
-                    "FROM \"Teams\".\"ProjectsTeamsMembers\" " +
-                    "WHERE \"UserId\" = ANY (SELECT ptm.\"UserId\" " +
-                    "FROM \"Teams\".\"ProjectsTeams\" AS pt " +
-                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
-                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
-                    "WHERE pt.\"ProjectId\" = @projectId)";
-                    
+					"FROM \"Teams\".\"ProjectsTeamsMembers\" " +
+					"WHERE \"UserId\" = ANY (SELECT ptm.\"UserId\" " +
+					"FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+					"INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+					"ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+					"WHERE pt.\"ProjectId\" = @projectId) " +
+					"AND \"TeamId\" = ANY (SELECT pt.\"TeamId\" " +
+					"FROM \"Teams\".\"ProjectsTeams\" AS pt " +
+					"WHERE pt.\"ProjectId\" = @projectId)";
+
         await connection.ExecuteAsync(query, parameters);
         
         await Task.CompletedTask;
