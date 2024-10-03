@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.ProjectManagement.Controllers;
 /// </summary>
 [AuthFilter]
 [ApiController]
-[Route("menu")]
+[Route("project-management/menu")]
 public class MenuController : BaseController
 {
     private readonly IMenuService _menuService;
