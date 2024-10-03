@@ -136,8 +136,6 @@ public class ProfileController : BaseController
 
         if (validator.Errors.Any())
         {
-            try
-            {
                 var exceptions = new List<InvalidOperationException>();
                 foreach (var err in validator.Errors)
                 {
@@ -146,9 +144,10 @@ public class ProfileController : BaseController
 
                 var ex = new AggregateException(exceptions);
                 _logger.LogError(ex, "Ошибки при попытке сохранения данных профиля.");
-
                 result.Errors.AddRange(validator.Errors);
 
+            try
+            {
                 var userLogin = GetUserName();
                 var userId = await _userRepository.GetUserIdByLoginAsync(userLogin);
 
@@ -164,9 +163,9 @@ public class ProfileController : BaseController
 
                 return result;
             }
-            catch (Exception ex)
+            catch (Exception exс)
             {
-                _logger.LogError(ex, ex.Message);
+                _logger.LogError(exс, exс.Message);
                 throw;
             }
         }
