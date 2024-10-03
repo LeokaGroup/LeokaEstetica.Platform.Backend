@@ -18,4 +18,10 @@ public interface IMenuService
     /// </summary>
     /// <returns>Элементы верхнего меню.</returns>
     Task<LeftMenuOutput> GetLeftMenuItemsAsync();
+
+    /// <summary>
+    /// Метод получает элементы меню для блока быстрых действий в раб.пространстве проекта.
+    /// </summary>
+    /// <returns>Элементы меню.</returns>
+    Task<ProjectManagementLineMenuOutput> GetProjectManagementLineMenuAsync();
 }
