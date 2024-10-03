@@ -1,0 +1,2 @@
+﻿CREATE UNIQUE INDEX component_role_name_component_role_sys_name
+ON roles.component_roles (component_role_name, component_role_sys_name);
