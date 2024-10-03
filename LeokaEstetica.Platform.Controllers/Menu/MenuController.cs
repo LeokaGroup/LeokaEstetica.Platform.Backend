@@ -60,22 +60,4 @@ public class MenuController : BaseController
 
         return result;
     }
-
-    /// <summary>
-    /// Метод получает элементы меню для блока быстрых действий в раб.пространстве проекта.
-    /// </summary>
-    /// <returns>Элементы меню.</returns>
-    [HttpGet]
-    [Route("project-management-line-menu")]
-    [ProducesResponseType(200, Type = typeof(ProjectManagementLineMenuOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<ProjectManagementLineMenuOutput> GetProjectManagementLineMenuAsync()
-    {
-        var result = await _menuService.GetProjectManagementLineMenuAsync();
-
-        return result;
-    }
 }
