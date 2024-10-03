@@ -18,6 +18,8 @@ internal sealed class MenuRepository : BaseRepository, IMenuRepository
     {
     }
 
+    #region Публичные методы.
+
     /// <inheritdoc />
     public async Task<string?> GetTopMenuItemsAsync()
     {
@@ -43,4 +45,25 @@ internal sealed class MenuRepository : BaseRepository, IMenuRepository
 
         return result;
     }
+
+    /// <inheritdoc />
+    public async Task<string?> GetProjectManagementLineMenuAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var query = "SELECT items " +
+                    "FROM project_management.project_management_line_menu";
+
+        var result = await connection.QueryFirstOrDefaultAsync<string>(query);
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }
