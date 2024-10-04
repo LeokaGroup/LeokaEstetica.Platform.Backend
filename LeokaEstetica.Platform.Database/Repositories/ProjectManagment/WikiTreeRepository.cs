@@ -362,8 +362,6 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         var query = "SELECT menu_id, item_name, icon, item_sys_name " +
                     "FROM project_management.wiki_context_menu";
 
-        folderId = 1;
-
        if (projectId.HasValue && !folderId.HasValue && !pageId.HasValue)
        {
            _contextMenuKeys.RemoveAll(x => new[] { "RemoveFolderPage", "RemoveFolder" }.Contains(x));         
