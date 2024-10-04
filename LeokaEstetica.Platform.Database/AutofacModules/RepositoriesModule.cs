@@ -9,6 +9,7 @@ using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
 using LeokaEstetica.Platform.Database.Abstractions.Knowledge;
 using LeokaEstetica.Platform.Database.Abstractions.Landing;
+using LeokaEstetica.Platform.Database.Abstractions.Menu;
 using LeokaEstetica.Platform.Database.Abstractions.Metrics;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Access;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Project;
@@ -40,6 +41,7 @@ using LeokaEstetica.Platform.Database.Repositories.FareRule;
 using LeokaEstetica.Platform.Database.Repositories.Header;
 using LeokaEstetica.Platform.Database.Repositories.Knowledge;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
+using LeokaEstetica.Platform.Database.Repositories.Menu;
 using LeokaEstetica.Platform.Database.Repositories.Metrics;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
@@ -387,6 +389,13 @@ public class RepositoriesModule : Module
             .InstancePerLifetimeScope();
         builder.RegisterType<CalendarRepository>()
             .As<ICalendarRepository>()
+            .InstancePerLifetimeScope();
+            
+        builder.RegisterType<MenuRepository>()
+            .Named<IMenuRepository>("MenuRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<MenuRepository>()
+            .As<IMenuRepository>()
             .InstancePerLifetimeScope();
     }
 }

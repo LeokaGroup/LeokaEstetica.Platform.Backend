@@ -1,2 +1,2 @@
-﻿DROP INDEX project_management.uniq_idx_user_stories_user_story_task_id;
+﻿DROP INDEX IF EXISTS project_management.uniq_idx_user_stories_project_id_user_story_task_id;
 CREATE UNIQUE INDEX uniq_idx_user_stories_project_id_user_story_task_id ON project_management.user_stories (project_id, user_story_task_id);

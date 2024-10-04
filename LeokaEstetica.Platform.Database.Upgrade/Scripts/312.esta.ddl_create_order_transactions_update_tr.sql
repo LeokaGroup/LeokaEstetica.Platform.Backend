@@ -1,4 +1,4 @@
-﻿CREATE FUNCTION order_transactions_update_tr() RETURNS TRIGGER
+﻿CREATE OR REPLACE FUNCTION order_transactions_update_tr() RETURNS TRIGGER
     LANGUAGE plpgsql
 AS
 $$

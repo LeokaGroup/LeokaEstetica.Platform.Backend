@@ -1,4 +1,4 @@
-﻿CREATE TABLE roles.component_roles
+﻿CREATE TABLE IF NOT EXISTS roles.component_roles
 (
     component_role_id       BIGSERIAL                 NOT NULL,
     component_role_name     VARCHAR(70)               NOT NULL,

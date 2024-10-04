@@ -22,6 +22,7 @@ using LeokaEstetica.Platform.Database.Repositories.Config;
 using LeokaEstetica.Platform.Database.Repositories.FareRule;
 using LeokaEstetica.Platform.Database.Repositories.Knowledge;
 using LeokaEstetica.Platform.Database.Repositories.Landing;
+using LeokaEstetica.Platform.Database.Repositories.Menu;
 using LeokaEstetica.Platform.Database.Repositories.Metrics;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Access;
 using LeokaEstetica.Platform.Database.Repositories.Moderation.Project;
@@ -59,6 +60,7 @@ using LeokaEstetica.Platform.Redis.Services.User;
 using LeokaEstetica.Platform.Services.Services.FareRule;
 using LeokaEstetica.Platform.Services.Services.Knowledge;
 using LeokaEstetica.Platform.Services.Services.Landing;
+using LeokaEstetica.Platform.Services.Services.Menu;
 using LeokaEstetica.Platform.Services.Services.Press;
 using LeokaEstetica.Platform.Services.Services.Profile;
 using LeokaEstetica.Platform.Services.Services.Project;
@@ -133,6 +135,7 @@ internal class BaseServiceTest
     protected readonly ProjectNotificationsService ProjectNotificationsService;
     protected readonly CompanyService CompanyService;
     protected readonly CalendarService CalendarService;
+    protected readonly MenuService MenuService;
 
     protected BaseServiceTest()
     {
@@ -333,6 +336,9 @@ internal class BaseServiceTest
         CompanyService = new CompanyService(null, companyRepository, userRepository);
 
         var calendarRepository = new CalendarRepository(connectionProvider);
-        CalendarService = new CalendarService(null, userRepository, calendarRepository, null);
+        CalendarService = new CalendarService(null, userRepository, calendarRepository);
+
+        var menuRepository = new MenuRepository(connectionProvider);
+        MenuService = new MenuService(null, menuRepository);
     }
 }
