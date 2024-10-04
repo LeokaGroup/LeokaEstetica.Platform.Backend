@@ -7,7 +7,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.ProjectManagement.HumanResources.Abstractions;
 using LeokaEstetica.Platform.ProjectManagement.HumanResources.Validators;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc; 
 
 namespace LeokaEstetica.Platform.ProjectManagement.HumanResources.Controllers;
 
