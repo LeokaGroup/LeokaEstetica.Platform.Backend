@@ -462,12 +462,16 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 		}
 	}
 
-	/// <inheritdoc />
-	public async Task SetProjectManagmentTemplateIdsAsync(List<TaskStatusOutput> templateStatuses)
+	/// <summary>
+	/// Метод проставляет шаблонам статусы.
+	/// </summary>
+	/// <param name="templateStatuses">Статусы входящие в шаблон проекта.</param>
+	/// <exception cref="InvalidOperationException">Может бахнуть, если произошло недопустимое действие.</exception>
+	private async Task SetProjectManagmentTemplateIdsAsync(List<TaskStatusOutput> templateStatuses)
 	{
 		try
 		{
-			if (templateStatuses is null || !templateStatuses.Any())
+			if (templateStatuses is null || templateStatuses.Count == 0)
 			{
 				throw new InvalidOperationException(
 					"Невозможно проставить Id щаблонов статусам задач." +
@@ -478,7 +482,7 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 			var templateStatusIds = templateStatuses.Select(x => x.StatusId);
 
 			var statuses = (await _projectManagmentRepository.GetTemplateStatusIdsByStatusIdsAsync(templateStatusIds))
-				.ToList();
+				.AsList();
 
 			foreach (var ts in templateStatuses)
 			{
@@ -968,9 +972,9 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 			// Получаем настройки проекта.
 			var projectSettings = await _projectSettingsConfigRepository.GetProjectSpaceSettingsByProjectIdAsync(
 				projectId);
-			var projectSettingsItems = projectSettings?.ToList();
+			var projectSettingsItems = projectSettings?.AsList();
 
-			if (projectSettingsItems is null || !projectSettingsItems.Any())
+			if (projectSettingsItems is null || projectSettingsItems.Count == 0)
 			{
 				throw new InvalidOperationException("Ошибка получения настроек проекта. " +
 													$"ProjectId: {projectId}.");
@@ -978,36 +982,36 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
 			var template = projectSettingsItems.Find(x =>
 				x.ParamKey.Equals(GlobalConfigKeys.ConfigSpaceSetting.PROJECT_MANAGEMENT_TEMPLATE_ID));
-			var templateId = Convert.ToInt32(template!.ParamValue);
+
+			if (template is null)
+			{
+				throw new InvalidOperationException(
+					"Ошибка получения шаблона проекта. " +
+					$"ProjectId: {projectId}. " +
+					$"Настройки проекта: {JsonConvert.SerializeObject(projectSettingsItems)}.");
+			}
+				
+			var templateId = Convert.ToInt32(template.ParamValue);
 
 			var statusIds = (await _projectManagmentTemplateRepository.GetTemplateStatusIdsAsync(templateId))
-				?.ToList();
+				?.AsList();
 
-			if (statusIds is null || !statusIds.Any())
+			if (statusIds is null || statusIds.Count == 0)
 			{
 				throw new InvalidOperationException("Не удалось получить статусы для выбора в задаче." +
 													$"ProjectId: {projectId}");
 			}
 
 			var items = await _projectManagmentTemplateRepository.GetTaskTemplateStatusesAsync(statusIds);
-			var result = _mapper.Map<IEnumerable<TaskStatusOutput>>(items).ToList();
+			var result = _mapper.Map<IEnumerable<TaskStatusOutput>>(items).AsList();
 
 			// Проставляем Id шаблона статусам.
 			await SetProjectManagmentTemplateIdsAsync(result);
 
-			var removedTaskStatus = new List<TaskStatusOutput>();
-
-			foreach (var ts in result)
-			{
-				// Если шаблон не совпадает с шаблоном текущего проекта, то такой статус не нужен.
-				if (ts.TemplateId != templateId)
-				{
-					removedTaskStatus.Add(ts);
-				}
-			}
+			var removedTaskStatus = result.Where(ts => ts.TemplateId != templateId).AsList();
 
 			// Если есть, что удалять, то удаляем статусы, которые не входят в шаблон проекта.
-			if (removedTaskStatus.Any())
+			if (removedTaskStatus.Count > 0)
 			{
 				result.RemoveAll(x => removedTaskStatus.Select(y => y.StatusId).Contains(x.StatusId));
 			}
