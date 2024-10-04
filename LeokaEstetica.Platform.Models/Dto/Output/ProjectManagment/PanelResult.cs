@@ -33,6 +33,11 @@ public class PanelResult
     /// Признак элемента футера меню.
     /// </summary>
     public bool IsFooterItem { get; set; }
+    
+    /// <summary>
+    /// Команда (используется фронтом для js-логики).
+    /// </summary>
+    public string? Command { get; set; }
 }
 
 public class Panel
@@ -68,6 +73,11 @@ public class Panel
     /// Признак отображения элемента.
     /// </summary>
     public bool Visible { get; set; }
+    
+    /// <summary>
+    /// Команда (используется фронтом для js-логики).
+    /// </summary>
+    public string? Command { get; set; }
 }
 
 public class PanelItems
