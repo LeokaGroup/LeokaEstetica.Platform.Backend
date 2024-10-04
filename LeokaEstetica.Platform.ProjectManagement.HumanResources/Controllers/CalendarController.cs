@@ -1,10 +1,13 @@
 ﻿using LeokaEstetica.Platform.Base;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagementHumanResources;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.ProjectManagement.HumanResources.Abstractions;
 using LeokaEstetica.Platform.ProjectManagement.HumanResources.Validators;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +25,8 @@ public class CalendarController : BaseController
     private readonly ICalendarService _calendarService;
     private readonly ILogger<CalendarController> _logger;
     private readonly Lazy<IDiscordService> _discordService;
+    private readonly IUserRepository _userRepository;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -29,13 +34,18 @@ public class CalendarController : BaseController
     /// <param name="calendarService">Сервис календарей.</param>
     /// <param name="logger">Логгер.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public CalendarController(ICalendarService calendarService,
         ILogger<CalendarController> logger,
-        Lazy<IDiscordService> discordService)
+        Lazy<IDiscordService> discordService,
+        IUserRepository userRepository,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _calendarService = calendarService;
         _logger = logger;
         _discordService = discordService;
+        _userRepository = userRepository;
+        _hubNotificationService = hubNotificationService;
     }
 
     /// <summary>
@@ -111,10 +121,18 @@ public class CalendarController : BaseController
             {
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
-
+            
             var ex = new AggregateException(exceptions);
             _logger.LogError(ex, "Ошибки при создании события календаря.");
-
+            
+            var userId = await _userRepository.GetUserByEmailAsync(GetUserName());
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+            
+            await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                "Ошибки при создании события календаря.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotifyWarningCreateCalendarEvent",
+                userCode, UserConnectionModuleEnum.Main);
+            
             throw ex;
         }
 
