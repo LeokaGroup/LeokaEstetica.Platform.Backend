@@ -353,7 +353,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
     /// <inheritdoc />
     public async Task<IEnumerable<WikiContextMenuOutput>> GetContextMenuAsync(long? projectId = null,
-        long? pageId = null, bool isParentFolder = false)
+        long? folderId = null, long? pageId = null, bool isParentFolder = false)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         
@@ -362,18 +362,25 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         var query = "SELECT menu_id, item_name, icon, item_sys_name " +
                     "FROM project_management.wiki_context_menu";
 
-        if (projectId.HasValue && !pageId.HasValue)
-        {
-            _contextMenuKeys.RemoveAll(x => new[] { "RemoveFolderPage" }.Contains(x));
-            parameters.Add("@keys", _contextMenuKeys);
-        }
+        folderId = 1;
 
-        if (pageId.HasValue)
-        {
-            _contextMenuKeys.RemoveAll(x => new[] { "CreateFolder", "RemoveFolder" }.Contains(x));
-            parameters.Add("@keys", _contextMenuKeys);
-        }
-        
+       if (projectId.HasValue && !folderId.HasValue && !pageId.HasValue)
+       {
+           _contextMenuKeys.RemoveAll(x => new[] { "RemoveFolderPage", "RemoveFolder" }.Contains(x));         
+       }
+
+       else if (!pageId.HasValue)
+       {
+           _contextMenuKeys.RemoveAll(x => new[] { "RemoveFolderPage" }.Contains(x));
+       }
+
+       else if (pageId.HasValue)
+       {
+           _contextMenuKeys.RemoveAll(x => new[] { "CreateFolder", "RemoveFolder" }.Contains(x));
+       }
+
+        parameters.Add("@keys", _contextMenuKeys);
+
         query += " WHERE item_sys_name = ANY(@keys)";
 
         var result = await connection.QueryAsync<WikiContextMenuOutput>(query, parameters);
