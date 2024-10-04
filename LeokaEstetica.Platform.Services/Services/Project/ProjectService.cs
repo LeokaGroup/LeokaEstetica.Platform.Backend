@@ -436,6 +436,15 @@ internal sealed class ProjectService : IProjectService
 	        // TODO: Делать все это в запросе метода GetCatalogProjectsAsync.
             result.CatalogProjects = await ExecuteCatalogConditionsAsync(result.CatalogProjects.AsList());
 
+            // Очищаем теги.
+            foreach (var project in result.CatalogProjects)
+			{
+				if (!string.IsNullOrEmpty(project.ProjectDetails))
+				{
+					project.ProjectDetails = ClearHtmlBuilder.Clear(project.ProjectDetails);
+				}
+			}
+
             return result;
         }
 
