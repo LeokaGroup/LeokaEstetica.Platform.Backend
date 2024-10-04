@@ -140,7 +140,7 @@ internal sealed class CalendarService : ICalendarService
             await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
                 "Событие календаря успешно создано.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessCreateCalendarEvent",
-                userCode, UserConnectionModuleEnum.Undefined);
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)
@@ -150,7 +150,7 @@ internal sealed class CalendarService : ICalendarService
             await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
                 "Ошибка при создании события календаря.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorCreateCalendarEvent",
-                userCode, UserConnectionModuleEnum.Undefined);
+                userCode, UserConnectionModuleEnum.Main);
             throw;
         }
     }
@@ -233,16 +233,27 @@ internal sealed class CalendarService : ICalendarService
     }
 
     /// <inheritdoc />
-    public async Task RemoveEventAsync(long eventId)
+    public async Task RemoveEventAsync(long eventId, string account)
     {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
         try
         {
             await _calendarRepository.RemoveEventAsync(eventId);
+            
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Событие календаря успешно удалено.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessRemoveCalendarEvent",
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)
         {
              _logger?.LogError(ex, ex.Message);
+             await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
+                 "Ошибка при удалении события календаря.",
+                 NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorRemoveCalendarEvent",
+                 userCode, UserConnectionModuleEnum.Main);
             throw;
         }
     }

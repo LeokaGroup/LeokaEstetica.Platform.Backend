@@ -336,7 +336,7 @@ internal class BaseServiceTest
         CompanyService = new CompanyService(null, companyRepository, userRepository);
 
         var calendarRepository = new CalendarRepository(connectionProvider);
-        CalendarService = new CalendarService(null, userRepository, calendarRepository);
+        CalendarService = new CalendarService(null, userRepository, calendarRepository, null);
 
         var menuRepository = new MenuRepository(connectionProvider);
         MenuService = new MenuService(null, menuRepository);
