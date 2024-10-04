@@ -281,10 +281,10 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
          
         if (!string.IsNullOrWhiteSpace(calendarInput.EventLocation))
         {
-            query += ", @eventLocation)";
+            query += ", @eventLocation";
         }
 
-        query += " RETURNING event_id";
+        query += ") RETURNING event_id";
 
         var eventId = await connection.ExecuteScalarAsync<long>(query, parameters);
 
