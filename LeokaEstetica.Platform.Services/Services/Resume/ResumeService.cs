@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using AutoMapper;
 using LeokaEstetica.Platform.Access.Abstractions.User;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Base.Extensions.HtmlExtensions;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Core.Extensions;
@@ -110,7 +111,16 @@ internal sealed class ResumeService : IResumeService
                 // Приводим к выходной модели.
                 CatalogResumes = _mapper.Map<IEnumerable<UserInfoOutput>>(profiles)
             };
-            
+
+            // Очищаем теги.
+            foreach (var p in result.CatalogResumes)
+            {
+                if(!string.IsNullOrEmpty(p.Aboutme)) 
+                {
+                    p.Aboutme = ClearHtmlBuilder.Clear(p.Aboutme);
+                }
+            }
+
             if (!result.CatalogResumes.Any())
             {
                 return result;

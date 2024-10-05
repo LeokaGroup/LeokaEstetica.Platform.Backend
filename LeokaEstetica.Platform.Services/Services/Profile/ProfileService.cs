@@ -143,9 +143,6 @@ internal sealed class ProfileService : IProfileService
             // Проверяем заполнение анкеты и даем доступ либо нет.
             result.IsEmptyProfile = await _accessUserService.IsProfileEmptyAsync(userId);
 
-            // Очищаем теги.
-            result.Aboutme = ClearHtmlBuilder.Clear(result.Aboutme);
-
             return result;
         }
 
