@@ -66,7 +66,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Proj
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Communications", "Communications", "{C82408A9-BEAB-4950-AE2B-4AB3DB090DEA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.Communications", "LeokaEstetica.Platform.Communications\LeokaEstetica.Platform.Communications.csproj", "{51FFF5E6-2831-4F71-8569-5B9E5C6202CE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LeokaEstetica.Platform.ChatCommunications", "LeokaEstetica.Platform.ChatCommunications\LeokaEstetica.Platform.ChatCommunications.csproj", "{51FFF5E6-2831-4F71-8569-5B9E5C6202CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
