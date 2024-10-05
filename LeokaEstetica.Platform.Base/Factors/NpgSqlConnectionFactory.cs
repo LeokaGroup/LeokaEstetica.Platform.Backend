@@ -8,6 +8,7 @@ using Npgsql;
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagement")]
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.ProjectManagement.HumanResources")]
+[assembly: InternalsVisibleTo("LeokaEstetica.Platform.Communications")]
 
 namespace LeokaEstetica.Platform.Base.Factors;
  
