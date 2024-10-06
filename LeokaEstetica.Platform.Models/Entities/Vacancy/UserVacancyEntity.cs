@@ -76,10 +76,15 @@ public class UserVacancyEntity
     /// </summary>
     public string? Conditions { get; set; }
 
-    /// <summary>
-    /// Каталог вакансий.
-    /// </summary>
-    public ICollection<CatalogVacancyEntity> CatalogVacancies { get; set; }
+	/// <summary>
+	/// Статус оплаты вакансии
+	/// </summary>
+    public bool IsPaymentCompleted { get; set; }
+
+	/// <summary>
+	/// Каталог вакансий.
+	/// </summary>
+	public ICollection<CatalogVacancyEntity> CatalogVacancies { get; set; }
 
     /// <summary>
     /// Статусы вакансий.
