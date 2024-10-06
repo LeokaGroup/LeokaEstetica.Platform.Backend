@@ -19,6 +19,7 @@ public interface IProjectFinderService
     /// Метод ищет пользователей по их почте.
     /// </summary>
     /// <param name="searchText">Поисковый текст.</param>
+    /// <param name="account">Аккаунт.</param>
     /// <returns>Список пользователей, которых можно пригласить в команду проекта.</returns>
-    Task<IEnumerable<UserEntity>?> SearchUserByEmailAsync(string searchText);
+    Task<UserEntity?> SearchUserByEmailAsync(string searchText, string account);
 }

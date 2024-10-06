@@ -245,7 +245,7 @@ internal class BaseServiceTest
             vacancyRepository, projectManagementRepository,
             new Lazy<IProjectManagementSettingsRepository>(projectManagementSettingsRepository), null);
         ProjectFinderService = new ProjectFinderService(null, userRepository,
-            ResumeModerationService);
+            ResumeModerationService, null);
 
         var resumeRepository = new ResumeRepository(pgContext, connectionProvider);
         var wikiRepository = new WikiTreeRepository(connectionProvider);
