@@ -254,7 +254,6 @@ public class WikiController : BaseController
     /// Метод получает элементы контекстного меню.
     /// </summary>
     /// <param name="projectId">Id проекта, если передан.</param>
-    /// <param name="folderId">Id папки, если передан.</param>
     /// <param name="pageId">Id страницы, если передан.</param>
     /// <param name="isParentFolder">Признак создания вне родителя.</param>
     /// <returns>Элементы контекстного меню.</returns>
@@ -266,7 +265,7 @@ public class WikiController : BaseController
    [ProducesResponseType(500)]
    [ProducesResponseType(404)]
    public async Task<IEnumerable<WikiContextMenuOutput>> GetContextMenuAsync([FromQuery] long? projectId,
-       [FromQuery] long? folderId, [FromQuery] long? pageId, [FromQuery] bool isParentFolder = false)
+        [FromQuery] long? pageId, [FromQuery] bool isParentFolder = false)
    {
       if (!projectId.HasValue && !pageId.HasValue)
       {
@@ -279,7 +278,7 @@ public class WikiController : BaseController
          throw ex;
       }
       
-      var result = await _wikiTreeRepository.Value.GetContextMenuAsync(projectId, folderId, pageId, isParentFolder);
+      var result = await _wikiTreeRepository.Value.GetContextMenuAsync(projectId, pageId, isParentFolder);
 
       return result;
    }
