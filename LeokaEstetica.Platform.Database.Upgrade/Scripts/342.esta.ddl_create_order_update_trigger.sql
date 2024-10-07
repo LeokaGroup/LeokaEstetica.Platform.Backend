@@ -3,7 +3,7 @@ RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO commerce.order_transaction_history (created_at, action_text, action_sys_name, 
 													  created_by, order_id, order_type, status_name)
-    VALUES (OLD.created_at, 'Изменение статуса заказа.', 
+    VALUES (OLD.created_at, 'РР·РјРµРЅРµРЅРёРµ СЃС‚Р°С‚СѓСЃР° Р·Р°РєР°Р·Р°.', 
 			'Update', OLD.created_by, OLD.order_id, OLD.order_type, NEW.status_name);
     
     RETURN NEW;
