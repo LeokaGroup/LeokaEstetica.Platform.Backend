@@ -37,6 +37,7 @@ internal class AgileObject
         if (taskDetailType == TaskDetailTypeEnum.Epic)
         {
             await builder.FillEpicTasksAsync();
-        }
+			await builder.FillSprintIdAndSprintNameAsync();
+		}
     }
 }
