@@ -302,14 +302,13 @@ internal sealed class OrdersJob : IJob
                                 orderBuilder = (FareRuleOrderBuilder)builder;
                             }
                     
-                            // else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy)
-                            // {
-                            //     
-                            //     BaseOrderBuilder builder = new PostVacancyOrderBuilder(_subscriptionRepository,
-                            //         _commerceRepository);
-                            //     orderBuilder = (PostVacancyOrderBuilder)builder;
-                            //     vacancy = ((PostVacancyOrderBuilder)builder).VacancyOrderData;
-                            // }
+                            else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy)
+                            {
+                                
+                                BaseOrderBuilder builder = new PostVacancyOrderBuilder(_subscriptionRepository,
+                                    _commerceRepository);
+                                orderBuilder = (PostVacancyOrderBuilder)builder;
+                            }
 
                             if (orderBuilder is null)
                             {

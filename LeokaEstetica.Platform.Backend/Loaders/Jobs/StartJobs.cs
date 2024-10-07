@@ -48,8 +48,7 @@ public static class StartJobs
             .WithIdentity("ScrumMasterAiJobKeyTrigger")
             .WithIdentity("OrdersJobTrigger")
             .WithSimpleSchedule(x => x
-                // .WithIntervalInMinutes(3)
-                .WithIntervalInSeconds(3)
+                .WithIntervalInMinutes(3)
                 .RepeatForever()));
     }
 }
