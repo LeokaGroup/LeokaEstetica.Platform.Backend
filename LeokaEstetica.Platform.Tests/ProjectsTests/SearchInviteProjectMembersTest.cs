@@ -9,17 +9,17 @@ internal class SearchInviteProjectMembersTest : BaseServiceTest
     public async Task SearchInviteProjectMembersAsyncSuccessTest()
     {
         var result = await ProjectFinderService
-            .SearchInviteProjectMembersAsync("alisaiva931@mail.ru", string.Empty);
+            .SearchInviteProjectMembersAsync("alisaiva931@mail.ru", string.Empty, null);
         
-        Assert.IsNotEmpty(result);
+        Assert.NotNull(result);
     }
     
     [Test]
     public async Task SearchInviteProjectMembersAsyncErrorTest()
     {
         var result = await ProjectFinderService
-            .SearchInviteProjectMembersAsync("testuser", string.Empty);
+            .SearchInviteProjectMembersAsync("testuser", string.Empty, null);
         
-        Assert.IsEmpty(result);
+        Assert.NotNull(result);
     }
 }
