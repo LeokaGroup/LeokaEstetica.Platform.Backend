@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using LeokaEstetica.Platform.Database.Abstractions.Menu;
+using LeokaEstetica.Platform.Models.Dto.Base.Menu;
 using LeokaEstetica.Platform.Models.Dto.Output.Menu;
 using LeokaEstetica.Platform.Services.Abstractions.Menu;
 using Microsoft.Extensions.Logging;
@@ -50,31 +51,10 @@ internal sealed class MenuService : IMenuService
 
             if (result.Items is null || result.Items.Count == 0)
             {
-                return new TopMenuOutput { Items = new List<TopItem>() };
+                return new TopMenuOutput { Items = new List<MenuItem>() };
             }
 
-            // Перебираем все элементы и сортируем.
-            foreach (var item in result.Items)
-            {
-                // Сортируем все вложенные элементы.
-                if (item.Items is not null && item.Items.Count > 0)
-                {
-                    foreach (var item2 in item.Items)
-                    {
-                        if (item2.Items is not null && item2.Items.Count > 0)
-                        {
-                            foreach (var item3 in item2.Items)
-                            {
-                                item3.Items = item3.Items?.OrderBy(x => x.Position).AsList();
-                            }
-
-                            item2.Items = item2.Items?.OrderBy(x => x.Position).AsList();
-                        }
-                    }
-
-                    item.Items = item.Items.OrderBy(x => x.Position).AsList();
-                }
-            }
+            await SortingMenuItemsAsync(result.Items);
 
             result.Items = result.Items.OrderBy(x => x.Position).AsList();
 
@@ -109,31 +89,10 @@ internal sealed class MenuService : IMenuService
 
             if (result.Items is null || result.Items.Count == 0)
             {
-                return new LeftMenuOutput { Items = new List<LeftItem>() };
+                return new LeftMenuOutput { Items = new List<MenuItem>() };
             }
 
-            // Перебираем все элементы и сортируем.
-            foreach (var item in result.Items)
-            {
-                // Сортируем все вложенные элементы.
-                if (item.Items is not null && item.Items.Count > 0)
-                {
-                    foreach (var item2 in item.Items)
-                    {
-                        if (item2.Items is not null && item2.Items.Count > 0)
-                        {
-                            foreach (var item3 in item2.Items)
-                            {
-                                item3.Items = item3.Items?.OrderBy(x => x.Position).AsList();
-                            }
-                        
-                            item2.Items = item2.Items?.OrderBy(x => x.Position).AsList();
-                        }
-                    }
-
-                    item.Items = item.Items.OrderBy(x => x.Position).AsList();
-                }
-            }
+            await SortingMenuItemsAsync(result.Items);
 
             result.Items = result.Items.OrderBy(x => x.Position).AsList();
 
@@ -170,31 +129,48 @@ internal sealed class MenuService : IMenuService
 
             if (result.Items is null || result.Items.Count == 0)
             {
-                return new ProjectManagementLineMenuOutput { Items = new List<ProjectManagementLineMenuItem>() };
+                return new ProjectManagementLineMenuOutput { Items = new List<MenuItem>() };
             }
 
-            // Перебираем все элементы и сортируем.
-            foreach (var item in result.Items)
+            await SortingMenuItemsAsync(result.Items);
+
+            result.Items = result.Items.OrderBy(x => x.Position).AsList();
+
+            return result;
+        }
+
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<LandingMenuOutput> GetLandingMenuItemsAsync()
+    {
+        try
+        {
+            var json = await _menuRepository.GetLandingMenuItemsAsync();
+
+            if (json is null)
             {
-                // Сортируем все вложенные элементы.
-                if (item.Items is not null && item.Items.Count > 0)
-                {
-                    foreach (var item2 in item.Items)
-                    {
-                        if (item2.Items is not null && item2.Items.Count > 0)
-                        {
-                            foreach (var item3 in item2.Items)
-                            {
-                                item3.Items = item3.Items?.OrderBy(x => x.Position).AsList();
-                            }
-                            
-                            item2.Items = item2.Items?.OrderBy(x => x.Position).AsList();
-                        }
-                    }
-
-                    item.Items = item.Items.OrderBy(x => x.Position).AsList();
-                }
+                throw new InvalidOperationException("Ошибка получения элементов меню для Landing страниц.");
             }
+
+            var result = JsonConvert.DeserializeObject<LandingMenuOutput>(json);
+
+            if (result is null)
+            {
+                throw new InvalidOperationException("Ошибка при десериализации меню для Landing страниц.");
+            }
+
+            if (result.Items is null || result.Items.Count == 0)
+            {
+                return new LandingMenuOutput { Items = new List<MenuItem>() };
+            }
+            
+            await SortingMenuItemsAsync(result.Items);
 
             result.Items = result.Items.OrderBy(x => x.Position).AsList();
 
@@ -211,6 +187,38 @@ internal sealed class MenuService : IMenuService
     #endregion
 
     #region Приватные методы.
+
+    /// <summary>
+    /// Метод сортирует элементы меню.
+    /// </summary>
+    /// <param name="items">элементы меню.</param>
+    private async Task SortingMenuItemsAsync(List<MenuItem> items)
+    {
+        // Перебираем все элементы и сортируем.
+        foreach (var item in items)
+        {
+            // Сортируем все вложенные элементы.
+            if (item.Items is not null && item.Items.Count > 0)
+            {
+                foreach (var item2 in item.Items)
+                {
+                    if (item2.Items is not null && item2.Items.Count > 0)
+                    {
+                        foreach (var item3 in item2.Items)
+                        {
+                            item3.Items = item3.Items?.OrderBy(x => x.Position).AsList();
+                        }
+
+                        item2.Items = item2.Items?.OrderBy(x => x.Position).AsList();
+                    }
+                }
+
+                item.Items = item.Items.OrderBy(x => x.Position).AsList();
+            }
+        }
+
+        await Task.CompletedTask;
+    }
 
     #endregion
 }

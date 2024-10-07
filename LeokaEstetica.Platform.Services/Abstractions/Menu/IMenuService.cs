@@ -24,4 +24,11 @@ public interface IMenuService
     /// </summary>
     /// <returns>Элементы меню.</returns>
     Task<ProjectManagementLineMenuOutput> GetProjectManagementLineMenuAsync();
+    
+    /// <summary>
+    /// Метод получает элементы меню для всех Landing страниц.
+    /// В будущем можно унифицировать этот эндпоинт будет под разные меню разных Landing страниц.
+    /// </summary>
+    /// <returns>Элементы Landing меню.</returns>
+    Task<LandingMenuOutput> GetLandingMenuItemsAsync();
 }
