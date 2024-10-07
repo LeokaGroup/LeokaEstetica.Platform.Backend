@@ -24,7 +24,7 @@ public class ProfileController : BaseController
 {
     private readonly IProfileService _profileService;
     private readonly ILogger<ProfileController> _logger;
-    private readonly IUserRepository _userRepository;
+    private readonly Lazy<IUserRepository> _userRepository;
     private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
@@ -36,7 +36,7 @@ public class ProfileController : BaseController
     /// <param name="logger">Логгер.</param>
     public ProfileController(IProfileService profileService,
         ILogger<ProfileController> logger,
-        IUserRepository userRepository,
+        Lazy<IUserRepository> userRepository,
         Lazy<IHubNotificationService> hubNotificationService)
     {
         _userRepository = userRepository;
@@ -152,14 +152,14 @@ public class ProfileController : BaseController
             try
             {
                 var name = GetUserName();
-                userId = await _userRepository.GetUserByEmailAsync(name);
+                userId = await _userRepository.Value.GetUserByEmailAsync(name);
 
                 if (userId == 0)
                 {
                     throw new InvalidOperationException($"Id пользователя с аккаунтом {name} не найден.");
                 }
 
-                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+                var userCode = await _userRepository.Value.GetUserCodeByUserIdAsync(userId);
                 await _hubNotificationService.Value.SendNotificationAsync("Внимание",
                     "Ошибка при попытке сохранения данных профиля",
                     NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserDataForm",

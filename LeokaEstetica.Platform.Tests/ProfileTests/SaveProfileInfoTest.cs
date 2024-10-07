@@ -20,7 +20,7 @@ internal class SaveProfileInfoTest : BaseServiceTest
                 Telegram = "@vano",
                 Vkontakte = "https://vk.com/vano",
                 OtherLink = "Нету..."
-            }, "sierra_93@mail.ru");
+            }, 32);
 
         Assert.IsNotNull(profileInfo);
         Assert.IsTrue(profileInfo.ProfileInfoId > 0);
