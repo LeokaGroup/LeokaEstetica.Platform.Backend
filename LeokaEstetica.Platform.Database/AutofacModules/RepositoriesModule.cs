@@ -397,5 +397,7 @@ public class RepositoriesModule : Module
         builder.RegisterType<MenuRepository>()
             .As<IMenuRepository>()
             .InstancePerLifetimeScope();
+        
+        builder.RegisterLazy<IVacancyRepository, VacancyRepository>();
     }
 }
