@@ -251,19 +251,6 @@ internal sealed class OrdersJob : IJob
                 // Если статус заказа изменился в ПС, то обновляем его статус в БД.
                 if (newOrderStatus != oldStatusSysName)
                 {
-                    var vacancyJson = JToken.Parse(message)["VacancyOrderData"];
-
-                    if (vacancyJson is null)
-                    {
-                        var ex = new InvalidOperationException("Ошибка парсинга данных вакансии. " +
-                                                               $"OrderEvent: {message}.");
-                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-                        throw ex;
-                    }
-                    
-                    var vacancyString = JsonConvert.SerializeObject(vacancyJson);
-                    var vacancy = JsonConvert.DeserializeObject<VacancyInput>(vacancyString);
-                    
                     try
                     {
                         if (string.IsNullOrWhiteSpace(orderEvent.PaymentId))
@@ -317,10 +304,10 @@ internal sealed class OrdersJob : IJob
                     
                             else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy)
                             {
+                                
                                 BaseOrderBuilder builder = new PostVacancyOrderBuilder(_subscriptionRepository,
                                     _commerceRepository);
                                 orderBuilder = (PostVacancyOrderBuilder)builder;
-                                vacancy = ((PostVacancyOrderBuilder)builder).VacancyOrderData;
                             }
 
                             if (orderBuilder is null)
@@ -376,7 +363,7 @@ internal sealed class OrdersJob : IJob
                     
                         _channel.BasicRecoverAsync(false);
 
-                        await Task.Yield(); 
+                        await Task.Yield();
                     }
 
                     // Если статус подтвержден, и тип заказа создание вакансии,
@@ -384,6 +371,19 @@ internal sealed class OrdersJob : IJob
                     else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy
                              && newOrderStatus == PaymentStatusEnum.Succeeded)
                     {
+                        var vacancyJson = JToken.Parse(message)["VacancyOrderData"];
+
+                        if (vacancyJson is null)
+                        {
+                            var ex = new InvalidOperationException("Ошибка парсинга данных вакансии. " +
+                                                                   $"OrderEvent: {message}.");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                            throw ex;
+                        }
+                    
+                        var vacancyString = JsonConvert.SerializeObject(vacancyJson);
+                        var vacancy = JsonConvert.DeserializeObject<VacancyInput>(vacancyString);
+                        
                         if (vacancy is null)
                         {
                             var ex = new InvalidOperationException(
