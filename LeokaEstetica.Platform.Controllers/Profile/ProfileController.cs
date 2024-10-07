@@ -9,7 +9,6 @@ using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -25,7 +24,7 @@ public class ProfileController : BaseController
 {
     private readonly IProfileService _profileService;
     private readonly ILogger<ProfileController> _logger;
-    private readonly IUserRepository _userRepository;
+    private readonly Lazy<IUserRepository> _userRepository;
     private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
@@ -37,7 +36,7 @@ public class ProfileController : BaseController
     /// <param name="logger">Логгер.</param>
     public ProfileController(IProfileService profileService,
         ILogger<ProfileController> logger,
-        IUserRepository userRepository,
+        Lazy<IUserRepository> userRepository,
         Lazy<IHubNotificationService> hubNotificationService)
     {
         _userRepository = userRepository;
@@ -134,15 +133,17 @@ public class ProfileController : BaseController
     {
         var result = new ProfileInfoOutput { Errors = new List<ValidationFailure>() };
         var validator = await new SaveProfileInfoValidator().ValidateAsync(profileInfoInput);
+        
+        long userId = 0;
 
-        if (validator.Errors.Any())
+        if (validator.Errors.Count > 0)
         {
             var exceptions = new List<InvalidOperationException>();
             
             foreach (var err in validator.Errors)
-                {
-                    exceptions.Add(new InvalidOperationException(err.ErrorMessage));
-                }
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
             
             var ex = new AggregateException(exceptions);
             _logger.LogError(ex, "Ошибки при попытке сохранения данных профиля.");
@@ -150,19 +151,21 @@ public class ProfileController : BaseController
 
             try
             {
-                var userLogin = GetUserName();
-                var userId = await _userRepository.GetUserIdByLoginAsync(userLogin);
+                var name = GetUserName();
+                userId = await _userRepository.Value.GetUserByEmailAsync(name);
 
                 if (userId == 0)
                 {
-                    throw new InvalidOperationException($"Id пользователя с аккаунтом {userLogin} не найден.");
+                    throw new InvalidOperationException($"Id пользователя с аккаунтом {name} не найден.");
                 }
 
-                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
-                await _hubNotificationService.Value.SendNotificationAsync("Внимание", "Ошибка при попытке сохранения данных профиля",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserDataForm", userCode,
-                    UserConnectionModuleEnum.Main);
+                var userCode = await _userRepository.Value.GetUserCodeByUserIdAsync(userId);
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    "Ошибка при попытке сохранения данных профиля",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserDataForm",
+                    userCode, UserConnectionModuleEnum.Main);
             }
+            
             catch (Exception exс)
             {
                 _logger.LogError(exс, exс.Message);
@@ -172,7 +175,7 @@ public class ProfileController : BaseController
             return result;
         }
         
-        result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName());
+        result = await _profileService.SaveProfileInfoAsync(profileInfoInput, userId);
 
         return result;
     }
