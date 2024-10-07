@@ -140,9 +140,9 @@ public class ProfileController : BaseController
             var exceptions = new List<InvalidOperationException>();
             
             foreach (var err in validator.Errors)
-                {
-                    exceptions.Add(new InvalidOperationException(err.ErrorMessage));
-                }
+            {
+                exceptions.Add(new InvalidOperationException(err.ErrorMessage));
+            }
             
             var ex = new AggregateException(exceptions);
             _logger.LogError(ex, "Ошибки при попытке сохранения данных профиля.");
@@ -150,12 +150,12 @@ public class ProfileController : BaseController
 
             try
             {
-                var userLogin = GetUserName();
-                var userId = await _userRepository.GetUserIdByLoginAsync(userLogin);
+                var name = GetUserName();
+                var userId = await _userRepository.GetUserByEmailAsync(name);
 
                 if (userId == 0)
                 {
-                    throw new InvalidOperationException($"Id пользователя с аккаунтом {userLogin} не найден.");
+                    throw new InvalidOperationException($"Id пользователя с аккаунтом {name} не найден.");
                 }
 
                 var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
