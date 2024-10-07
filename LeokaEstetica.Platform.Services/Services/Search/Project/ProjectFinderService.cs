@@ -1,7 +1,11 @@
 using System.Runtime.CompilerServices;
+using Dapper;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Resume;
 using LeokaEstetica.Platform.Models.Entities.User;
+using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Search.Project;
 using Microsoft.Extensions.Logging;
 
@@ -17,6 +21,7 @@ internal sealed class ProjectFinderService : IProjectFinderService
     private readonly ILogger<ProjectFinderService> _logger;
     private readonly IUserRepository _userRepository;
     private readonly IResumeModerationService _resumeModerationService;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -24,13 +29,16 @@ internal sealed class ProjectFinderService : IProjectFinderService
     /// <param name="logger">Логгер.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="resumeModerationService">Сервис модерации анкет.</param>
+    /// <param name="resumeModerationService">Сервис уведомлений.</param>
     public ProjectFinderService(ILogger<ProjectFinderService> logger,
         IUserRepository userRepository,
-        IResumeModerationService resumeModerationService)
+        IResumeModerationService resumeModerationService,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _userRepository = userRepository;
         _resumeModerationService = resumeModerationService;
+        _hubNotificationService = hubNotificationService;
     }
 
     /// <summary>
@@ -76,18 +84,37 @@ internal sealed class ProjectFinderService : IProjectFinderService
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<UserEntity>?> SearchUserByEmailAsync(string searchText)
+    public async Task<UserEntity?> SearchUserByEmailAsync(string searchText, string account)
     {
         try
         {
-            var users = await _userRepository.GetUserByEmailOrLoginAsync(searchText);
-            
-            if (users is null || users.Count == 0)
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+            if (userId == 0)
             {
-                return Enumerable.Empty<UserEntity>();
+                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
+            }
+            
+            var users = (await _userRepository.GetUserByEmailOrLoginAsync(searchText))?.AsList();
+            
+            // Если не нашли или даже если более 1, то все равно это ошибка.
+            // Значит не заполнили полносттью почту пользователя в поиске и все равно не светим
+            // пользователей по частичному совпадению. Нам нужно именно полное совпадение по почте
+            // иначе говорим, что нет пользователя.
+            if (users is null || users.Count is 0 or > 1)
+            {
+                var ex = new InvalidOperationException($"Пользователя с почтой {searchText} не найдено.");
+                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    ex.Message,
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningNotFoundUserByEmail",
+                    userCode, UserConnectionModuleEnum.ProjectManagement);
+
+                throw ex;
             }
 
-            return users;
+            return users.First();
         }
         
         catch (Exception ex)
