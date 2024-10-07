@@ -129,7 +129,7 @@ internal sealed class ProjectFinderService : IProjectFinderService
                 throw ex;
             }
 
-            return users.First();
+            return users.FirstOrDefault() ?? new UserEntity();
         }
         
         catch (Exception ex)
