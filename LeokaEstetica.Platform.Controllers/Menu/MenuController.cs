@@ -60,4 +60,23 @@ public class MenuController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает элементы меню для всех Landing страниц.
+    /// В будущем можно унифицировать этот эндпоинт будет под разные меню разных Landing страниц.
+    /// </summary>
+    /// <returns>Элементы Landing меню.</returns>
+    [HttpGet]
+    [Route("landing-menu")]
+    [ProducesResponseType(200, Type = typeof(LandingMenuOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<LandingMenuOutput> GetLandingMenuItemsAsync()
+    {
+        var result = await _menuService.GetLandingMenuItemsAsync();
+
+        return result;
+    }
 }
