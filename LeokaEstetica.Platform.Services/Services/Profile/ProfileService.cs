@@ -239,25 +239,18 @@ internal sealed class ProfileService : IProfileService
     /// Метод сохраняет данные анкеты пользователя.
     /// </summary>
     /// <param name="profileInfoInput">Входная модель.</param>
-    /// <param name="account">ккаунт пользователя.</param>
+    /// <param name="userId">Id пользователя.</param>
     /// <returns>Сохраненные данные.</returns>
-    public async Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, string account)
+    public async Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, long userId)
     {
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
-            if (userId == 0)
-            {
-                throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
-            }
-
             // Получаем данные профиля пользователя.
             var profileInfo = await _profileRepository.GetProfileInfoAsync(userId);
 
             if (profileInfo is null)
             {
-                throw new InvalidOperationException($"Для пользователя {account} не заведено профиля в системе.");
+                throw new InvalidOperationException($"Для пользователя с Id {userId} не заведено профиля в системе.");
             }
             
             // TODO: Вернуть, если решим вернуть этот функционал на фронте.

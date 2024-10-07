@@ -9,7 +9,6 @@ using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Notifications.Abstractions;
 using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -134,8 +133,10 @@ public class ProfileController : BaseController
     {
         var result = new ProfileInfoOutput { Errors = new List<ValidationFailure>() };
         var validator = await new SaveProfileInfoValidator().ValidateAsync(profileInfoInput);
+        
+        long userId = 0;
 
-        if (validator.Errors.Any())
+        if (validator.Errors.Count > 0)
         {
             var exceptions = new List<InvalidOperationException>();
             
@@ -151,7 +152,7 @@ public class ProfileController : BaseController
             try
             {
                 var name = GetUserName();
-                var userId = await _userRepository.GetUserByEmailAsync(name);
+                userId = await _userRepository.GetUserByEmailAsync(name);
 
                 if (userId == 0)
                 {
@@ -159,10 +160,12 @@ public class ProfileController : BaseController
                 }
 
                 var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
-                await _hubNotificationService.Value.SendNotificationAsync("Внимание", "Ошибка при попытке сохранения данных профиля",
-                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserDataForm", userCode,
-                    UserConnectionModuleEnum.Main);
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    "Ошибка при попытке сохранения данных профиля",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningEmptyUserDataForm",
+                    userCode, UserConnectionModuleEnum.Main);
             }
+            
             catch (Exception exс)
             {
                 _logger.LogError(exс, exс.Message);
@@ -172,7 +175,7 @@ public class ProfileController : BaseController
             return result;
         }
         
-        result = await _profileService.SaveProfileInfoAsync(profileInfoInput, GetUserName());
+        result = await _profileService.SaveProfileInfoAsync(profileInfoInput, userId);
 
         return result;
     }
