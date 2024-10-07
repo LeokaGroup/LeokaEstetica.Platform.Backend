@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Models.Dto.Output.Menu;
 using LeokaEstetica.Platform.Services.Abstractions.Menu;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LeokaEstetica.Platform.Controllers.Menu;
@@ -66,6 +67,7 @@ public class MenuController : BaseController
     /// В будущем можно унифицировать этот эндпоинт будет под разные меню разных Landing страниц.
     /// </summary>
     /// <returns>Элементы Landing меню.</returns>
+    [AllowAnonymous]
     [HttpGet]
     [Route("landing-menu")]
     [ProducesResponseType(200, Type = typeof(LandingMenuOutput))]
