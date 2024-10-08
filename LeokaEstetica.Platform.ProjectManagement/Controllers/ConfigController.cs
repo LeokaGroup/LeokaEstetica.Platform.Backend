@@ -76,7 +76,8 @@ public class ConfigController : BaseController
     public async Task<bool> IsAvailableScrumMasterAi()
     {
         _logger.LogInformation("Начали проверку доступности функционала AI.");
-        var result = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.ProjectManagment.PROJECT_MANAGEMENT_SCRUM_MODE_ENABLED);
+        var result = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.ProjectManagment
+            .PROJECT_MANAGEMENT_SCRUM_MODE_ENABLED);
         _logger.LogInformation($"Закончили проверку доступности функционала AI Result: {result}");
 
         return result;
