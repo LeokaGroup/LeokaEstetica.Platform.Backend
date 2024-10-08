@@ -516,12 +516,18 @@ public class ProjectController : BaseController
 
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка добавления пользователя в команду проекта. " +
+			_logger.LogError(ex, "Ошибка добавления пользователя в команду проекта. " +
 								 $"InviteText был {inviteProjectMemberInput.InviteText}. " +
                                  $"InviteType был {inviteProjectMemberInput.InviteType}. " +
                                  $"ProjectId был {inviteProjectMemberInput.ProjectId}. " +
                                  $"VacancyId был {inviteProjectMemberInput.VacancyId}");
-            throw;
+            
+			return new ProjectTeamMemberOutput
+            {
+                SuccessMessage = "Проект еще на модерации. Нельзя пригласить пользователей, пока проект не пройдет модерацию.",
+                IsAccess = false
+            };
+            //throw;
         }
     }
 
