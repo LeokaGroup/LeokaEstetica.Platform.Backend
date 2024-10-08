@@ -4,7 +4,6 @@ using LeokaEstetica.Platform.Models.Entities.Moderation;
 using LeokaEstetica.Platform.Models.Entities.Profile;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
 using LeokaEstetica.Platform.Models.Entities.User;
-using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 
@@ -103,7 +102,7 @@ public interface IUserRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="phone">Номер телефона.</param>
     /// <param name="email">Email.</param>
-    Task<SaveUserProfileDataOutput> SaveUserDataAsync(long userId, string phone, string email);
+    Task<SaveUserProfileDataOutput> SaveUserDataAsync(long userId, string? phone, string email);
 
     /// <summary>
     /// Метод находит логин и почту пользователей по почте или логину пользователя.

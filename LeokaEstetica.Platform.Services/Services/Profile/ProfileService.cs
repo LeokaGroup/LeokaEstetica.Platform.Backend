@@ -241,8 +241,17 @@ internal sealed class ProfileService : IProfileService
     /// <param name="profileInfoInput">Входная модель.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Сохраненные данные.</returns>
-    public async Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, long userId)
+    public async Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, string account)
     {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId == 0)
+        {
+            throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найдено.");
+        }
+
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+            
         try
         {
             // Получаем данные профиля пользователя.
@@ -271,18 +280,19 @@ internal sealed class ProfileService : IProfileService
 
             // Сохраняем номер телефона пользователя.
             var savedProfileInfoData = await _userRepository.SaveUserDataAsync(userId, profileInfoInput.PhoneNumber,
-                email);
+                email!);
 
-            // Сохраняем выбранные навыки пользователя.
-            await SaveUserSkillsAsync(profileInfoInput, userId);
+            if (profileInfoInput.UserSkills is not null && profileInfoInput.UserSkills.Any())
+            {
+                // Сохраняем выбранные навыки пользователя.
+                await SaveUserSkillsAsync(profileInfoInput, userId);
+            }
             
-            // Сохраняем выбранные цели пользователя.
-            await SaveUserIntentsAsync(profileInfoInput, userId);
-            
-            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
-            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо", "Данные успешно сохранены.",
-                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessSave", userCode,
-                UserConnectionModuleEnum.Main);
+            if (profileInfoInput.UserIntents is not null && profileInfoInput.UserIntents.Any())
+            {
+                // Сохраняем выбранные цели пользователя.
+                await SaveUserIntentsAsync(profileInfoInput, userId);
+            }
 
             // Снова логиним юзера, так как почта изменилась а значит и токен надо менять.
             if (savedProfileInfoData.IsEmailChanged)
@@ -304,6 +314,10 @@ internal sealed class ProfileService : IProfileService
 
             // Отправляем анкету на модерацию.            
             await _resumeModerationRepository.AddResumeModerationAsync(profileInfoId);
+            
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо", "Данные успешно сохранены.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessSaveProfileInfo", userCode,
+                UserConnectionModuleEnum.Main);
 
             // Отправляем уведомление в пачку об изменениях анкеты.
             await _discordService.SendNotificationChangedProfileInfoBeforeModerationAsync(profileInfoId);
@@ -314,6 +328,12 @@ internal sealed class ProfileService : IProfileService
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
+            
+            await _hubNotificationService.Value.SendNotificationAsync("Что то не так...",
+             "Ошибка при сохранении данных. Мы уже знаем о проблеме и разбираемся с ней.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorSaveProfileInfo", userCode,
+                UserConnectionModuleEnum.Main);
+            
             throw;
         }
     }

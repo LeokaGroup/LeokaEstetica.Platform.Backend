@@ -261,7 +261,7 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
     /// <param name="userId">Id пользователя.</param>
     /// <param name="phone">Номер телефона.</param>
     /// <param name="email">Email.</param>
-    public async Task<SaveUserProfileDataOutput> SaveUserDataAsync(long userId, string phone, string email)
+    public async Task<SaveUserProfileDataOutput> SaveUserDataAsync(long userId, string? phone, string email)
     {
         var user = await GetUserByUserIdAsync(userId);
         user.PhoneNumber = phone;
