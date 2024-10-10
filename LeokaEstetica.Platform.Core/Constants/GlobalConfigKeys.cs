@@ -156,7 +156,7 @@ public static class GlobalConfigKeys
         /// <summary>
         /// Ключ вкл/откл функционала AI.
         /// </summary>
-        public const string PROJECT_MANAGEMENT_SCRUM_MODE_ENABLED =
+        public const string SCRUM_MASTER_AI_MODE_ENABLED =
             "ScrumMasterAi.Mode.Enabled";
     }
 
