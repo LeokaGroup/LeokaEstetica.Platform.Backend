@@ -657,7 +657,7 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
             parameters.Add("@projectId", projectId);
 
             // Удаляем задачи спринта если они есть.
-            if (sprintTaskIds.Any())
+            if (sprintTaskIds is not null && sprintTaskIds.Any())
             {
                 parameters.Add("@sprintTaskIds", sprintTaskIds.AsList());
 
