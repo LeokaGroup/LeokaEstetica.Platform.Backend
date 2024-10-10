@@ -11,8 +11,7 @@ internal class SaveProfileInfoTest : BaseServiceTest
     public async Task SaveProfileInfoAsyncTest()
     {
         var profileInfo = await ProfileService.SaveProfileInfoAsync(
-            new ProfileInfoInput("Иванов", "Иван", "Тестовая информация о пользователе.", "Тестировщик",
-                "sierra_93@mail.ru", "89543567834", new List<SkillInput>(), new List<IntentOutput>(), "1")
+            new ProfileInfoInput()
             {
                 Patronymic = "Иванович",
                 IsShortFirstName = false,
@@ -20,7 +19,7 @@ internal class SaveProfileInfoTest : BaseServiceTest
                 Telegram = "@vano",
                 Vkontakte = "https://vk.com/vano",
                 OtherLink = "Нету..."
-            }, 32);
+            }, "sierra_93@mail.ru");
 
         Assert.IsNotNull(profileInfo);
         Assert.IsTrue(profileInfo.ProfileInfoId > 0);

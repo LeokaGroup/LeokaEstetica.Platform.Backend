@@ -71,8 +71,9 @@ public class ConfigController : BaseController
     [ProducesResponseType(404)]
     public async Task<bool> IsAvailableScrumMasterAi()
     {
-        var result = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.ArtificialIntelligenceConfig
+        var result = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.ProjectManagment
             .SCRUM_MASTER_AI_MODE_ENABLED);
+
         return result;
     }
 
