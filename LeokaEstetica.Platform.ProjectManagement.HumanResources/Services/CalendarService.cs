@@ -115,15 +115,21 @@ internal sealed class CalendarService : ICalendarService
 
             calendarInput.EventMembers ??= new List<EventMemberInput>();
 
-            // TODO: Подумать как сделать корректнее. По почте надо всех находить и заполнять.
-            // TODO: С фронта будет приходить теперь не UserId, а почта пользователя.
+            //Заполняем UserId
+            foreach (var member in calendarInput.EventMembers)
+            {
+                if (member.EventMemberMail != string.Empty) 
+                    member.EventMemberId = await _userRepository.GetUserIdByEmailAsync(member.EventMemberMail);
+            }
+            
             // Добавляем в участники события текущего пользователя, который создает событие.
             if (calendarInput.EventMembers.Count == 0
-                || !calendarInput.EventMembers.Select(x => x.EventMemberId).Contains(userId))
+                || !calendarInput.EventMembers.Select(x => x.EventMemberMail).Contains(account))
             {
                 calendarInput.EventMembers.Add(new EventMemberInput
                 {
-                    EventMemberId = userId
+                    EventMemberId = userId,
+                    EventMemberMail = account
                 });
             }
 
@@ -191,16 +197,22 @@ internal sealed class CalendarService : ICalendarService
             }
             
             calendarInput.EventMembers ??= new List<EventMemberInput>();
-
-            // TODO: Подумать как сделать корректнее. По почте надо всех находить и заполнять.
-            // TODO: С фронта будет приходить теперь не UserId, а почта пользователя.
+            
+            //Заполняем UserId
+            foreach (var member in calendarInput.EventMembers)
+            {
+                if (member.EventMemberMail != string.Empty) 
+                    member.EventMemberId = await _userRepository.GetUserIdByEmailAsync(member.EventMemberMail);
+            }
+            
             // Добавляем в участники события текущего пользователя, который создает событие.
             if (calendarInput.EventMembers.Count == 0
-                || !calendarInput.EventMembers.Select(x => x.EventMemberId).Contains(userId))
+                || !calendarInput.EventMembers.Select(x => x.EventMemberMail).Contains(account))
             {
                 calendarInput.EventMembers.Add(new EventMemberInput
                 {
-                    EventMemberId = userId
+                    EventMemberId = userId,
+                    EventMemberMail = account
                 });
             }
 
