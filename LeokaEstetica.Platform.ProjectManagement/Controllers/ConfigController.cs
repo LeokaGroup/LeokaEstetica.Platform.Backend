@@ -53,11 +53,8 @@ public class ConfigController : BaseController
     [ProducesResponseType(404)]
     public async Task<bool> IsAvailableProjectManagmentAsync()
     {
-        _logger.LogInformation("Начали проверку доступности модуля управления проектами.");
         var result = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.ProjectManagment
                 .PROJECT_MANAGEMENT_MODE_ENABLED);
-        _logger.LogInformation($"Закончили проверку доступности модуля управления проектами. Result: {result}");
-
         return result;
     }
 
