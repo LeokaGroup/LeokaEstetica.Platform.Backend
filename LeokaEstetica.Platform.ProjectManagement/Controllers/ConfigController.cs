@@ -53,11 +53,8 @@ public class ConfigController : BaseController
     [ProducesResponseType(404)]
     public async Task<bool> IsAvailableProjectManagmentAsync()
     {
-        _logger.LogInformation("Начали проверку доступности модуля управления проектами.");
         var result = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.ProjectManagment
                 .PROJECT_MANAGEMENT_MODE_ENABLED);
-        _logger.LogInformation($"Закончили проверку доступности модуля управления проектами. Result: {result}");
-
         return result;
     }
 
@@ -65,7 +62,6 @@ public class ConfigController : BaseController
     /// Метод проверяет доступность функционала AI.
     /// </summary>
     /// <returns>Признак активности модуля.</returns>
-    [AllowAnonymous]
     [HttpGet]
     [Route("is-available-scrum-master-ai")]
     [ProducesResponseType(200, Type = typeof(bool))]
@@ -75,11 +71,8 @@ public class ConfigController : BaseController
     [ProducesResponseType(404)]
     public async Task<bool> IsAvailableScrumMasterAi()
     {
-        _logger.LogInformation("Начали проверку доступности функционала AI.");
         var result = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.ArtificialIntelligenceConfig
-            .PROJECT_MANAGEMENT_SCRUM_MODE_ENABLED);
-        _logger.LogInformation($"Закончили проверку доступности функционала AI Result: {result}");
-
+            .SCRUM_MASTER_AI_MODE_ENABLED);
         return result;
     }
 
