@@ -509,9 +509,7 @@ public class SprintController : BaseController
     /// <summary>
     /// Метод удаляет спринт.
     /// </summary>
-    /// <param name="sprintId">Id спринта.</param>
-    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
-    /// <returns></returns>
+    /// <param name="removeSprintInput">Входная модель.</param>
     [HttpDelete]
     [Route("sprint")]
     [ProducesResponseType(200)]
@@ -519,8 +517,9 @@ public class SprintController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task RemoveSprintAsync([FromQuery] long sprintId, [FromQuery] long projectSprintId)
+    public async Task RemoveSprintAsync([FromBody] RemoveSprintInput removeSprintInput)
     {
-        await _sprintService.RemoveSprintAsync(sprintId, projectSprintId);
+        await _sprintService.RemoveSprintAsync(removeSprintInput.ProjectSprintId, 
+            removeSprintInput.ProjectId, removeSprintInput.ProjectTaskIds);
     }
 }
