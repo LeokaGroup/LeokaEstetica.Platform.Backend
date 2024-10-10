@@ -645,7 +645,7 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
      }
 
     /// <inheritdoc/>
-    public async Task RemoveSprintAsync(long sprintId, long projectSprintId)
+    public async Task RemoveSprintAsync(long projectSprintId, long projectId, IEnumerable<long>? sprintTaskIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
@@ -653,27 +653,25 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
         try
         {
             var parameters = new DynamicParameters();
-            parameters.Add("@sprintId", sprintId);
             parameters.Add("@projectSprintId", projectSprintId);
-
-            var countTasksSprintQuery = "SELECT COUNT(*) FROM project_management.sprint_tasks " +
-                                        "WHERE sprint_id = @projectSprintId";
-
-            var result = await connection.ExecuteScalarAsync<bool>(countTasksSprintQuery, parameters);
+            parameters.Add("@projectId", projectId);
 
             // Удаляем задачи спринта если они есть.
-            if (result)
-            {               
+            if (sprintTaskIds.Any())
+            {
+                parameters.Add("@sprintTaskIds", sprintTaskIds.AsList());
+
                 var removeTasksSprintQuery = "DELETE FROM project_management.sprint_tasks " +
-                                             "WHERE sprint_id = @projectSprintId";
+                                             "WHERE project_task_id = ANY (@sprintTaskIds) " +
+                                             "AND sprint_id = @projectSprintId";
 
                 await connection.ExecuteAsync(removeTasksSprintQuery, parameters);
             }
 
             // Удаляем спринт.
             var query = "DELETE FROM project_management.sprints " +
-                        "WHERE sprint_id = @sprintId " +
-                        "AND project_sprint_id = @projectSprintId";
+                        "WHERE project_sprint_id = @projectSprintId " +
+                        "AND project_id = @projectId";
 
             await connection.ExecuteAsync(query, parameters);
 
