@@ -738,11 +738,11 @@ internal sealed class SprintService : ISprintService
     }
 
     /// <inheritdoc />
-    public async Task RemoveSprintAsync(long sprintId, long projectSprintId)
+    public async Task RemoveSprintAsync(long projectSprintId, long projectId, IEnumerable<long>? sprintTaskIds)
     {
         try
         {
-            await _sprintRepository.RemoveSprintAsync(sprintId, projectSprintId);
+            await _sprintRepository.RemoveSprintAsync(projectSprintId, projectId, sprintTaskIds);
         }
 
         catch (Exception ex)
