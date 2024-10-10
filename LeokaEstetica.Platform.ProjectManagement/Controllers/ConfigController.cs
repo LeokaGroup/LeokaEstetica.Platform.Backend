@@ -62,6 +62,25 @@ public class ConfigController : BaseController
     }
 
     /// <summary>
+    /// Метод проверяет доступность функционала AI.
+    /// </summary>
+    /// <returns>Признак активности модуля.</returns>
+    [HttpGet]
+    [Route("is-available-scrum-master-ai")]
+    [ProducesResponseType(200, Type = typeof(bool))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<bool> IsAvailableScrumMasterAi()
+    {
+        var result = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.ProjectManagment
+            .SCRUM_MASTER_AI_MODE_ENABLED);
+
+        return result;
+    }
+
+    /// <summary>
     /// Метод фиксирует выбранные пользователем настройки рабочего пространства проекта.
     /// </summary>
     /// <param name="configSpaceSettingInput">Входная модель.</param>
