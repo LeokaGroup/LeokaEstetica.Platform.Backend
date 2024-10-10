@@ -644,7 +644,51 @@ internal sealed class SprintRepository : BaseRepository, ISprintRepository
          await connection.ExecuteAsync(query, parameters);
      }
 
-     #endregion
+    /// <inheritdoc/>
+    public async Task RemoveSprintAsync(long sprintId, long projectSprintId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+        using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+
+        try
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@sprintId", sprintId);
+            parameters.Add("@projectSprintId", projectSprintId);
+
+            var countTasksSprintQuery = "SELECT COUNT(*) FROM project_management.sprint_tasks " +
+                                        "WHERE sprint_id = @projectSprintId";
+
+            var result = await connection.ExecuteScalarAsync<bool>(countTasksSprintQuery, parameters);
+
+            // Удаляем задачи спринта если они есть.
+            if (result)
+            {               
+                var removeTasksSprintQuery = "DELETE FROM project_management.sprint_tasks " +
+                                             "WHERE sprint_id = @projectSprintId";
+
+                await connection.ExecuteAsync(removeTasksSprintQuery, parameters);
+            }
+
+            // Удаляем спринт.
+            var query = "DELETE FROM project_management.sprints " +
+                        "WHERE sprint_id = @sprintId " +
+                        "AND project_sprint_id = @projectSprintId";
+
+            await connection.ExecuteAsync(query, parameters);
+
+            transaction.Commit();
+        }
+
+        catch
+        {
+            transaction.Rollback();
+
+            throw;
+        }
+    }
+
+    #endregion
 
     #region Приватные методы.
 

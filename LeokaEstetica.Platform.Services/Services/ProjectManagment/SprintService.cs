@@ -737,6 +737,21 @@ internal sealed class SprintService : ISprintService
         }
     }
 
+    /// <inheritdoc />
+    public async Task RemoveSprintAsync(long sprintId, long projectSprintId)
+    {
+        try
+        {
+            await _sprintRepository.RemoveSprintAsync(sprintId, projectSprintId);
+        }
+
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.
