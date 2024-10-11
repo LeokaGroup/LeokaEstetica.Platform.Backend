@@ -36,6 +36,7 @@ public class AbstractGroupController : BaseController
     }
 
     /// <summary>
+    /// TODO: Изменить на сокеты.
     /// Метод получает объекты группы абстрактной области.
     /// </summary>
     /// <param name="abstractScopeId">Id абстрактной области.</param>
