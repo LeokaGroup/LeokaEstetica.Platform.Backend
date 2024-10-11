@@ -24,6 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\LeokaEstetica.Platform.Classifiers\LeokaEstetica.Platform.Classifiers.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Integrations\LeokaEstetica.Platform.Integrations.csproj" />
     </ItemGroup>
 

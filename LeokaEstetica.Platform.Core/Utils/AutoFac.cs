@@ -43,7 +43,8 @@ public static class AutoFac
         "LeokaEstetica.Platform.ProjectManagement.ScrumMasterAI",
         "LeokaEstetica.Platform.Database.MongoDb",
         "LeokaEstetica.Platform.ProjectManagement.HumanResources",
-        "LeokaEstetica.Platform.ChatCommunications"
+        "LeokaEstetica.Platform.ChatCommunications",
+        "LeokaEstetica.Platform.Classifiers"
     };
 
     private static readonly List<Assembly> _assemblies = new();

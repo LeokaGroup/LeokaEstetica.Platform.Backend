@@ -12,7 +12,7 @@ internal class GetAbstractScopesTest : BaseServiceTest
         
         Assert.NotNull(result);
         Assert.IsNotEmpty(result);
-        Assert.True(result.All(x => x.AbstractScopeId.HasValue));
+        Assert.True(result.All(x => x.AbstractScopeId > 0));
         Assert.True(result.All(x => x.UserId > 0));
     }
 }
