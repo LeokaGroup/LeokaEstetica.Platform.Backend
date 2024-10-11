@@ -406,5 +406,12 @@ public class RepositoriesModule : Module
         builder.RegisterType<AbstractScopeRepository>()
             .As<IAbstractScopeRepository>()
             .InstancePerLifetimeScope();
+            
+        builder.RegisterType<AbstractGroupRepository>()
+            .Named<IAbstractGroupRepository>("AbstractGroupRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<AbstractGroupRepository>()
+            .As<IAbstractGroupRepository>()
+            .InstancePerLifetimeScope();
     }
 }
