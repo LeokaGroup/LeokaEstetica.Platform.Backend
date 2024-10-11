@@ -615,6 +615,22 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task SetVacancyPaymentAsync(long vacancyId, bool isPayment)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@vacancyId", vacancyId);
+        parameters.Add("@isPayment", isPayment);
+
+        var query = "UPDATE \"Vacancies\".\"UserVacancies\" " +
+                    "SET \"IsPaymentCompleted\" = @isPayment " +
+                    "WHERE \"VacancyId\" = @vacancyId";
+
+        await connection.ExecuteAsync(query, parameters);
+    }
+
     #endregion
 
     #region Приватные методы.

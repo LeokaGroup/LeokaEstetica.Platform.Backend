@@ -37,7 +37,7 @@ public interface IProfileService
     /// Метод сохраняет данные анкеты пользователя.
     /// </summary>
     /// <param name="profileInfoInput">Входная модель.</param>
-    /// <param name="account">ккаунт пользователя.</param>
+    /// <param name="account">Аккаунт пользователя.</param>
     /// <returns>Сохраненные данные.</returns>
     Task<ProfileInfoOutput> SaveProfileInfoAsync(ProfileInfoInput profileInfoInput, string account);
 

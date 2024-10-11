@@ -184,4 +184,12 @@ public interface ISprintRepository
     /// <param name="sprintId">Id спринта.</param>
     /// <param name="sprintTaskIds">Список Id задач, которые нужно включить в спринт.</param>
     Task IncludeSprintTasksAsync(long sprintId, IEnumerable<long> sprintTaskIds);
-}
+
+    /// <summary>
+    /// Метод удаляет спринт.
+    /// </summary>
+    /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
+    /// <param name="projectId">Id проекта.</param>
+    /// <param name="sprintTaskIds">Список Id задач в рамках проекта, которые нужно исключить из спринта.</param>
+    Task RemoveSprintAsync(long projectSprintId, long projectId, IEnumerable<long>? sprintTaskIds);
+}   

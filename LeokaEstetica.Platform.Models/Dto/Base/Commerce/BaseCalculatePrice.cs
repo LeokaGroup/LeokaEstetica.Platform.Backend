@@ -14,4 +14,9 @@ public class BaseCalculatePrice
     /// Сумма.
     /// </summary>
     public decimal? Price { get; set; }
+
+    /// <summary>
+    /// Отформатированная сумма.
+    /// </summary>
+    public string? FormatedPrice { get; set; }
 }

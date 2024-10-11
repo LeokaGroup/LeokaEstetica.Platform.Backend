@@ -623,6 +623,9 @@ internal sealed class CommerceService : ICommerceService
                 IsNeedUserAction = true
             };
 
+            // Разбиваем сумму на разряды.
+            result.FormatedPrice = result.Price?.ToString("N0");
+
             return result;
         }
 

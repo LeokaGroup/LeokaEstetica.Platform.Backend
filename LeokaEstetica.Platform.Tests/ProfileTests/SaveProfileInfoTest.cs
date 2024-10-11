@@ -11,8 +11,7 @@ internal class SaveProfileInfoTest : BaseServiceTest
     public async Task SaveProfileInfoAsyncTest()
     {
         var profileInfo = await ProfileService.SaveProfileInfoAsync(
-            new ProfileInfoInput("Иванов", "Иван", "Тестовая информация о пользователе.", "Тестировщик",
-                "sierra_93@mail.ru", "89543567834", new List<SkillInput>(), new List<IntentOutput>(), "1")
+            new ProfileInfoInput()
             {
                 Patronymic = "Иванович",
                 IsShortFirstName = false,

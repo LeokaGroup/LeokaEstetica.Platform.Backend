@@ -362,18 +362,23 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         var query = "SELECT menu_id, item_name, icon, item_sys_name " +
                     "FROM project_management.wiki_context_menu";
 
-        if (projectId.HasValue && !pageId.HasValue)
+        if (projectId.HasValue && isParentFolder)
         {
-            _contextMenuKeys.RemoveAll(x => new[] { "RemoveFolderPage" }.Contains(x));
-            parameters.Add("@keys", _contextMenuKeys);
+            _contextMenuKeys.RemoveAll(x => new[] { "RemoveFolderPage", "RemoveFolder" }.Contains(x));
         }
 
-        if (pageId.HasValue)
+        else if (!pageId.HasValue)
+        {
+            _contextMenuKeys.RemoveAll(x => new[] { "RemoveFolderPage" }.Contains(x));
+        }
+
+        else if (pageId.HasValue)
         {
             _contextMenuKeys.RemoveAll(x => new[] { "CreateFolder", "RemoveFolder" }.Contains(x));
-            parameters.Add("@keys", _contextMenuKeys);
         }
-        
+
+        parameters.Add("@keys", _contextMenuKeys);
+
         query += " WHERE item_sys_name = ANY(@keys)";
 
         var result = await connection.QueryAsync<WikiContextMenuOutput>(query, parameters);

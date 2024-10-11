@@ -35,6 +35,7 @@ public static class CreateVacanciesModerationDatesBuilder
             newItem.DateCreated = convertCreatedDate;
             newItem.VacancyName = item.UserVacancy.VacancyName;
             newItem.ModerationStatusName = item.ModerationStatus.StatusName;
+            newItem.IsPaymentCompleted = item.UserVacancy.IsPaymentCompleted;
             _vacancies.Add(newItem);
         }
 

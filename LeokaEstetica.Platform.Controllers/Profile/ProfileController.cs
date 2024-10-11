@@ -5,7 +5,6 @@ using LeokaEstetica.Platform.Controllers.Validators.Profile;
 using LeokaEstetica.Platform.Models.Dto.Input.Profile;
 using LeokaEstetica.Platform.Models.Dto.Output.Profile;
 using LeokaEstetica.Platform.Services.Abstractions.Profile;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -123,18 +122,22 @@ public class ProfileController : BaseController
         var result = new ProfileInfoOutput { Errors = new List<ValidationFailure>() };
         var validator = await new SaveProfileInfoValidator().ValidateAsync(profileInfoInput);
 
-        if (validator.Errors.Any())
+        if (validator.Errors.Count > 0)
         {
             var exceptions = new List<InvalidOperationException>();
+            
             foreach (var err in validator.Errors)
             {
                 exceptions.Add(new InvalidOperationException(err.ErrorMessage));
             }
-            
-            var ex = new AggregateException(exceptions);
-            _logger.LogError(ex, "Ошибки при попытке сохранения данных профиля.");
 
-            result.Errors.Add(validator.Errors.First());
+            if (exceptions.Count > 0)
+            {
+                var ex = new AggregateException(exceptions);
+                _logger.LogError(ex, "Ошибки при попытке сохранения данных профиля.");
+                
+                result.Errors.AddRange(validator.Errors);
+            }
 
             return result;
         }

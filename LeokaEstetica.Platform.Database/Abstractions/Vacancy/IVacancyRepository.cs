@@ -125,4 +125,11 @@ public interface IVacancyRepository
     /// <param name="vacancyCatalogInput">Входная модель.</param>
     /// <returns>Список вакансий.</returns>
 	Task<CatalogVacancyResultOutput> GetCatalogVacanciesAsync(VacancyCatalogInput vacancyCatalogInput);
+
+    /// <summary>
+    /// Метод проставляет признак оплаты вакансии.
+    /// </summary>
+    /// <param name="vacancyId">Id вакансии.</param>
+    /// <param name="isPayment">Признак оплаты.</param>
+    Task SetVacancyPaymentAsync(long vacancyId, bool isPayment);
 }

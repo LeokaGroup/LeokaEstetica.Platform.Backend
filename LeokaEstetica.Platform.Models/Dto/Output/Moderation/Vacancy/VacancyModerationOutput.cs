@@ -60,4 +60,9 @@ public class VacancyModerationOutput
     /// Название статуса модерации.
     /// </summary>
     public string ModerationStatusName { get; set; }
+
+	/// <summary>
+	/// Статус оплаты вакансии
+	/// </summary>
+	public bool IsPaymentCompleted { get; set; }
 }
