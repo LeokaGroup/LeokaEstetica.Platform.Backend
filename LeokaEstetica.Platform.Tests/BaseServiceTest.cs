@@ -10,6 +10,7 @@ using LeokaEstetica.Platform.CallCenter.Services.Project;
 using LeokaEstetica.Platform.CallCenter.Services.Resume;
 using LeokaEstetica.Platform.CallCenter.Services.Ticket;
 using LeokaEstetica.Platform.CallCenter.Services.Vacancy;
+using LeokaEstetica.Platform.Communications.Services;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
 using LeokaEstetica.Platform.Database.Abstractions.Project;
@@ -18,6 +19,7 @@ using LeokaEstetica.Platform.Database.Repositories.Access.Ticket;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
+using LeokaEstetica.Platform.Database.Repositories.Communications;
 using LeokaEstetica.Platform.Database.Repositories.Config;
 using LeokaEstetica.Platform.Database.Repositories.FareRule;
 using LeokaEstetica.Platform.Database.Repositories.Knowledge;
@@ -136,6 +138,7 @@ internal class BaseServiceTest
     protected readonly CompanyService CompanyService;
     protected readonly CalendarService CalendarService;
     protected readonly MenuService MenuService;
+    protected readonly AbstractScopeService AbstractScopeService;
 
     protected BaseServiceTest()
     {
@@ -340,5 +343,8 @@ internal class BaseServiceTest
 
         var menuRepository = new MenuRepository(connectionProvider);
         MenuService = new MenuService(null, menuRepository);
+
+        var abstractScopeRepository = new AbstractScopeRepository(connectionProvider);
+        AbstractScopeService = new AbstractScopeService(null, userRepository, abstractScopeRepository);
     }
 }
