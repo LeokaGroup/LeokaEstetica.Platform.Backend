@@ -10,12 +10,18 @@ public class ChatCommunicationsModule : Module
 {
     public static void InitModules(ContainerBuilder builder)
     {
-        // Репозиторий хидера.
         builder.RegisterType<AbstractScopeService>()
             .Named<IAbstractScopeService>("AbstractScopeService")
             .InstancePerLifetimeScope();
         builder.RegisterType<AbstractScopeService>()
             .As<IAbstractScopeService>()
+            .InstancePerLifetimeScope();
+            
+        builder.RegisterType<AbstractGroupService>()
+            .Named<IAbstractGroupService>("AbstractGroupService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<AbstractGroupService>()
+            .As<IAbstractGroupService>()
             .InstancePerLifetimeScope();
     }
 }

@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.ProjectManagement;
+﻿using LeokaEstetica.Platform.Models.Dto.Communications.Output;
+using LeokaEstetica.Platform.Models.Dto.ProjectManagement;
 
 namespace LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 
@@ -27,4 +28,12 @@ public interface ICompanyRepository
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Список компаний пользователя.</returns>
     Task<IEnumerable<CompanyOutput>?> GetUserCompaniesAsync(long userId);
+    
+    /// <summary>
+    /// Метод получает объекты группы абстрактной области.
+    /// </summary>
+    /// <param name="abstractScopeId">Id абстрактной области.</param>
+    /// <param name="userId">Id пользователя.</param>
+    /// <returns>Объекты группы абстрактной области.</returns>
+    Task<IEnumerable<AbstractGroupOutput>> GetAbstractGroupObjectsAsync(long abstractScopeId, long userId);
 }

@@ -25,5 +25,5 @@ public class AbstractScopeOutput
     /// <summary>
     /// Id абстрактной области.
     /// </summary>
-    public long? AbstractScopeId { get; set; }
+    public long AbstractScopeId { get; set; }
 }
