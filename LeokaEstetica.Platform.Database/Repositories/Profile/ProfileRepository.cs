@@ -115,22 +115,9 @@ internal sealed class ProfileRepository : IProfileRepository
             .Where(s => s.UserId == userId)
             .ToListAsync();
 
-        // Если у пользователя в БД еще не было навыков, то просто добавляем из выбранных.
         var enumerable = selectedSkills.ToList();
         var skillEntities = enumerable.ToList();
         var userSkillEntities = skillEntities.ToList();
-
-        //TODO: вернуть если поле навыки перестанет быть обязательным
-        // Если передан пустой массив навыков, удаляем все навыки пользователя из БД.
-        /*
-        if (!enumerable.Any())
-        {
-            if (userSkills.Any())
-            {
-                _pgContext.UserSkills.RemoveRange(userSkills);
-            }
-        }
-        else */
 
         // Если в БД еще нет навыков у пользователя и есть новые навыки для добавления,
         // то добавляем все, что он выбрал или переходим к актуализации.
