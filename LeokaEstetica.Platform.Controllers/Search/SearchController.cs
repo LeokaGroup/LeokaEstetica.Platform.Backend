@@ -42,18 +42,19 @@ public class SearchController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<SearchProjectMemberOutput>> SearchInviteProjectMembersAsync(
+    public async Task<SearchProjectMemberOutput> SearchInviteProjectMembersAsync(
         [FromQuery] string? searchText)
     {
         if (string.IsNullOrWhiteSpace(searchText))
         {
-            return Enumerable.Empty<SearchProjectMemberOutput>();
+            return new SearchProjectMemberOutput();
         }
 
-        var items = await _projectFinderService.SearchInviteProjectMembersAsync(searchText, GetTokenFromHeader());
+        var searchUser = await _projectFinderService.SearchInviteProjectMembersAsync(searchText, GetTokenFromHeader(),
+            GetUserName());
         
         // TODO: Мапить сразу в выходной модели и через Dapper.
-        var result = _mapper.Map<IEnumerable<SearchProjectMemberOutput>>(items);
+        var result = _mapper.Map<SearchProjectMemberOutput>(searchUser);
         
         return result;
     }
@@ -70,17 +71,17 @@ public class SearchController : BaseController
     [ProducesResponseType(403)]
     [ProducesResponseType(500)]
     [ProducesResponseType(404)]
-    public async Task<IEnumerable<SearchProjectMemberOutput>> SearchUserByEmailAsync([FromQuery] string? searchText)
+    public async Task<SearchProjectMemberOutput> SearchUserByEmailAsync([FromQuery] string? searchText)
     {
         if (string.IsNullOrWhiteSpace(searchText))
         {
-            return Enumerable.Empty<SearchProjectMemberOutput>();
+            return new SearchProjectMemberOutput();
         }
 
-        var items = await _projectFinderService.SearchUserByEmailAsync(searchText);
+        var items = await _projectFinderService.SearchUserByEmailAsync(searchText, GetUserName());
 
         // TODO: Мапить сразу в выходной модели и через Dapper.
-        var result = _mapper.Map<IEnumerable<SearchProjectMemberOutput>>(items);
+        var result = _mapper.Map<SearchProjectMemberOutput>(items);
 
         return result;
     }

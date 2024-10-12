@@ -505,4 +505,21 @@ public class SprintController : BaseController
         await _sprintService.IncludeSprintTasksAsync(includeExcludeEpicSprintTaskInput.EpicSprintId,
             includeExcludeEpicSprintTaskInput.ProjectTaskIds, GetUserName());
     }
+
+    /// <summary>
+    /// Метод удаляет спринт.
+    /// </summary>
+    /// <param name="removeSprintInput">Входная модель.</param>
+    [HttpDelete]
+    [Route("sprint")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RemoveSprintAsync([FromBody] RemoveSprintInput removeSprintInput)
+    {
+        await _sprintService.RemoveSprintAsync(removeSprintInput.ProjectSprintId, 
+            removeSprintInput.ProjectId, removeSprintInput.ProjectTaskIds);
+    }
 }

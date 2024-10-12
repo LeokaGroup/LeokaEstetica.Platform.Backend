@@ -5,7 +5,7 @@ using LeokaEstetica.Platform.Models.Dto.Output.Moderation.Resume;
 namespace LeokaEstetica.Platform.Models.Dto.Output.Profile;
 
 /// <summary>
-/// Класс выходной модели информации профиля пользователя для раздела обо мне.
+/// Класс выходной модели профиля пользователя.
 /// </summary>
 public class ProfileInfoOutput : ResumeRemarkResult, IFrontError
 {
@@ -17,17 +17,17 @@ public class ProfileInfoOutput : ResumeRemarkResult, IFrontError
     /// <summary>
     /// Фамилия.
     /// </summary>
-    public string LastName { get; set; }
+    public string? LastName { get; set; }
 
     /// <summary>
     /// Имя.
     /// </summary>
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
 
     /// <summary>
     /// Отчество.
     /// </summary>
-    public string Patronymic { get; set; }
+    public string? Patronymic { get; set; }
 
     /// <summary>
     /// Отображать ли первую букву фамилии.
@@ -37,32 +37,32 @@ public class ProfileInfoOutput : ResumeRemarkResult, IFrontError
     /// <summary>
     /// Ссылка на телегу либо ник.
     /// </summary>
-    public string Telegram { get; set; }
+    public string? Telegram { get; set; }
 
     /// <summary>
     /// Ватсап номер телефона.
     /// </summary>
-    public string WhatsApp { get; set; }
+    public string? WhatsApp { get; set; }
 
     /// <summary>
     /// Ссылка на ВК либо ник.
     /// </summary>
-    public string Vkontakte { get; set; }
+    public string? Vkontakte { get; set; }
 
     /// <summary>
     /// Ссылка на другую соц.сеть.
     /// </summary>
-    public string OtherLink { get; set; }
+    public string? OtherLink { get; set; }
 
     /// <summary>
     /// Обо мне.
     /// </summary>
-    public string Aboutme { get; set; }
+    public string? Aboutme { get; set; }
 
     /// <summary>
     /// Должность.
     /// </summary>
-    public string Job { get; set; }
+    public string? Job { get; set; }
 
     /// <summary>
     /// Id пользователя.
@@ -72,12 +72,12 @@ public class ProfileInfoOutput : ResumeRemarkResult, IFrontError
     /// <summary>
     /// Email.
     /// </summary>
-    public string Email { get; set; }
+    public string? Email { get; set; }
 
     /// <summary>
     /// Номер телефона пользователя.
     /// </summary>
-    public string PhoneNumber { get; set; }
+    public string? PhoneNumber { get; set; }
 
     /// <summary>
     /// Флаг успешности.
@@ -87,17 +87,17 @@ public class ProfileInfoOutput : ResumeRemarkResult, IFrontError
     /// <summary>
     /// Список ошибок.
     /// </summary>
-    public List<ValidationFailure> Errors { get; set; }
+    public List<ValidationFailure>? Errors { get; set; }
 
     /// <summary>
     /// Опыт работы.
     /// </summary>
-    public string WorkExperience { get; set; }
+    public string? WorkExperience { get; set; }
 
     /// <summary>
     /// Токен пользователя. Если изменился, то будет заполнен.
     /// </summary>
-    public string Token { get; set; }
+    public string? Token { get; set; }
     
     /// <summary>
     /// Признак изменения почты пользователя. Нужно для повторного создания токена и релогина в системе.

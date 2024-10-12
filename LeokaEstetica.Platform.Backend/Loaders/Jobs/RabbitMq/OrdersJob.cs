@@ -45,11 +45,11 @@ internal sealed class OrdersJob : IJob
     private readonly IDiscordService _discordService;
     private readonly ICommerceService _commerceService;
     private readonly ISubscriptionRepository _subscriptionRepository;
-    private readonly IVacancyRepository _vacancyRepository;
     private readonly IProjectRepository _projectRepository;
     private readonly IVacancyModerationService _vacancyModerationService;
     private readonly IUserRepository _userRepository;
     private readonly IMailingsService _mailingsService;
+    private readonly Lazy<IVacancyRepository> _vacancyRepository;
 
     /// <summary>
     /// Название очереди.
@@ -85,7 +85,7 @@ internal sealed class OrdersJob : IJob
         IDiscordService discordService,
         ICommerceService commerceService,
         ISubscriptionRepository subscriptionRepository,
-        IVacancyRepository vacancyRepository,
+        Lazy<IVacancyRepository> vacancyRepository,
         IProjectRepository projectRepository,
         IVacancyModerationService vacancyModerationService,
         IUserRepository userRepository,
@@ -251,19 +251,6 @@ internal sealed class OrdersJob : IJob
                 // Если статус заказа изменился в ПС, то обновляем его статус в БД.
                 if (newOrderStatus != oldStatusSysName)
                 {
-                    var vacancyJson = JToken.Parse(message)["VacancyOrderData"];
-
-                    if (vacancyJson is null)
-                    {
-                        var ex = new InvalidOperationException("Ошибка парсинга данных вакансии. " +
-                                                               $"OrderEvent: {message}.");
-                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-                        throw ex;
-                    }
-                    
-                    var vacancyString = JsonConvert.SerializeObject(vacancyJson);
-                    var vacancy = JsonConvert.DeserializeObject<VacancyInput>(vacancyString);
-                    
                     try
                     {
                         if (string.IsNullOrWhiteSpace(orderEvent.PaymentId))
@@ -317,10 +304,10 @@ internal sealed class OrdersJob : IJob
                     
                             else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy)
                             {
+                                
                                 BaseOrderBuilder builder = new PostVacancyOrderBuilder(_subscriptionRepository,
                                     _commerceRepository);
                                 orderBuilder = (PostVacancyOrderBuilder)builder;
-                                vacancy = ((PostVacancyOrderBuilder)builder).VacancyOrderData;
                             }
 
                             if (orderBuilder is null)
@@ -376,7 +363,7 @@ internal sealed class OrdersJob : IJob
                     
                         _channel.BasicRecoverAsync(false);
 
-                        await Task.Yield(); 
+                        await Task.Yield();
                     }
 
                     // Если статус подтвержден, и тип заказа создание вакансии,
@@ -384,6 +371,19 @@ internal sealed class OrdersJob : IJob
                     else if (orderEvent.OrderType == OrderTypeEnum.CreateVacancy
                              && newOrderStatus == PaymentStatusEnum.Succeeded)
                     {
+                        var vacancyJson = JToken.Parse(message)["VacancyOrderData"];
+
+                        if (vacancyJson is null)
+                        {
+                            var ex = new InvalidOperationException("Ошибка парсинга данных вакансии. " +
+                                                                   $"OrderEvent: {message}.");
+                            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                            throw ex;
+                        }
+                    
+                        var vacancyString = JsonConvert.SerializeObject(vacancyJson);
+                        var vacancy = JsonConvert.DeserializeObject<VacancyInput>(vacancyString);
+                        
                         if (vacancy is null)
                         {
                             var ex = new InvalidOperationException(
@@ -395,7 +395,7 @@ internal sealed class OrdersJob : IJob
                         try
                         {
                             // Добавляем вакансию в таблицу вакансий пользователя.
-                            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancy,
+                            var createdVacancy = await _vacancyRepository.Value.CreateVacancyAsync(vacancy,
                                 orderEvent.CreatedBy);
                             var vacancyId = createdVacancy.VacancyId;
 
@@ -415,6 +415,7 @@ internal sealed class OrdersJob : IJob
                             await _vacancyModerationService.AddVacancyModerationAsync(vacancyId);
                         
                             // TODO: Из джобы так не сделать. Нужно другое решение как уведомлять пользователя. 
+                            // TODO: Это будет делать джоба MailSenderJob.
                             // Отправляем уведомление об успешном создании вакансии и отправки ее на модерацию.
                             // await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
                             //     "Данные успешно сохранены. Вакансия отправлена на модерацию.",
@@ -429,6 +430,9 @@ internal sealed class OrdersJob : IJob
                         
                             // Отправляем уведомление о созданной вакансии в дискорд.
                             await _discordService.SendNotificationCreatedVacancyBeforeModerationAsync(vacancyId);
+                            
+                            // Проставляем признак оплаты вакансии.
+                            await _vacancyRepository.Value.SetVacancyPaymentAsync(vacancyId, true);
                         }
                         
                         catch (Exception ex)

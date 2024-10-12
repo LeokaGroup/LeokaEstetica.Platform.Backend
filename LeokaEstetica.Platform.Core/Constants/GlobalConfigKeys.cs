@@ -125,16 +125,6 @@ public static class GlobalConfigKeys
         /// Ключ вкл/выкл контроля длительности спринтов проекта.
         /// </summary>
         public const string PROJECT_SPRINT_DURATION_JOB_MODE_ENABLED = "ProjectSprintDuration.Mode.Enabled";
-
-        /// <summary>
-        /// Вкл/выкл работу сообщения нейросети.
-        /// </summary>
-        public const string SCRUM_MASTER_AI_MESSAGES = "ScrumMasterAi.Message.Mode.Enabled";
-        
-        /// <summary>
-        /// Вкл/выкл работу анализа нейросети.
-        /// </summary>
-        public const string SCRUM_MASTER_AI_ANALYSiS = "ScrumMasterAi.Analysis.Mode.Enabled";
     }
 
     /// <summary>
@@ -148,10 +138,10 @@ public static class GlobalConfigKeys
         public const string PROJECT_MANAGEMENT_MODE_ENABLED = "ProjectManagement.Mode.Enabled";
 
         /// <summary>
-        /// Ключ вкл/откл настройку Scrum в проектах.
+        /// Ключ вкл/откл функционала AI.
         /// </summary>
-        public const string PROJECT_MANAGEMENT_CONFIGURE_PROJECT_SCRUM_SETTINGS =
-            "ProjectManagement.ConfigureProjectScrumSettings.Mode.Enabled";
+        public const string SCRUM_MASTER_AI_MODE_ENABLED =
+            "ScrumMasterAi.Mode.Enabled";
     }
 
     /// <summary>
@@ -211,5 +201,32 @@ public static class GlobalConfigKeys
         /// Ендпоинт получения конфига настроек RabbitMQ из конфига модуля УП.
         /// </summary>
         public static string PROJECT_MANAGEMENT_CONFIG_RABBITMQ_PROXY_API = "/project-management/proxy/config-rabbitmq";
+    }
+
+    /// <summary>
+    /// Класс ключей модуля ИИ.
+    /// </summary>
+    public static class ArtificialIntelligenceConfig
+    {
+        /// <summary>
+        /// Ключ вкл/откл настройку Scrum в проектах.
+        /// </summary>
+        public const string PROJECT_MANAGEMENT_CONFIGURE_PROJECT_SCRUM_SETTINGS =
+            "ProjectManagement.ConfigureProjectScrumSettings.Mode.Enabled";
+
+        /// <summary>
+        /// Ключ вкл/откл функционала AI.
+        /// </summary>
+        public const string SCRUM_MASTER_AI_MODE_ENABLED = "ScrumMasterAi.Mode.Enabled";
+
+        /// <summary>
+        /// Вкл/выкл работу сообщения нейросети.
+        /// </summary>
+        public const string SCRUM_MASTER_AI_MESSAGES = "ScrumMasterAi.Message.Mode.Enabled";
+
+        /// <summary>
+        /// Вкл/выкл работу анализа нейросети.
+        /// </summary>
+        public const string SCRUM_MASTER_AI_ANALYSiS = "ScrumMasterAi.Analysis.Mode.Enabled";
     }
 }

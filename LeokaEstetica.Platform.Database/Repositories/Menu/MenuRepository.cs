@@ -59,6 +59,19 @@ internal sealed class MenuRepository : BaseRepository, IMenuRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<string?> GetLandingMenuItemsAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var query = "SELECT items " +
+                    "FROM dbo.landing_menu";
+
+        var result = await connection.QueryFirstOrDefaultAsync<string>(query);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.

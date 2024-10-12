@@ -165,7 +165,8 @@ internal sealed class VacancyModerationRepository : BaseRepository, IVacancyMode
                 UserVacancy = new UserVacancyEntity
                 {
                     VacancyName = p.UserVacancy.VacancyName,
-                    DateCreated = p.UserVacancy.DateCreated
+                    DateCreated = p.UserVacancy.DateCreated,
+                    IsPaymentCompleted=p.UserVacancy.IsPaymentCompleted
                 },
                 DateModeration = p.DateModeration,
                 ModerationStatusId = p.ModerationStatusId,

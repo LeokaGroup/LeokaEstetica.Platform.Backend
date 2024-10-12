@@ -260,7 +260,7 @@ internal sealed class ProjectService : IProjectService
 			await AddProjectOwnerToTeamMembersAsync(userId, projectId);
 
 			var isEnabledConfigureProjectScrumSettings = await _globalConfigRepository.GetValueByKeyAsync<bool>(
-				GlobalConfigKeys.ProjectManagment.PROJECT_MANAGEMENT_CONFIGURE_PROJECT_SCRUM_SETTINGS);
+				GlobalConfigKeys.ArtificialIntelligenceConfig.PROJECT_MANAGEMENT_CONFIGURE_PROJECT_SCRUM_SETTINGS);
 
 			if (isEnabledConfigureProjectScrumSettings)
 			{
@@ -435,6 +435,15 @@ internal sealed class ProjectService : IProjectService
 
 	        // TODO: Делать все это в запросе метода GetCatalogProjectsAsync.
             result.CatalogProjects = await ExecuteCatalogConditionsAsync(result.CatalogProjects.AsList());
+
+            // Очищаем теги.
+            foreach (var project in result.CatalogProjects)
+			{
+				if (!string.IsNullOrEmpty(project.ProjectDetails))
+				{
+					project.ProjectDetails = ClearHtmlBuilder.Clear(project.ProjectDetails);
+				}
+			}
 
             return result;
         }

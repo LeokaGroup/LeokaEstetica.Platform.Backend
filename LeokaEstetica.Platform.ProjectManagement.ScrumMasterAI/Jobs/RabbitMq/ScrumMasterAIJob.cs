@@ -182,7 +182,7 @@ internal sealed class ScrumMasterAIJob : IJob
     private async void RunClassificationNetworkWorkMessagesAsync()
     {
         var isEnabledJob = await _globalConfigRepository
-            .GetValueByKeyAsync<bool>(GlobalConfigKeys.JobsMode.SCRUM_MASTER_AI_MESSAGES);
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.ArtificialIntelligenceConfig.SCRUM_MASTER_AI_MESSAGES);
 
         // Если режим нейросети выкл, то не нагружаем ЦПУ и память.
         if (!isEnabledJob)
@@ -199,7 +199,7 @@ internal sealed class ScrumMasterAIJob : IJob
     private async void RunClassificationNetworkWorkAnalysisAsync()
     {
         var isEnabledJob = await _globalConfigRepository
-            .GetValueByKeyAsync<bool>(GlobalConfigKeys.JobsMode.SCRUM_MASTER_AI_ANALYSiS);
+            .GetValueByKeyAsync<bool>(GlobalConfigKeys.ArtificialIntelligenceConfig.SCRUM_MASTER_AI_ANALYSiS);
 
         // Если режим нейросети выкл, то не нагружаем ЦПУ и память.
         if (!isEnabledJob)

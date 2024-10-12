@@ -1,4 +1,5 @@
 using Autofac;
+using LazyProxy.Autofac;
 using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Messaging.Mail;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Chat;
@@ -91,5 +92,7 @@ public class BaseModule : Module
         builder.RegisterType<ConnectionProvider>()
             .As<IConnectionProvider>()
             .InstancePerLifetimeScope();
+        
+        builder.RegisterLazy<IUserRepository, UserRepository>();
     }
 }

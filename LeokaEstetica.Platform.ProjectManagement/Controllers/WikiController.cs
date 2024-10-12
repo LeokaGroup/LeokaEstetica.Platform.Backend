@@ -250,14 +250,14 @@ public class WikiController : BaseController
          updateFolderPageDescriptionInput.PageId);
    }
 
-   /// <summary>
-   /// Метод получает элементы контекстного меню.
-   /// </summary>
-   /// <param name="projectId">Id проекта, если передан.</param>
-   /// <param name="pageId">Id страницы, если передан.</param>
-   /// <param name="isParentFolder">Признак создания вне родителя.</param>
-   /// <returns>Элементы контекстного меню.</returns>
-   [HttpGet]
+    /// <summary>
+    /// Метод получает элементы контекстного меню.
+    /// </summary>
+    /// <param name="projectId">Id проекта, если передан.</param>
+    /// <param name="pageId">Id страницы, если передан.</param>
+    /// <param name="isParentFolder">Признак создания вне родителя.</param>
+    /// <returns>Элементы контекстного меню.</returns>
+    [HttpGet]
    [Route("context-menu")]
    [ProducesResponseType(200, Type = typeof(IEnumerable<WikiContextMenuOutput>))]
    [ProducesResponseType(400)]
@@ -265,7 +265,7 @@ public class WikiController : BaseController
    [ProducesResponseType(500)]
    [ProducesResponseType(404)]
    public async Task<IEnumerable<WikiContextMenuOutput>> GetContextMenuAsync([FromQuery] long? projectId,
-      [FromQuery] long? pageId, [FromQuery] bool isParentFolder = false)
+        [FromQuery] long? pageId, [FromQuery] bool isParentFolder = false)
    {
       if (!projectId.HasValue && !pageId.HasValue)
       {

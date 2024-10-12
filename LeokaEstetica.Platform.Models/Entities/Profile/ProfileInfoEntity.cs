@@ -20,12 +20,12 @@ public class ProfileInfoEntity
     /// <summary>
     /// Фамилия.
     /// </summary>
-    public string LastName { get; set; }
+    public string? LastName { get; set; }
 
     /// <summary>
     /// Имя.
     /// </summary>
-    public string FirstName { get; set; }
+    public string? FirstName { get; set; }
 
     /// <summary>
     /// Отчество.
@@ -60,7 +60,7 @@ public class ProfileInfoEntity
     /// <summary>
     /// Обо мне.
     /// </summary>
-    public string Aboutme { get; set; }
+    public string? Aboutme { get; set; }
 
     /// <summary>
     /// Должность.
