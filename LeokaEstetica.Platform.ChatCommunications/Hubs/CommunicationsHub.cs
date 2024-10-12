@@ -38,7 +38,8 @@ internal sealed class CommunicationsHub : Hub, IAbstractScopeService
 
     #region Публичные методы.
 
-    public override Task OnConnectedAsync()
+    /// <inheritdoc />
+    public override async Task OnConnectedAsync()
     {
         var userCode = Context.GetHttpContext()?.Request.Query["userCode"].ToString();
         var module = Enum.Parse<UserConnectionModuleEnum>(
@@ -46,13 +47,12 @@ internal sealed class CommunicationsHub : Hub, IAbstractScopeService
 
         if (!string.IsNullOrEmpty(userCode))
         {
-            _connectionService.AddConnectionIdCacheAsync(userCode, Context.ConnectionId, module)
+            await _connectionService.AddConnectionIdCacheAsync(userCode, Context.ConnectionId, module)
                 .ConfigureAwait(false);
         }
-        
-        return base.OnConnectedAsync();
     }
     
+    /// <inheritdoc />
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         return Task.CompletedTask;
