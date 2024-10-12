@@ -1,6 +1,8 @@
 ﻿namespace LeokaEstetica.Platform.Notifications.Abstractions;
 
 /// <summary>
+/// TODO: Выпилить это все и абстракцию тоже и реализации в хабах.
+/// TODO: Все это будет в одном хабе микросервиса коммуникаций.
 /// Абстракция сервиса хаба.
 /// </summary>
 public interface IHubService

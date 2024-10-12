@@ -538,6 +538,8 @@ internal sealed class ChatRepository : BaseRepository, IChatRepository
             await _pgContext.SaveChangesAsync();
         }
 
+        // TODO: Точно ли ИИ должна находится в этом слое у нас? Пересмотреть другое место.
+        // TODO: Почему оно использует именно хаб ChatHub? Это ведь касается именно модуля УП.
         if (isScrumMasterAi)
         {
             using var connection = await ConnectionProvider.GetConnectionAsync();

@@ -2,6 +2,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using FluentValidation.AspNetCore;
 using LeokaEstetica.Platform.Base.Factors;
+using LeokaEstetica.Platform.Communications.Hubs;
 using LeokaEstetica.Platform.Communications.Loaders;
 using LeokaEstetica.Platform.Core.Data;
 using LeokaEstetica.Platform.Core.Utils;
@@ -205,7 +206,7 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 }
 
 // Добавляем хаб приложения для работы через сокеты.
-// app.MapHub<ProjectManagementHub>("/project-management-notify");
+app.MapHub<CommunicationsHub>("/communications");
 
 // app.UseProblemDetails();
 
