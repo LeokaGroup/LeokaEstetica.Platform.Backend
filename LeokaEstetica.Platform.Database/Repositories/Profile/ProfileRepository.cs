@@ -125,13 +125,9 @@ internal sealed class ProfileRepository : IProfileRepository
         /*
         if (!enumerable.Any())
         {
-            var userSkillsToRemove = await _pgContext.UserSkills
-                .Where(us => us.UserId == userId)
-                .ToListAsync();
-
-            if (userSkillsToRemove.Any())
+            if (userSkills.Any())
             {
-                _pgContext.UserSkills.RemoveRange(userSkillsToRemove);
+                _pgContext.UserSkills.RemoveRange(userSkills);
             }
         }
         else */
