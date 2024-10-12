@@ -4,6 +4,7 @@ using LeokaEstetica.Platform.Base.Factors;
 using LeokaEstetica.Platform.Core.Attributes;
 using LeokaEstetica.Platform.Database.Abstractions.AvailableLimits;
 using LeokaEstetica.Platform.Database.Abstractions.Commerce;
+using LeokaEstetica.Platform.Database.Abstractions.Communications;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.FareRule;
 using LeokaEstetica.Platform.Database.Abstractions.Header;
@@ -36,6 +37,7 @@ using LeokaEstetica.Platform.Database.Repositories.Access.Ticket;
 using LeokaEstetica.Platform.Database.Repositories.Access.User;
 using LeokaEstetica.Platform.Database.Repositories.AvailableLimits;
 using LeokaEstetica.Platform.Database.Repositories.Commerce;
+using LeokaEstetica.Platform.Database.Repositories.Communications;
 using LeokaEstetica.Platform.Database.Repositories.Config;
 using LeokaEstetica.Platform.Database.Repositories.FareRule;
 using LeokaEstetica.Platform.Database.Repositories.Header;
@@ -399,5 +401,12 @@ public class RepositoriesModule : Module
             .InstancePerLifetimeScope();
         
         builder.RegisterLazy<IVacancyRepository, VacancyRepository>();
+            
+        builder.RegisterType<AbstractScopeRepository>()
+            .Named<IAbstractScopeRepository>("AbstractScopeRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<AbstractScopeRepository>()
+            .As<IAbstractScopeRepository>()
+            .InstancePerLifetimeScope();
     }
 }
