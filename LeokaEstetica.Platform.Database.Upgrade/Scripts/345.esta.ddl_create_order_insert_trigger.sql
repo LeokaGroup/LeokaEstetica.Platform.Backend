@@ -10,7 +10,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER order_transactions_history_insert_trigger
+CREATE OR REPLACE TRIGGER order_transactions_history_insert_trigger
 	AFTER INSERT 
 	ON commerce.orders
 	FOR EACH ROW
