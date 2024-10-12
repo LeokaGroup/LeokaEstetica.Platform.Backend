@@ -116,10 +116,15 @@ internal sealed class CalendarService : ICalendarService
             calendarInput.EventMembers ??= new List<EventMemberInput>();
 
             //Заполняем UserId
-            foreach (var member in calendarInput.EventMembers)
-            {
-                if (member.EventMemberMail != string.Empty) 
-                    member.EventMemberId = await _userRepository.GetUserIdByEmailAsync(member.EventMemberMail);
+            var eventMemberIdList = (await _userRepository.GetUserByEmailsAsync(
+            calendarInput.EventMembers.Select(x => x.EventMemberMail).ToList())).ToList();
+
+            if (eventMemberIdList.Count != calendarInput.EventMembers.Count) 
+                throw new ArgumentException();
+            
+            for (var i = 0; i < calendarInput.EventMembers.Count; i++)
+            { 
+                calendarInput.EventMembers[i].EventMemberId = eventMemberIdList[i];
             }
             
             // Добавляем в участники события текущего пользователя, который создает событие.
@@ -128,8 +133,7 @@ internal sealed class CalendarService : ICalendarService
             {
                 calendarInput.EventMembers.Add(new EventMemberInput
                 {
-                    EventMemberId = userId,
-                    EventMemberMail = account
+                    EventMemberId = userId
                 });
             }
 
@@ -199,10 +203,15 @@ internal sealed class CalendarService : ICalendarService
             calendarInput.EventMembers ??= new List<EventMemberInput>();
             
             //Заполняем UserId
-            foreach (var member in calendarInput.EventMembers)
-            {
-                if (member.EventMemberMail != string.Empty) 
-                    member.EventMemberId = await _userRepository.GetUserIdByEmailAsync(member.EventMemberMail);
+            var eventMemberIdList = (await _userRepository.GetUserByEmailsAsync(
+                calendarInput.EventMembers.Select(x => x.EventMemberMail).ToList())).ToList();
+
+            if (eventMemberIdList.Count != calendarInput.EventMembers.Count) 
+                throw new ArgumentException();
+            
+            for (var i = 0; i < calendarInput.EventMembers.Count; i++)
+            { 
+                calendarInput.EventMembers[i].EventMemberId = eventMemberIdList[i];
             }
             
             // Добавляем в участники события текущего пользователя, который создает событие.
@@ -211,8 +220,7 @@ internal sealed class CalendarService : ICalendarService
             {
                 calendarInput.EventMembers.Add(new EventMemberInput
                 {
-                    EventMemberId = userId,
-                    EventMemberMail = account
+                    EventMemberId = userId
                 });
             }
 
