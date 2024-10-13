@@ -1,6 +1,5 @@
 ﻿using LeokaEstetica.Platform.Communications.Abstractions;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
-using LeokaEstetica.Platform.Models.Dto.Communications.Output;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
 using Microsoft.AspNetCore.SignalR;
@@ -83,7 +82,7 @@ internal sealed class CommunicationsHub : Hub
             }
 
             // Используем как прокси-метод.
-            var result = await GetAbstractScopesAsync(account);
+            var result = await _abstractScopeService.GetAbstractScopesAsync(account);
 
             await Clients
                 .Client(connection.ConnectionId)
@@ -98,14 +97,6 @@ internal sealed class CommunicationsHub : Hub
             _logger.LogError(ex, ex.Message);
             throw;
         }
-    }
-
-    /// <inheritdoc />
-    public async Task<IEnumerable<AbstractScopeOutput>> GetAbstractScopesAsync(string account)
-    {
-        var result = await _abstractScopeService.GetAbstractScopesAsync(account);
-
-        return result;
     }
 
     #endregion
