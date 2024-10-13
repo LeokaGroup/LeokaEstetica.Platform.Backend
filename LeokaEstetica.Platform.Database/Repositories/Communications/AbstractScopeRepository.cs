@@ -30,7 +30,7 @@ internal sealed class AbstractScopeRepository : BaseRepository, IAbstractScopeRe
 
         // При расширении абстрактных областей - добавлять новые путем UNION.
         var query = "SELECT DISTINCT (o.organization_id) AS abstract_scope_id, " +
-                    "COALESCE(o.organization_name, 'Не задано название') AS scope_name, " +
+                    "COALESCE(o.organization_name, 'Не задано название') AS label, " +
                     "'company'::communications.abstract_scope_type_enum AS abstract_scope_type," +
                     "om.member_id AS user_id " +
                     "FROM project_management.organizations AS o " +
@@ -40,7 +40,7 @@ internal sealed class AbstractScopeRepository : BaseRepository, IAbstractScopeRe
                     "ON o.organization_id = om.organization_id " +
                     "WHERE om.member_id = @userId " +
                     "AND op.is_active " +
-                    "GROUP BY abstract_scope_id, user_id, scope_name " +
+                    "GROUP BY abstract_scope_id, user_id, label " +
                     "ORDER BY abstract_scope_id";
 
         var result = await connection.QueryAsync<AbstractScopeOutput>(query, parameters);

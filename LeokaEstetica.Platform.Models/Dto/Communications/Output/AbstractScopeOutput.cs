@@ -10,7 +10,7 @@ public class AbstractScopeOutput
     /// <summary>
     /// Название абстрактной области.
     /// </summary>
-    public string? ScopeName { get; set; }
+    public string? Label { get; set; }
 
     /// <summary>
     /// Тип абстрактных областей.

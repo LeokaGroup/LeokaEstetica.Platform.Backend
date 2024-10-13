@@ -89,7 +89,7 @@ internal sealed class CompanyRepository : BaseRepository, ICompanyRepository
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" " +
                     "WHERE \"ProjectId\" = op.project_id " +
                     "AND \"ParamKey\" = 'ProjectManagement.ProjectName'), 'Проект без названия') " +
-                    "AS abstract_group_name, " +
+                    "AS label, " +
                     "'project'::communications.abstract_group_type_enum AS abstract_group_type " +
                     "FROM project_management.organization_members AS om " +
                     "INNER JOIN project_management.organization_projects AS op " +
