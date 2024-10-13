@@ -22,8 +22,8 @@ using Enum = System.Enum;
 namespace LeokaEstetica.Platform.Notifications.Data;
 
 /// <summary>
-/// Класс логики хаба для чатов.
-/// Также используется для уведомлений у основного модуля системы.
+/// Используется для уведомлений у основного модуля системы.
+/// С чатом никак не связан (плохое название дали).
 /// </summary>
 internal sealed class ChatHub : Hub, IHubService
 {

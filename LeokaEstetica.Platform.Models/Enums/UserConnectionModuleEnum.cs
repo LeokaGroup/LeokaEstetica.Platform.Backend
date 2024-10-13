@@ -18,5 +18,10 @@ public enum UserConnectionModuleEnum
     /// <summary>
     /// Модуль УП - Управление проектами.
     /// </summary>
-    ProjectManagement = 2
+    ProjectManagement = 2,
+    
+    /// <summary>
+    /// Модуль коммуникаций.
+    /// </summary>
+    Communications = 3
 }

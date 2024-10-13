@@ -9,17 +9,21 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Autofac" Version="8.1.1" />
+        <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.2.2" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.9" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.8" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
         <PackageReference Include="MongoDB.Driver" Version="2.27.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="NLog.Web.AspNetCore" Version="5.2.3" />
-        <PackageReference Include="Quartz" Version="3.13.0" />
+        <PackageReference Include="Quartz" Version="3.7.0" />
         <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.6.2" />
         <PackageReference Include="Quartz.Extensions.Hosting" Version="3.6.2" />
-        <PackageReference Include="Quartz.Jobs" Version="3.13.0" />
+        <PackageReference Include="Quartz.Jobs" Version="3.7.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     </ItemGroup>
 

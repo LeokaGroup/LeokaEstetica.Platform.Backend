@@ -1,4 +1,5 @@
-﻿CREATE TABLE dbo.landing_menu
+﻿DROP TABLE dbo.landing_menu;
+CREATE TABLE dbo.landing_menu
 (
     menu_id SERIAL NOT NULL,
     items   JSONB,
