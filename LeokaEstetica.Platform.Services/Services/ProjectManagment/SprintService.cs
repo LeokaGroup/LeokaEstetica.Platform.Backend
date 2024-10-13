@@ -738,11 +738,26 @@ internal sealed class SprintService : ISprintService
     }
 
     /// <inheritdoc />
-    public async Task RemoveSprintAsync(long projectSprintId, long projectId, IEnumerable<long>? sprintTaskIds)
+    public async Task RemoveSprintAsync(long projectSprintId, long projectId, IEnumerable<long>? sprintTaskIds, string account)
     {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+
+        if (userId <= 0)
+        {
+            var ex = new NotFoundUserIdByAccountException(account);
+            throw ex;
+        }
+
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
         try
         {
             await _sprintRepository.RemoveSprintAsync(projectSprintId, projectId, sprintTaskIds);
+
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Спринт успешно удален. Из спринта также были исключены все задачи, если они у него были.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessRemoveSprint",
+                userCode, UserConnectionModuleEnum.ProjectManagement);
         }
 
         catch (Exception ex)
