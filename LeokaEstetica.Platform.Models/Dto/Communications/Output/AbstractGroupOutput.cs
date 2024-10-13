@@ -15,7 +15,7 @@ public class AbstractGroupOutput
     /// <summary>
     /// Название группы абстрактной области.
     /// </summary>
-    public string? AbstractGroupName { get; set; }
+    public string? Label { get; set; }
     
     /// <summary>
     /// Тип группы абстрактных областей.
