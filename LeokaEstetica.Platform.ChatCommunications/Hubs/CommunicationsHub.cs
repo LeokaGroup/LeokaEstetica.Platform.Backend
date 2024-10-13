@@ -16,6 +16,7 @@ internal sealed class CommunicationsHub : Hub
     private readonly ILogger<CommunicationsHub> _logger;
     private readonly IDiscordService _discordService;
     private readonly IConnectionService _connectionService;
+    private readonly IAbstractGroupService _abstractGroupService;
 
     /// <summary>
     /// Конструктор.
@@ -24,15 +25,18 @@ internal sealed class CommunicationsHub : Hub
     /// <param name="logger">Логгер.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="connectionService">Сервис подключений Redis.</param>
+    /// <param name="abstractGroupService">Сервис групп абстрактной области.</param>
     public CommunicationsHub(IAbstractScopeService abstractScopeService,
         ILogger<CommunicationsHub> logger,
         IDiscordService discordService,
-        IConnectionService connectionService)
+        IConnectionService connectionService,
+        IAbstractGroupService abstractGroupService)
     {
         _abstractScopeService = abstractScopeService;
         _logger = logger;
         _discordService = discordService;
         _connectionService = connectionService;
+        _abstractGroupService = abstractGroupService;
     }
 
     #region Публичные методы.
@@ -40,14 +44,27 @@ internal sealed class CommunicationsHub : Hub
     /// <inheritdoc />
     public override async Task OnConnectedAsync()
     {
-        var userCode = Context.GetHttpContext()?.Request.Query["userCode"].ToString();
-        var module = Enum.Parse<UserConnectionModuleEnum>(
-            Context.GetHttpContext()?.Request.Query["module"].ToString()!);
-
-        if (!string.IsNullOrEmpty(userCode))
+        try
         {
+            var userCode = Context.GetHttpContext()?.Request.Query["userCode"].ToString();
+            var module = Enum.Parse<UserConnectionModuleEnum>(
+                Context.GetHttpContext()?.Request.Query["module"].ToString()!);
+
+            if (string.IsNullOrEmpty(userCode))
+            {
+                throw new InvalidOperationException("Ошибка получения кода пользователя.");
+            }
+            
             await _connectionService.AddConnectionIdCacheAsync(userCode, Context.ConnectionId, module)
                 .ConfigureAwait(false);
+        }
+        
+        catch (Exception ex)
+        {
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+            
+            _logger.LogError(ex, ex.Message);
+            throw;
         }
     }
     
@@ -63,11 +80,15 @@ internal sealed class CommunicationsHub : Hub
     /// Текущий метод можно расширять новыми абстрактными областями.
     /// </summary>
     /// <param name="account">Аккаунт.</param>
+    /// <exception cref="InvalidOperationException">Если ошибка валидации.</exception>
     /// <returns>Возвращает через сокеты cписок абстрактных областей чата.</returns>
     public async Task GetScopesAsync(string account)
     {
         try
         {
+            // Получаем список абстрактных областей чата.
+            var result = await _abstractScopeService.GetAbstractScopesAsync(account);
+            
             var userCode = Context.GetHttpContext()?.Request.Query["userCode"].ToString();
             var module = Enum.Parse<UserConnectionModuleEnum>(
                 Context.GetHttpContext()?.Request.Query["module"].ToString()!);
@@ -81,12 +102,66 @@ internal sealed class CommunicationsHub : Hub
                                                     "Не удалось получить абстрактные области чата.");
             }
 
-            // Получаем список абстрактных областей чата.
-            var result = await _abstractScopeService.GetAbstractScopesAsync(account);
-
             await Clients
                 .Client(connection.ConnectionId)
                 .SendAsync("getAbstractScopes", result)
+                .ConfigureAwait(false);
+        }
+        
+        catch (Exception ex)
+        {
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+            
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает группы объектов выбранной абстрактной области чата.
+    /// </summary>
+    /// <param name="abstractScopeId">Id выбранной абстрактной области чата.</param>
+    /// <param name="abstractScopeType">Тип выбранной абстрактной области чата.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <exception cref="InvalidOperationException">Если ошибка валидации.</exception>
+    /// <returns>Возвращает через сокеты группы объектов выбранной абстрактной области чата.</returns>
+    public async Task GetScopeGroupObjectsAsync(long abstractScopeId, AbstractScopeTypeEnum abstractScopeType,
+        string account)
+    {
+        try
+        {
+            if (abstractScopeId <= 0)
+            {
+                throw new InvalidOperationException("Id абстрактной области невалиден. " +
+                                                    $"abstractScopeId: {abstractScopeId}.");
+            }
+            
+            if (abstractScopeType == AbstractScopeTypeEnum.Undefined)
+            {
+                throw new InvalidOperationException("Тип абстрактной области невалиден. " +
+                                                    $"AbstractScopeType: {abstractScopeType}.");
+            }
+
+            // Получаем список групп объектов выбранной абстрактной области чата.
+            var result = await _abstractGroupService.GetAbstractGroupObjectsAsync(abstractScopeId, abstractScopeType,
+                account);
+                
+            var userCode = Context.GetHttpContext()?.Request.Query["userCode"].ToString();
+            var module = Enum.Parse<UserConnectionModuleEnum>(
+                Context.GetHttpContext()?.Request.Query["module"].ToString()!);
+            var key = string.Concat(userCode + "_", module.ToString());
+            
+            var connection = await _connectionService.GetConnectionIdCacheAsync(key);
+
+            if (string.IsNullOrWhiteSpace(connection?.ConnectionId))
+            {
+                throw new InvalidOperationException("Ошибка получения подключения пользователя из Redis. " +
+                                                    "Не удалось получить абстрактные области чата.");
+            }
+
+            await Clients
+                .Client(connection.ConnectionId)
+                .SendAsync("getScopeGroupObjects", result)
                 .ConfigureAwait(false);
         }
         
