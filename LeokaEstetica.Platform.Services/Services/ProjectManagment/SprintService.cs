@@ -763,6 +763,12 @@ internal sealed class SprintService : ISprintService
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
+
+            await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
+                "Ошибка при удалении спринта.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorRemoveSprint", 
+                userCode, UserConnectionModuleEnum.ProjectManagement);
+
             throw;
         }
     }
