@@ -81,7 +81,7 @@ internal sealed class CommunicationsHub : Hub
                                                     "Не удалось получить абстрактные области чата.");
             }
 
-            // Используем как прокси-метод.
+            // Получаем список абстрактных областей чата.
             var result = await _abstractScopeService.GetAbstractScopesAsync(account);
 
             await Clients
