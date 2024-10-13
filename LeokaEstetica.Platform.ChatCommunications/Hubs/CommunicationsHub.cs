@@ -11,7 +11,7 @@ namespace LeokaEstetica.Platform.Communications.Hubs;
 /// <summary>
 /// Класс хаба модуля коммуникаций.
 /// </summary>
-internal sealed class CommunicationsHub : Hub, IAbstractScopeService
+internal sealed class CommunicationsHub : Hub
 {
     private readonly IAbstractScopeService _abstractScopeService;
     private readonly ILogger<CommunicationsHub> _logger;
