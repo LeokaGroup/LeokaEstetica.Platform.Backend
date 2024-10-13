@@ -84,11 +84,13 @@ internal sealed class CompanyRepository : BaseRepository, ICompanyRepository
         parameters.Add("@companyId", abstractScopeId);
         parameters.Add("@userId", userId);
 
-        var query = "SELECT op.project_id, " +
+        var query = "SELECT op.project_id AS abstract_group_id, " +
                     "COALESCE((SELECT \"ParamValue\" " +
                     "FROM \"Configs\".\"ProjectManagmentProjectSettings\" " +
                     "WHERE \"ProjectId\" = op.project_id " +
-                    "AND \"ParamKey\" = 'ProjectManagement.ProjectName'), 'Проект без названия') AS ProjectName " +
+                    "AND \"ParamKey\" = 'ProjectManagement.ProjectName'), 'Проект без названия') " +
+                    "AS abstract_group_name, " +
+                    "'project'::communications.abstract_group_type_enum AS abstract_group_type " +
                     "FROM project_management.organization_members AS om " +
                     "INNER JOIN project_management.organization_projects AS op " +
                     "ON om.organization_id = op.organization_id " +

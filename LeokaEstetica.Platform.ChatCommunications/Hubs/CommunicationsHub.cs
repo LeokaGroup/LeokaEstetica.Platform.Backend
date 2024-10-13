@@ -125,7 +125,7 @@ internal sealed class CommunicationsHub : Hub
     /// <param name="account">Аккаунт.</param>
     /// <exception cref="InvalidOperationException">Если ошибка валидации.</exception>
     /// <returns>Возвращает через сокеты группы объектов выбранной абстрактной области чата.</returns>
-    public async Task GetScopeGroupObjectsAsync(long abstractScopeId, AbstractScopeTypeEnum abstractScopeType,
+    public async Task GetScopeGroupObjectsAsync(long abstractScopeId, int abstractScopeType,
         string account)
     {
         try
@@ -135,15 +135,25 @@ internal sealed class CommunicationsHub : Hub
                 throw new InvalidOperationException("Id абстрактной области невалиден. " +
                                                     $"abstractScopeId: {abstractScopeId}.");
             }
-            
-            if (abstractScopeType == AbstractScopeTypeEnum.Undefined)
+
+            var enumValue = AbstractScopeTypeEnum.Undefined;
+
+            foreach (var ev in Enum.GetValues<AbstractScopeTypeEnum>())
+            {
+                if ((int)ev == abstractScopeType)
+                {
+                    enumValue = ev;
+                }
+            }
+
+            if (enumValue == AbstractScopeTypeEnum.Undefined)
             {
                 throw new InvalidOperationException("Тип абстрактной области невалиден. " +
                                                     $"AbstractScopeType: {abstractScopeType}.");
             }
 
             // Получаем список групп объектов выбранной абстрактной области чата.
-            var result = await _abstractGroupService.GetAbstractGroupObjectsAsync(abstractScopeId, abstractScopeType,
+            var result = await _abstractGroupService.GetAbstractGroupObjectsAsync(abstractScopeId, enumValue,
                 account);
                 
             var userCode = Context.GetHttpContext()?.Request.Query["userCode"].ToString();
