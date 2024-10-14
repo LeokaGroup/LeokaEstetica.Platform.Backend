@@ -1855,10 +1855,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         var epicTaskParameters = new DynamicParameters();
         epicTaskParameters.Add("@projectTaskId", projectTaskId);
+        epicTaskParameters.Add("@projectId", projectId);
 
-        var epicTaskQuery = @"SELECT epic_id 
-                              FROM project_management.epic_tasks 
-                              WHERE project_task_id = @projectTaskId";
+		var epicTaskQuery = @"SELECT epic_tasks.epic_id
+                              FROM project_management.epic_tasks as epic_tasks
+                              INNER JOIN project_management.epics as epics
+                              ON epics.epic_id = epic_tasks.epic_id
+                              WHERE project_task_id = @projectTaskId and project_id=@projectId";
 
         var epicIdResult = await connection.QuerySingleOrDefaultAsync<long?>(epicTaskQuery, epicTaskParameters);
 
