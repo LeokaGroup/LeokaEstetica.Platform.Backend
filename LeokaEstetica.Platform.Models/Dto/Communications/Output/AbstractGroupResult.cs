@@ -13,5 +13,5 @@ public class AbstractGroupResult
     /// <summary>
     /// Объекты группы.
     /// </summary>
-    public IEnumerable<AbstractGroupOutput>? Objects { get; set; }
+    public List<AbstractGroupOutput>? Objects { get; set; }
 }

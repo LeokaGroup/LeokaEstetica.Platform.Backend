@@ -90,13 +90,22 @@ internal sealed class CompanyRepository : BaseRepository, ICompanyRepository
                     "WHERE \"ProjectId\" = op.project_id " +
                     "AND \"ParamKey\" = 'ProjectManagement.ProjectName'), 'Проект без названия') " +
                     "AS label, " +
-                    "'project'::communications.abstract_group_type_enum AS abstract_group_type " +
+                    "'project'::communications.abstract_group_type_enum AS abstract_group_type," +
+                    "(CASE WHEN (SELECT COUNT(message_id)) > 0 THEN TRUE ELSE FALSE END) AS has_dialogs " +
                     "FROM project_management.organization_members AS om " +
                     "INNER JOIN project_management.organization_projects AS op " +
                     "ON om.organization_id = op.organization_id " +
+                    "LEFT JOIN communications.main_info_dialogs AS id " +
+                    "ON op.project_id = id.abstract_scope_id " +
+                    "LEFT JOIN communications.dialog_members AS dm " +
+                    "ON id.dialog_id = dm.dialog_id " +
+                    "LEFT JOIN communications.dialog_messages AS dmes " +
+                    "ON id.dialog_id = dmes.dialog_id " +
                     "WHERE op.is_active " +
                     "AND om.member_id = @userId " +
-                    "AND op.organization_id = @companyId";
+                    "AND op.organization_id = @companyId " +
+                    "GROUP BY abstract_group_id " +
+                    "ORDER BY abstract_group_id";
 
         var result = await connection.QueryAsync<AbstractGroupOutput>(query, parameters);
 

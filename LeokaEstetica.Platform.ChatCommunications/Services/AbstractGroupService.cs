@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+﻿using Dapper;
+using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Classifiers.Abstractions.Communications;
 using LeokaEstetica.Platform.Communications.Abstractions;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
@@ -57,7 +58,26 @@ internal sealed class AbstractGroupService : IAbstractGroupService
             {
                 // Получаем проекты компании и где текущий пользователь есть в участниках.
                 result.GroupName = "Проекты компании";
-                result.Objects = await _companyRepository.Value.GetAbstractGroupObjectsAsync(abstractScopeId, userId);
+                result.Objects = (await _companyRepository.Value.GetAbstractGroupObjectsAsync(abstractScopeId, userId))
+                    ?.AsList();
+            }
+            
+            // Отбираем объекты, у которых есть диалоги с сообщениями и заполняем объекты сообщениями.
+            if (result.Objects is not null && result.Objects.Count > 0)
+            {
+                foreach (var o in result.Objects)
+                {
+                    // Вместо null будет пустой массив, фронту так проще будет.
+                    o.Items ??= new List<EmptyObjectItem>();
+
+                    if (o.HasDialogs)
+                    {
+                        // Просто добавляем пустышку, чтобы фронт мог отразить наличие вложенности.
+                        // Уже будет > 1 и фронт отразит стрелочку у вложенности.
+                        // Т.к. на фронте контрол смотрит именно на кол-во items.
+                        o.Items.Add(new EmptyObjectItem());   
+                    }
+                }
             }
 
             return result;

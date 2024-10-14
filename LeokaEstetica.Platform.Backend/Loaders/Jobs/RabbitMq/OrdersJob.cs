@@ -49,7 +49,7 @@ internal sealed class OrdersJob : IJob
     private readonly IVacancyModerationService _vacancyModerationService;
     private readonly IUserRepository _userRepository;
     private readonly IMailingsService _mailingsService;
-    private readonly Lazy<IVacancyRepository> _vacancyRepository;
+    private readonly IVacancyRepository _vacancyRepository;
 
     /// <summary>
     /// Название очереди.
@@ -85,7 +85,7 @@ internal sealed class OrdersJob : IJob
         IDiscordService discordService,
         ICommerceService commerceService,
         ISubscriptionRepository subscriptionRepository,
-        Lazy<IVacancyRepository> vacancyRepository,
+        IVacancyRepository vacancyRepository,
         IProjectRepository projectRepository,
         IVacancyModerationService vacancyModerationService,
         IUserRepository userRepository,
@@ -395,7 +395,7 @@ internal sealed class OrdersJob : IJob
                         try
                         {
                             // Добавляем вакансию в таблицу вакансий пользователя.
-                            var createdVacancy = await _vacancyRepository.Value.CreateVacancyAsync(vacancy,
+                            var createdVacancy = await _vacancyRepository.CreateVacancyAsync(vacancy,
                                 orderEvent.CreatedBy);
                             var vacancyId = createdVacancy.VacancyId;
 
@@ -432,7 +432,7 @@ internal sealed class OrdersJob : IJob
                             await _discordService.SendNotificationCreatedVacancyBeforeModerationAsync(vacancyId);
                             
                             // Проставляем признак оплаты вакансии.
-                            await _vacancyRepository.Value.SetVacancyPaymentAsync(vacancyId, true);
+                            await _vacancyRepository.SetVacancyPaymentAsync(vacancyId, true);
                         }
                         
                         catch (Exception ex)
