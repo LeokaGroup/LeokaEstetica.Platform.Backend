@@ -842,4 +842,12 @@ public interface IProjectManagmentRepository
     /// <returns>Словарь со статусами историй.</returns>
     Task<IDictionary<long, StoryAndEpicSystemStatusOutput>> GetStoryStatusesDictionaryAsync(
         IEnumerable<long> storyIds);
+
+	/// <summary>
+	/// Метод ищет проекты в разделе "Мое пространство"
+	/// </summary>
+	/// <param name="SearchInput"> Входная модель поиска</param>
+	/// <param name="userId">Id пользователя пространства</param>
+	/// <returns></returns>
+	Task<IEnumerable<WorkSpaceOutput>> GetSearchingWorkSpaceAsync(WorkspaceSearchingInput SearchInput, long userId);
 }
