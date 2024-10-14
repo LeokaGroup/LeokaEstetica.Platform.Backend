@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Communications.Abstractions;
+﻿using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
+using LeokaEstetica.Platform.Communications.Abstractions;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Enums;
 using LeokaEstetica.Platform.Redis.Abstractions.Connection;
@@ -17,6 +18,8 @@ internal sealed class CommunicationsHub : Hub
     private readonly IDiscordService _discordService;
     private readonly IConnectionService _connectionService;
     private readonly IAbstractGroupService _abstractGroupService;
+    private readonly IUserRepository _userRepository;
+    private readonly IAbstractGroupObjectsService _abstractGroupObjectsService;
 
     /// <summary>
     /// Конструктор.
@@ -26,17 +29,23 @@ internal sealed class CommunicationsHub : Hub
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="connectionService">Сервис подключений Redis.</param>
     /// <param name="abstractGroupService">Сервис групп абстрактной области.</param>
+    /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="abstractGroupObjectsService">Репозиторий объектов группы.</param>
     public CommunicationsHub(IAbstractScopeService abstractScopeService,
         ILogger<CommunicationsHub> logger,
         IDiscordService discordService,
         IConnectionService connectionService,
-        IAbstractGroupService abstractGroupService)
+        IAbstractGroupService abstractGroupService,
+        IUserRepository userRepository,
+        IAbstractGroupObjectsService abstractGroupObjectsService)
     {
         _abstractScopeService = abstractScopeService;
         _logger = logger;
         _discordService = discordService;
         _connectionService = connectionService;
         _abstractGroupService = abstractGroupService;
+        _userRepository = userRepository;
+        _abstractGroupObjectsService = abstractGroupObjectsService;
     }
 
     #region Публичные методы.
@@ -158,7 +167,7 @@ internal sealed class CommunicationsHub : Hub
             if (string.IsNullOrWhiteSpace(connection?.ConnectionId))
             {
                 throw new InvalidOperationException("Ошибка получения подключения пользователя из Redis. " +
-                                                    "Не удалось получить абстрактные области чата.");
+                                                    "Не удалось получить группы абстрактной области чата.");
             }
 
             await Clients
@@ -174,6 +183,48 @@ internal sealed class CommunicationsHub : Hub
             _logger.LogError(ex, ex.Message);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Метод получает диалоги объекта группы.
+    /// </summary>
+    /// <param name="abstractScopeId">Id выбранной абстрактной области чата.</param>
+    /// <param name="account">Аккаунт.</param>
+    /// <exception cref="InvalidOperationException">Если ошибка валидации.</exception>
+    public async Task GetObjectDialogsAsync(long abstractScopeId, string account)
+    {
+        if (abstractScopeId <= 0)
+        {
+            throw new InvalidOperationException("Id абстрактной области невалиден. " +
+                                                $"abstractScopeId: {abstractScopeId}.");
+        }
+
+        var userId = await _userRepository.GetUserIdByEmailAsync(account);
+        
+        if (userId == 0)
+        {
+            throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
+        }
+
+        var result = await _abstractGroupObjectsService.GetObjectDialogsAsync(abstractScopeId, userId);
+        
+        var userCode = Context.GetHttpContext()?.Request.Query["userCode"].ToString();
+        var module = Enum.Parse<UserConnectionModuleEnum>(
+            Context.GetHttpContext()?.Request.Query["module"].ToString()!);
+        var key = string.Concat(userCode + "_", module.ToString());
+            
+        var connection = await _connectionService.GetConnectionIdCacheAsync(key);
+
+        if (string.IsNullOrWhiteSpace(connection?.ConnectionId))
+        {
+            throw new InvalidOperationException("Ошибка получения подключения пользователя из Redis. " +
+                                                "Не удалось получить объекты группы абстрактной области чата.");
+        }
+
+        await Clients
+            .Client(connection.ConnectionId)
+            .SendAsync("getObjectDialogs", result)
+            .ConfigureAwait(false);
     }
 
     #endregion

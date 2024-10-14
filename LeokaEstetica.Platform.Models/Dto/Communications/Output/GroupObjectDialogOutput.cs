@@ -25,6 +25,11 @@ public class GroupObjectDialogOutput
     /// Дата создания сообщения.
     /// </summary>
     public DateTime CreatedAt { get; set; }
+    
+    /// <summary>
+    /// Дата создания сообщения (форматированная).
+    /// </summary>
+    public string? FormatedCreatedAt { get; set; }
 
     /// <summary>
     /// Id пользователя, который создал сообщение.

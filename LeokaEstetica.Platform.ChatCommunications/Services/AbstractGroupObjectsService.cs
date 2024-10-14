@@ -1,0 +1,59 @@
+﻿using Dapper;
+using LeokaEstetica.Platform.Communications.Abstractions;
+using LeokaEstetica.Platform.Database.Abstractions.Communications;
+using LeokaEstetica.Platform.Models.Dto.Communications.Output;
+
+namespace LeokaEstetica.Platform.Communications.Services;
+
+/// <summary>
+/// Класс реализует методы сервиса объектов группы.
+/// </summary>
+internal sealed class AbstractGroupObjectsService : IAbstractGroupObjectsService
+{
+    private readonly ILogger<AbstractGroupObjectsService> _logger;
+    private readonly IAbstractGroupObjectsRepository _abstractGroupObjectsRepository;
+
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="logger">Логгер.</param>
+    /// <param name="abstractGroupObjectsRepository">Репозиторий объектов группы.</param>
+    public AbstractGroupObjectsService(ILogger<AbstractGroupObjectsService> logger,
+        IAbstractGroupObjectsRepository abstractGroupObjectsRepository)
+    {
+        _logger = logger;
+        _abstractGroupObjectsRepository = abstractGroupObjectsRepository;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<GroupObjectDialogOutput>> GetObjectDialogsAsync(long abstractScopeId, long userId)
+    {
+        try
+        {
+            var result = (await _abstractGroupObjectsRepository.GetObjectDialogsAsync(abstractScopeId, userId))
+                ?.AsList();
+
+            if (result is null || result.Count == 0)
+            {
+                return Enumerable.Empty<GroupObjectDialogOutput>();
+            }
+
+            foreach (var o in result)
+            {
+                // Проставляем флаг принадлежности сообщения текущему пользователю.
+                o.IsMyMessage = o.CreatedBy == userId;
+
+                // Форматируем дату сообщения.
+                o.FormatedCreatedAt = o.CreatedAt.ToString("g");
+            }
+
+            return result;
+        }
+        
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+}
