@@ -136,15 +136,7 @@ internal sealed class CommunicationsHub : Hub
                                                     $"abstractScopeId: {abstractScopeId}.");
             }
 
-            var enumValue = AbstractScopeTypeEnum.Undefined;
-
-            foreach (var ev in Enum.GetValues<AbstractScopeTypeEnum>())
-            {
-                if ((int)ev == abstractScopeType)
-                {
-                    enumValue = ev;
-                }
-            }
+            var enumValue = Enum.GetValues<AbstractScopeTypeEnum>().FirstOrDefault(x => (int)x == abstractScopeType);
 
             if (enumValue == AbstractScopeTypeEnum.Undefined)
             {

@@ -58,6 +58,7 @@ internal sealed class AbstractGroupService : IAbstractGroupService
             {
                 // Получаем проекты компании и где текущий пользователь есть в участниках.
                 result.GroupName = "Проекты компании";
+                result.GroupSysName = "Projects";
                 result.Objects = (await _companyRepository.Value.GetAbstractGroupObjectsAsync(abstractScopeId, userId))
                     ?.AsList();
             }
