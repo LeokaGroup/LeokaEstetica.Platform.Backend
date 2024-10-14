@@ -191,6 +191,7 @@ internal sealed class CommunicationsHub : Hub
     /// <param name="abstractScopeId">Id выбранной абстрактной области чата.</param>
     /// <param name="account">Аккаунт.</param>
     /// <exception cref="InvalidOperationException">Если ошибка валидации.</exception>
+    /// <returns>Возвращает через сокеты диалоги объекта выбранной группы.</returns>
     public async Task GetObjectDialogsAsync(long abstractScopeId, string account)
     {
         if (abstractScopeId <= 0)
