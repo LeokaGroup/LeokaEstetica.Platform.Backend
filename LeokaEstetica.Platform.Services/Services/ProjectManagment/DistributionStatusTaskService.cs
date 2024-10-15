@@ -92,7 +92,8 @@ internal class DistributionStatusTaskService : IDistributionStatusTaskService
         }
 
         // Получаем имена авторов задач.
-        var authorIds = tasks.Select(x => x.AuthorId);
+        var authorIds = tasks.Select(x => x.AuthorId).Distinct().AsList();
+
         var authors = await _userRepository.GetAuthorNamesByAuthorIdsAsync(authorIds);
 
         if (authors.Count == 0)
