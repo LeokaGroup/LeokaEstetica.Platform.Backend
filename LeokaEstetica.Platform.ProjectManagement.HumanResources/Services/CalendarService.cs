@@ -121,11 +121,21 @@ internal sealed class CalendarService : ICalendarService
 
             calendarInput.EventMembers ??= new List<EventMemberInput>();
 
-            // TODO: Подумать как сделать корректнее. По почте надо всех находить и заполнять.
-            // TODO: С фронта будет приходить теперь не UserId, а почта пользователя.
+            //Заполняем UserId
+            var eventMemberIdList = (await _userRepository.GetUserByEmailsAsync(
+            calendarInput.EventMembers.Select(x => x.EventMemberMail).ToList())).ToList();
+
+            if (eventMemberIdList.Count != calendarInput.EventMembers.Count) 
+                throw new ArgumentException();
+            
+            for (var i = 0; i < calendarInput.EventMembers.Count; i++)
+            { 
+                calendarInput.EventMembers[i].EventMemberId = eventMemberIdList[i];
+            }
+            
             // Добавляем в участники события текущего пользователя, который создает событие.
             if (calendarInput.EventMembers.Count == 0
-                || !calendarInput.EventMembers.Select(x => x.EventMemberId).Contains(userId))
+                || !calendarInput.EventMembers.Select(x => x.EventMemberMail).Contains(account))
             {
                 calendarInput.EventMembers.Add(new EventMemberInput
                 {
@@ -207,12 +217,22 @@ internal sealed class CalendarService : ICalendarService
             }
             
             calendarInput.EventMembers ??= new List<EventMemberInput>();
+            
+            //Заполняем UserId
+            var eventMemberIdList = (await _userRepository.GetUserByEmailsAsync(
+                calendarInput.EventMembers.Select(x => x.EventMemberMail).ToList())).ToList();
 
-            // TODO: Подумать как сделать корректнее. По почте надо всех находить и заполнять.
-            // TODO: С фронта будет приходить теперь не UserId, а почта пользователя.
+            if (eventMemberIdList.Count != calendarInput.EventMembers.Count) 
+                throw new ArgumentException();
+            
+            for (var i = 0; i < calendarInput.EventMembers.Count; i++)
+            { 
+                calendarInput.EventMembers[i].EventMemberId = eventMemberIdList[i];
+            }
+            
             // Добавляем в участники события текущего пользователя, который создает событие.
             if (calendarInput.EventMembers.Count == 0
-                || !calendarInput.EventMembers.Select(x => x.EventMemberId).Contains(userId))
+                || !calendarInput.EventMembers.Select(x => x.EventMemberMail).Contains(account))
             {
                 calendarInput.EventMembers.Add(new EventMemberInput
                 {
