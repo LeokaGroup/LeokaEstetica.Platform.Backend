@@ -18,6 +18,7 @@ public class GroupObjectDialogOutput
 
     /// <summary>
     /// Сообщение.
+    /// Это поле для отображения последнего сообщения каждого диалога.
     /// </summary>
     public string? Message { get; set; }
 
@@ -35,9 +36,4 @@ public class GroupObjectDialogOutput
     /// Id пользователя, который создал сообщение.
     /// </summary>
     public long CreatedBy { get; set; }
-
-    /// <summary>
-    /// Признак принадлежности сообщения текущему пользователю.
-    /// </summary>
-    public bool IsMyMessage { get; set; }
 }

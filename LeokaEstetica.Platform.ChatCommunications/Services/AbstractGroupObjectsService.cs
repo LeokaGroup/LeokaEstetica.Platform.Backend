@@ -40,9 +40,6 @@ internal sealed class AbstractGroupObjectsService : IAbstractGroupObjectsService
 
             foreach (var o in result)
             {
-                // Проставляем флаг принадлежности сообщения текущему пользователю.
-                o.IsMyMessage = o.CreatedBy == userId;
-
                 // Форматируем дату сообщения.
                 o.FormatedCreatedAt = o.CreatedAt.ToString("g");
             }
