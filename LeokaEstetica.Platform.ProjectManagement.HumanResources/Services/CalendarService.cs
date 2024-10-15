@@ -6,6 +6,8 @@ using LeokaEstetica.Platform.Database.Abstractions.ProjectManagmentHumanResource
 using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagementHumanResources;
 using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Notifications.Abstractions;
+using LeokaEstetica.Platform.Notifications.Consts;
 using LeokaEstetica.Platform.ProjectManagement.HumanResources.Abstractions;
 using Enum = System.Enum;
 
@@ -21,6 +23,7 @@ internal sealed class CalendarService : ICalendarService
     private readonly ILogger<CalendarService>? _logger;
     private readonly IUserRepository _userRepository;
     private readonly ICalendarRepository _calendarRepository;
+    private readonly Lazy<IHubNotificationService> _hubNotificationService;
 
     /// <summary>
     /// Конструктор.
@@ -28,13 +31,16 @@ internal sealed class CalendarService : ICalendarService
     /// <param name="logger">Логгер.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
     /// <param name="calendarRepository">Репозиторий календаря.</param>
+    /// <param name="hubNotificationService">Сервис уведомлений хабов.</param>
     public CalendarService(ILogger<CalendarService>? logger,
         IUserRepository userRepository,
-        ICalendarRepository calendarRepository)
+        ICalendarRepository calendarRepository,
+        Lazy<IHubNotificationService> hubNotificationService)
     {
         _logger = logger;
         _userRepository = userRepository;
         _calendarRepository = calendarRepository;
+        _hubNotificationService = hubNotificationService;
     }
 
     #region Публичные методы.
@@ -103,11 +109,11 @@ internal sealed class CalendarService : ICalendarService
 
     /// <inheritdoc />
     public async Task CreateCalendarEventAsync(CalendarInput calendarInput, string account)
-    {
+    {  
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
         try
         {
-            var userId = await _userRepository.GetUserByEmailAsync(account);
-
             if (userId == 0)
             {
                 throw new InvalidOperationException($"Id пользователя с аккаунтом {account} не найден.");
@@ -130,11 +136,21 @@ internal sealed class CalendarService : ICalendarService
             calendarInput.CreatedBy = userId;
             
             await _calendarRepository.CreateCalendarEventAsync(calendarInput);
+            
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Событие календаря успешно создано.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessCreateCalendarEvent",
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
+        
+            await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
+                "Ошибка при создании события календаря.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorCreateCalendarEvent",
+                userCode, UserConnectionModuleEnum.Main);
             throw;
         }
     }
@@ -217,16 +233,27 @@ internal sealed class CalendarService : ICalendarService
     }
 
     /// <inheritdoc />
-    public async Task RemoveEventAsync(long eventId)
+    public async Task RemoveEventAsync(long eventId, string account)
     {
+        var userId = await _userRepository.GetUserByEmailAsync(account);
+        var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
         try
         {
             await _calendarRepository.RemoveEventAsync(eventId);
+            
+            await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
+                "Событие календаря успешно удалено.",
+                NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessRemoveCalendarEvent",
+                userCode, UserConnectionModuleEnum.Main);
         }
         
         catch (Exception ex)
         {
              _logger?.LogError(ex, ex.Message);
+             await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
+                 "Ошибка при удалении события календаря.",
+                 NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorRemoveCalendarEvent",
+                 userCode, UserConnectionModuleEnum.Main);
             throw;
         }
     }

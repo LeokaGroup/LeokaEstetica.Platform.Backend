@@ -193,6 +193,6 @@ public class CalendarController : BaseController
     [ProducesResponseType(404)]
     public async Task RemoveEventAsync([FromQuery] long eventId)
     {
-        await _calendarService.RemoveEventAsync(eventId);
+        await _calendarService.RemoveEventAsync(eventId, GetUserName());
     }
 }

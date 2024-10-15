@@ -41,5 +41,6 @@ public interface ICalendarService
     /// Метод удаляет событие календаря.
     /// </summary>
     /// <param name="eventId">Id события.</param>
-    Task RemoveEventAsync(long eventId);
+    /// <param name="account">Аккаунт пользователя.</param>
+    Task RemoveEventAsync(long eventId, string account);
 }
