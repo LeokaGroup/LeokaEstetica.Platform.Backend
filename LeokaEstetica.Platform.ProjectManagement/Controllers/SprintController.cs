@@ -520,6 +520,6 @@ public class SprintController : BaseController
     public async Task RemoveSprintAsync([FromBody] RemoveSprintInput removeSprintInput)
     {
         await _sprintService.RemoveSprintAsync(removeSprintInput.ProjectSprintId, 
-            removeSprintInput.ProjectId, removeSprintInput.ProjectTaskIds);
+            removeSprintInput.ProjectId, removeSprintInput.ProjectTaskIds, GetUserName());
     }
 }
