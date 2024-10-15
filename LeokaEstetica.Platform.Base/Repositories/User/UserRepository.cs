@@ -702,19 +702,22 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
     public async Task<IDictionary<long, UserInfoOutput>> GetExecutorNamesByExecutorIdsAsync(
         IEnumerable<long> executorIds)
     {
-        var result = await _pgContext.Users
-            .Where(u => executorIds.Contains(u.UserId))
-            .Select(u => new UserInfoOutput
-            {
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                Email = u.Email,
-                SecondName = u.SecondName,
-                UserId = u.UserId
-            })
-            .ToDictionaryAsync(k => k.UserId, v => v);
 
-        return result;
+		using var connection = await ConnectionProvider.GetConnectionAsync();
+
+		var parameters = new DynamicParameters();
+		parameters.Add("@userId", executorIds);
+
+		var query = 
+            "SELECT Users.\"UserId\", Users.\"Email\" , Profile.\"FirstName\" , Profile.\"LastName\" " +
+			"FROM dbo.\"Users\" as Users " +
+			"INNER JOIN \"Profile\".\"ProfilesInfo\" as Profile " +
+			"ON Users.\"UserId\" = Profile.\"UserId\" " +
+			"WHERE Users.\"UserId\" = ANY (@userId) ";
+
+		var result = (await connection.QueryAsync<UserInfoOutput>(query, parameters)).ToDictionary(k => k.UserId, v => v);
+
+		return result;
     }
 
     /// <summary>
