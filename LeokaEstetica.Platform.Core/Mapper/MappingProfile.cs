@@ -50,6 +50,7 @@ using LeokaEstetica.Platform.Models.Entities.Template;
 using LeokaEstetica.Platform.Models.Entities.Ticket;
 using LeokaEstetica.Platform.Models.Entities.User;
 using LeokaEstetica.Platform.Models.Entities.Vacancy;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Core.Mapper;
 
@@ -275,6 +276,10 @@ public class MappingProfile : Profile
         CreateMap<CreateOrderOutput, CreateOrderCache>();
         CreateMap<CreateOrderOutput, OrderCacheOutput>();
         CreateMap<CreateOrderYandexKassaOutput , CreateOrderOutput>();
+        CreateMap<OrderEntity, OrderOutput>()
+            .ForMember(d => d.DateCreated, d => d.MapFrom(t => t.DateCreated.ToString("O")))
+            .ForMember(c => c.CurrencyValue,
+            c => c.MapFrom(v => string.IsNullOrEmpty(v.Currency) ? (CurrencyTypeEnum?)null : Models.Enums.Enum.FromString<CurrencyTypeEnum>(v.Currency)));
     }
     
     /// <summary>
