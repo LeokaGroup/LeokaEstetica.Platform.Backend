@@ -62,7 +62,7 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
          var query = "SELECT id, " +
                      "event_member_id, " +
                      "event_id, " +
-                     "REPLACE(member_status::text, '_', '') " +
+                     "member_status::project_management_human_resources.calendar_member_status_enum " +
                      "AS CalendarEventMemberStatusValue, " +
                      "joined " +
                      "FROM project_management_human_resources.calendar_event_members " +
