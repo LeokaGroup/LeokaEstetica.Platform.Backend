@@ -5,10 +5,12 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Base.Abstractions.Services.Validation;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Controllers.Validators.User;
+using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Models.Dto.Input.User;
 using LeokaEstetica.Platform.Models.Dto.Output.Roles;
 using LeokaEstetica.Platform.Models.Dto.Output.User;
 using LeokaEstetica.Platform.Services.Abstractions.User;
+using LeokaEstetica.Platform.Services.Consts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -228,7 +230,16 @@ public class UserController : BaseController
     public async Task<UserRestorePasswordOutput> SendCodeRestorePasswordAsync(
         [FromBody] PreRestorePasswordInput preRestorePasswordInput)
     {
-        var result = await _userService.SendCodeRestorePasswordAsync(preRestorePasswordInput.Account);
+
+        var result = new UserRestorePasswordOutput { Errors = new List<ValidationFailure>() };
+        var validator = await new CheckRestoreAccountValidator().ValidateAsync(preRestorePasswordInput);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+            return result;
+        }
+        result = await _userService.SendCodeRestorePasswordAsync(preRestorePasswordInput.Account);
 
         return result;
     }
