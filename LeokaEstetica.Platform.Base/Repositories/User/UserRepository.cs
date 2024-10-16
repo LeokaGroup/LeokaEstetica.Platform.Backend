@@ -177,12 +177,16 @@ internal sealed class UserRepository : BaseRepository, IUserRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<long>> GetUserByEmailsAsync(IEnumerable<string> accounts)
+    public async Task<IDictionary<string, long>> GetUserByEmailsAsync(IEnumerable<string?> accounts)
     {
         var result = await _pgContext.Users
             .Where(u => accounts.Contains(u.Email))
-            .Select(u => u.UserId)
-            .ToListAsync();
+            .Select(u => new
+            {
+                u.UserId,
+                u.Email
+            })
+            .ToDictionaryAsync(k => k.Email, v => v.UserId);
 
         return result;
     }

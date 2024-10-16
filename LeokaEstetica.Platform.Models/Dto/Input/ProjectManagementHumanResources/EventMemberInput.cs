@@ -13,5 +13,5 @@ public class EventMemberInput
     /// <summary>
     /// Почта участника события.
     /// </summary>
-    public string EventMemberMail { get; set; }
+    public string? EventMemberMail { get; set; }
 }
