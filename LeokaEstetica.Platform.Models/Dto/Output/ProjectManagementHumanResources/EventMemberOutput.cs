@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Models.Extensions;
 using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Models.Dto.Output.ProjectManagementHumanResources;
@@ -34,7 +35,8 @@ public class EventMemberOutput
     public IEnum CalendarEventMemberStatus
     {
         get => new Enum(CalendarEventMemberStatusValue);
-        set => CalendarEventMemberStatusValue = Enum.FromString<CalendarEventMemberStatusEnum>(value.Value);
+        set => CalendarEventMemberStatusValue = Enum.FromString<CalendarEventMemberStatusEnum>(
+            value.Value.ToPascalCaseFromSnakeCase());
     }
 
     /// <summary>

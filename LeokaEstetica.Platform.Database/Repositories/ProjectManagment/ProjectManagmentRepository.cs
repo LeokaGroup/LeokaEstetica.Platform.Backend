@@ -1137,12 +1137,36 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
         parameters.Add("@project_task_id", projectTaskId);
         parameters.Add("@project_id", projectId);
 
-        var sql = @"UPDATE project_management.project_tasks 
-                    SET executor_id = @executor_id 
-                    WHERE project_task_id = @project_task_id 
-                      AND project_id = @project_id";
-                      
-        await connection.ExecuteAsync(sql, parameters);
+        var updateExecutorQuery =
+			"UPDATE project_management.project_tasks  " +
+            "SET executor_id = @executor_id " +
+			"WHERE project_task_id = @project_task_id " +
+			"AND project_id = @project_id " +
+            "AND EXISTS (" +
+                "SELECT 'project_tasks' "+
+				"FROM project_management.project_tasks " +
+                "WHERE project_task_id = @project_task_id and project_id = @project_id); " +
+
+            "UPDATE project_management.user_stories " +
+            "SET executor_id = @executor_id " +
+			"WHERE user_story_task_id = @project_task_id " +
+			"AND project_id = @project_id " +
+			"AND EXISTS (" +
+				"SELECT 'user_stories' " +
+				"FROM project_management.user_stories " +
+                "WHERE user_story_task_id = @project_task_id and project_id = @project_id); " +
+
+            "UPDATE project_management.epics " +
+            "SET executor_id = @executor_id " +
+			"WHERE project_epic_id = @project_task_id " +
+			"AND project_id = @project_id " +
+			"AND EXISTS (" +
+				"SELECT 'epics' " +
+				"FROM project_management.epics " +
+                "WHERE project_epic_id = @project_task_id and project_id = @project_id); ";
+
+
+        await connection.ExecuteAsync(updateExecutorQuery, parameters);
     }
 
     /// <inheritdoc />
@@ -1855,10 +1879,13 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         var epicTaskParameters = new DynamicParameters();
         epicTaskParameters.Add("@projectTaskId", projectTaskId);
+        epicTaskParameters.Add("@projectId", projectId);
 
-        var epicTaskQuery = @"SELECT epic_id 
-                              FROM project_management.epic_tasks 
-                              WHERE project_task_id = @projectTaskId";
+		var epicTaskQuery = @"SELECT epic_tasks.epic_id
+                              FROM project_management.epic_tasks as epic_tasks
+                              INNER JOIN project_management.epics as epics
+                              ON epics.epic_id = epic_tasks.epic_id
+                              WHERE project_task_id = @projectTaskId and project_id=@projectId";
 
         var epicIdResult = await connection.QuerySingleOrDefaultAsync<long?>(epicTaskQuery, epicTaskParameters);
 

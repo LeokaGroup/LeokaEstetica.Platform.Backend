@@ -707,8 +707,8 @@ internal sealed class UserService : IUserService
                 throw ex;
             }
 
-            var userDocuments = (await _projectManagmentRepository.GetUserAvatarDocumentIdByUserIdsAsync(userIds,
-                projectId))?.AsList();
+            var userDocuments = (await _projectManagmentRepository.GetUserAvatarDocumentIdByUserIdsAsync(
+                userIds.Select(x => x.Value), projectId))?.AsList();
                 
             var result = new Dictionary<long, FileContentResult>();
 

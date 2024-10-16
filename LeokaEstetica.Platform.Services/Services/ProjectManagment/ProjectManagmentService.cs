@@ -821,18 +821,18 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 transactionScope.Complete();
 
                 // Уведомление об успешном создании/ошибки задачи
-                if (addedProjectTask.TaskStatusId == (int)SearchAgileObjectTypeEnum.Task)
+                if (addedProjectTask.TaskTypeId == (int)SearchAgileObjectTypeEnum.Task)
                 {
 					await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
 				        $"Задача успешно создана.",
 				        NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessProjectTask",
 				        userCode, UserConnectionModuleEnum.ProjectManagement);
 				}
-                else if (addedProjectTask.TaskStatusId == (int)SearchAgileObjectTypeEnum.Error)
+                else if (addedProjectTask.TaskTypeId == (int)SearchAgileObjectTypeEnum.Error)
                 {
 					await _hubNotificationService.Value.SendNotificationAsync("Все хорошо",
 						$"Ошибка успешно создана",
-						NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorProjectTask",
+						NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessProjectTask",
 						userCode, UserConnectionModuleEnum.ProjectManagement);
 				}
                 return result;

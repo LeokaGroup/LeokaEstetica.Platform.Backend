@@ -108,5 +108,6 @@ public interface ISprintService
     /// <param name="projectSprintId">Id спринта в рамках проекта.</param>
     /// <param name="projectId">Id проекта.</param>
     /// <param name="sprintTaskIds">Список Id задач в рамках проекта, которые нужно исключить из спринта.</param>
-    Task RemoveSprintAsync(long projectSprintId, long projectId, IEnumerable<long>? sprintTaskIds);
+    /// <param name="account">Аккаунт.</param>
+    Task RemoveSprintAsync(long projectSprintId, long projectId, IEnumerable<long>? sprintTaskIds, string account);
 }

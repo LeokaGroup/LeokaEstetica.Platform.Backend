@@ -8,5 +8,10 @@ public class EventMemberInput
     /// <summary>
     /// Id участника события.
     /// </summary>
-    public long EventMemberId { get; set; }
+    public long? EventMemberId { get; set; }
+    
+    /// <summary>
+    /// Почта участника события.
+    /// </summary>
+    public string? EventMemberMail { get; set; }
 }
