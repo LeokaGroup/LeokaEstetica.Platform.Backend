@@ -31,10 +31,10 @@ internal sealed class AbstractGroupObjectsRepository : BaseRepository, IAbstract
 
         var query = "SELECT dmes.message_id, " +
                     "dmes.message, " +
-                    "dmes.is_my_message, " +
                     "id.dialog_id, " +
-                    "dmes.created_at, " +
-                    "dmes.created_by " +
+                    "TO_CHAR(dmes.created_at, 'dd.MM.yyyy HH24:MI'), " +
+                    "dmes.created_by," +
+                    "id.dialog_name AS label " +
                     "FROM communications.main_info_dialogs AS id " +
                     "INNER JOIN communications.dialog_members AS dm " +
                     "ON id.dialog_id = dm.dialog_id " +

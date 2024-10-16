@@ -38,12 +38,6 @@ internal sealed class AbstractGroupObjectsService : IAbstractGroupObjectsService
                 return Enumerable.Empty<GroupObjectDialogOutput>();
             }
 
-            foreach (var o in result)
-            {
-                // Форматируем дату сообщения.
-                o.FormatedCreatedAt = o.CreatedAt.ToString("g");
-            }
-
             return result;
         }
         
