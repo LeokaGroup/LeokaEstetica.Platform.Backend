@@ -3,6 +3,11 @@ using System.Text.RegularExpressions;
 
 namespace LeokaEstetica.Platform.Models.Extensions;
 
+/// <summary>
+/// Класс расширений для строк.
+/// Содержит некоторые одинаковые методы как в LeokaEstetica.Platform.Base.Extensions.StringExtensions
+/// ради избежания референсов между слоями архитектуры, т.к. надо избегать ссылок из Models на Base.
+/// </summary>
 public static class StringExtensions
 {
     /// <summary>
@@ -42,5 +47,15 @@ public static class StringExtensions
         }
 
         return sb.ToString();
+    }
+    
+    /// <summary>
+    /// Метод переводит из snake_case в PascalCase.
+    /// </summary>
+    /// <param name="str">Строка дял перевода.</param>
+    /// <returns>Измененная строка.</returns>
+    public static string ToPascalCaseFromSnakeCase(this string str)
+    {
+        return string.Concat(str.Split('_').Select(Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase));
     }
 }

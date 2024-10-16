@@ -63,7 +63,7 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
                      "event_member_id, " +
                      "event_id, " +
                      "member_status::project_management_human_resources.calendar_member_status_enum " +
-                     "AS CalendarEventMemberStatusValue, " +
+                     "AS CalendarEventMemberStatus, " +
                      "joined " +
                      "FROM project_management_human_resources.calendar_event_members " +
                      "WHERE event_id = ANY (@eventIds)";
@@ -153,8 +153,8 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
          var eventMembersQuery = "SELECT em.id, " +
                                  "em.event_member_id, " +
                                  "em.event_id, " +
-                                 "em.member_status::project_management_human_resources.CALENDAR_MEMBER_STATUS_ENUM " +
-                                 "AS CalendarEventMemberStatusValue, " +
+                                 "em.member_status::project_management_human_resources.calendar_member_status_enum " +
+                                 "AS CalendarEventMemberStatus, " +
                                  "em.joined," +
                                  "u.\"Email\" " +
                                  "FROM project_management_human_resources.calendar_event_members AS em " +

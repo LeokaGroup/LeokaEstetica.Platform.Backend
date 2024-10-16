@@ -72,8 +72,8 @@ public interface IUserRepository
     /// Метод находит Id пользователей по их почте.
     /// </summary>
     /// <param name="account">Почта пользователей.</param>
-    /// <returns>Массив с Id пользователей.</returns>
-    Task<IEnumerable<long>> GetUserByEmailsAsync(IEnumerable<string> accounts);
+    /// <returns>Словарь с пользователями.</returns>
+    Task<IDictionary<string, long>> GetUserByEmailsAsync(IEnumerable<string?> accounts);
 
     /// <summary>
     /// Метод получает код пользователя по его почте.

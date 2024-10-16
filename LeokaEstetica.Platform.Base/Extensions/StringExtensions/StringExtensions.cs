@@ -37,6 +37,11 @@ public static class StringExtensions
         return sb.ToString();
     }
     
+    /// <summary>
+    /// Метод переводит из snake_case в PascalCase.
+    /// </summary>
+    /// <param name="str">Строка дял перевода.</param>
+    /// <returns>Измененная строка.</returns>
     public static string ToPascalCaseFromSnakeCase(this string str)
     {
         return string.Concat(str.Split('_').Select(Thread.CurrentThread.CurrentCulture.TextInfo.ToTitleCase));

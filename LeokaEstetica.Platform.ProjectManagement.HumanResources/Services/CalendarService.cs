@@ -121,26 +121,18 @@ internal sealed class CalendarService : ICalendarService
 
             calendarInput.EventMembers ??= new List<EventMemberInput>();
 
-            //Заполняем UserId
-            var eventMemberIdList = (await _userRepository.GetUserByEmailsAsync(
-            calendarInput.EventMembers.Select(x => x.EventMemberMail).ToList())).ToList();
+            var eventMemberMails = calendarInput.EventMembers.Select(x => x.EventMemberMail)?.AsList();
 
-            if (eventMemberIdList.Count != calendarInput.EventMembers.Count) 
-                throw new ArgumentException();
+            eventMemberMails ??= new List<string?>();
             
-            for (var i = 0; i < calendarInput.EventMembers.Count; i++)
-            { 
-                calendarInput.EventMembers[i].EventMemberId = eventMemberIdList[i];
-            }
+            var eventMembersDict = await _userRepository.GetUserByEmailsAsync(eventMemberMails);
             
             // Добавляем в участники события текущего пользователя, который создает событие.
-            if (calendarInput.EventMembers.Count == 0
-                || !calendarInput.EventMembers.Select(x => x.EventMemberMail).Contains(account))
+            eventMembersDict.TryAdd(account, userId);
+
+            foreach (var em in calendarInput.EventMembers)
             {
-                calendarInput.EventMembers.Add(new EventMemberInput
-                {
-                    EventMemberId = userId
-                });
+                em.EventMemberId = eventMembersDict!.TryGet(em.EventMemberMail);
             }
 
             calendarInput.CreatedBy = userId;
@@ -158,7 +150,7 @@ internal sealed class CalendarService : ICalendarService
             _logger?.LogError(ex, ex.Message);
         
             await _hubNotificationService.Value.SendNotificationAsync("Что то пошло не так",
-                "Ошибка при создании события календаря.",
+                "Ошибка при сохранении данных. Мы уже знаем о проблеме и разбираемся с ней.",
                 NotificationLevelConsts.NOTIFICATION_LEVEL_ERROR, "SendNotifyErrorCreateCalendarEvent",
                 userCode, UserConnectionModuleEnum.Main);
             throw;
@@ -218,26 +210,15 @@ internal sealed class CalendarService : ICalendarService
             
             calendarInput.EventMembers ??= new List<EventMemberInput>();
             
-            //Заполняем UserId
-            var eventMemberIdList = (await _userRepository.GetUserByEmailsAsync(
-                calendarInput.EventMembers.Select(x => x.EventMemberMail).ToList())).ToList();
-
-            if (eventMemberIdList.Count != calendarInput.EventMembers.Count) 
-                throw new ArgumentException();
-            
-            for (var i = 0; i < calendarInput.EventMembers.Count; i++)
-            { 
-                calendarInput.EventMembers[i].EventMemberId = eventMemberIdList[i];
-            }
+            var eventMemberMails = calendarInput.EventMembers.Select(x => x.EventMemberMail);
+            var eventMembersDict = await _userRepository.GetUserByEmailsAsync(eventMemberMails);
             
             // Добавляем в участники события текущего пользователя, который создает событие.
-            if (calendarInput.EventMembers.Count == 0
-                || !calendarInput.EventMembers.Select(x => x.EventMemberMail).Contains(account))
+            eventMembersDict.TryAdd(account, userId);
+
+            foreach (var em in calendarInput.EventMembers)
             {
-                calendarInput.EventMembers.Add(new EventMemberInput
-                {
-                    EventMemberId = userId
-                });
+                em.EventMemberId = eventMembersDict!.TryGet(em.EventMemberMail);
             }
 
             calendarInput.CreatedBy = userId;
