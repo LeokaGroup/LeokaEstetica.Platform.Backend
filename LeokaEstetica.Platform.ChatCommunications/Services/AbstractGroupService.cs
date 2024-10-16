@@ -2,6 +2,7 @@
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.Classifiers.Abstractions.Communications;
 using LeokaEstetica.Platform.Communications.Abstractions;
+using LeokaEstetica.Platform.Database.Abstractions.Communications;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Communications.Output;
 using LeokaEstetica.Platform.Models.Enums;
@@ -17,6 +18,7 @@ internal sealed class AbstractGroupService : IAbstractGroupService
     private readonly ILogger<AbstractGroupService> _logger;
     private readonly Lazy<ICompanyRepository> _companyRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IAbstractGroupObjectsRepository _abstractGroupObjectsRepository;
 
     /// <summary>
     /// Конструктор.
@@ -25,15 +27,18 @@ internal sealed class AbstractGroupService : IAbstractGroupService
     /// <param name="logger">Логгер.</param>
     /// <param name="companyRepository">Репозиторий компаний.</param>
     /// <param name="userRepository">Репозиторий пользователей.</param>
+    /// <param name="abstractGroupObjectsRepository">Репозиторий объектов.</param>
     public AbstractGroupService(IClassifierAbstractGroupService classifierAbstractGroupService,
         ILogger<AbstractGroupService> logger,
         Lazy<ICompanyRepository> companyRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IAbstractGroupObjectsRepository abstractGroupObjectsRepository)
     {
         _classifierAbstractGroupService = classifierAbstractGroupService;
         _logger = logger;
         _companyRepository = companyRepository;
         _userRepository = userRepository;
+        _abstractGroupObjectsRepository = abstractGroupObjectsRepository;
     }
 
     /// <inheritdoc />
@@ -58,6 +63,7 @@ internal sealed class AbstractGroupService : IAbstractGroupService
             {
                 // Получаем проекты компании и где текущий пользователь есть в участниках.
                 result.GroupName = "Проекты компании";
+                result.GroupSysName = "Projects";
                 result.Objects = (await _companyRepository.Value.GetAbstractGroupObjectsAsync(abstractScopeId, userId))
                     ?.AsList();
             }
@@ -65,17 +71,20 @@ internal sealed class AbstractGroupService : IAbstractGroupService
             // Отбираем объекты, у которых есть диалоги с сообщениями и заполняем объекты сообщениями.
             if (result.Objects is not null && result.Objects.Count > 0)
             {
+                // Получаем диалоги каждого объекта.
+                var objectIds = result.Objects.Select(x => x.AbstractGroupId);
+                var objectDialogs = (await _abstractGroupObjectsRepository.GetObjectDialogMessagesAsync(objectIds))
+                    ?.AsList();
+                
                 foreach (var o in result.Objects)
                 {
                     // Вместо null будет пустой массив, фронту так проще будет.
-                    o.Items ??= new List<EmptyObjectItem>();
+                    o.Items ??= new List<GroupObjectDialogMessageOutput>();
 
-                    if (o.HasDialogs)
+                    // Если есть диалоги, то заполняем сообщениями.
+                    if (o.HasDialogs && objectDialogs?.Count > 0)
                     {
-                        // Просто добавляем пустышку, чтобы фронт мог отразить наличие вложенности.
-                        // Уже будет > 1 и фронт отразит стрелочку у вложенности.
-                        // Т.к. на фронте контрол смотрит именно на кол-во items.
-                        o.Items.Add(new EmptyObjectItem());   
+                        o.Items = objectDialogs.Where(x => x.ObjectId == o.AbstractGroupId).AsList();
                     }
                 }
             }

@@ -14,4 +14,9 @@ public class AbstractGroupResult
     /// Объекты группы.
     /// </summary>
     public List<AbstractGroupOutput>? Objects { get; set; }
+
+    /// <summary>
+    /// Системное название группы объектов.
+    /// </summary>
+    public string? GroupSysName { get; set; }
 }

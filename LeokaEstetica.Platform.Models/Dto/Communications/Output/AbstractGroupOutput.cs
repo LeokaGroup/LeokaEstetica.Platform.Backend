@@ -35,14 +35,5 @@ public class AbstractGroupOutput
     /// <summary>
     /// Вложенные элементы.
     /// </summary>
-    public List<EmptyObjectItem>? Items { get; set; }
-}
-
-/// <summary>
-/// Класс пустышка - нужен, чтобы на фронте отразить вложенность.
-/// Здесь не закладываем внутри сообщения диалогов, это в другом месте делается.
-/// Здесь важно просто отразить наличие вложенности как элемент.
-/// </summary>
-public class EmptyObjectItem
-{
+    public List<GroupObjectDialogMessageOutput>? Items { get; set; }
 }
