@@ -21,37 +21,7 @@ internal sealed class AbstractGroupObjectsRepository : BaseRepository, IAbstract
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<GroupObjectDialogMessageOutput>> GetObjectDialogsAsync(long abstractScopeId,
-        long userId)
-    {
-        using var connection = await ConnectionProvider.GetConnectionAsync();
-
-        var parameters = new DynamicParameters();
-        parameters.Add("@abstractScopeId", abstractScopeId);
-        parameters.Add("@userId", userId);
-
-        var query = "SELECT dmes.message_id, " +
-                    "dmes.message, " +
-                    "id.dialog_id, " +
-                    "TO_CHAR(dmes.created_at, 'dd.MM.yyyy HH24:MI'), " +
-                    "dmes.created_by," +
-                    "id.dialog_name AS label " +
-                    "FROM communications.main_info_dialogs AS id " +
-                    "INNER JOIN communications.dialog_members AS dm " +
-                    "ON id.dialog_id = dm.dialog_id " +
-                    "LEFT JOIN communications.dialog_messages AS dmes " +
-                    "ON id.dialog_id = dmes.dialog_id " +
-                    "WHERE dm.user_id = @userId " +
-                    "AND id.abstract_scope_id = @abstractScopeId ";
-
-        var result = await connection.QueryAsync<GroupObjectDialogMessageOutput>(query, parameters);
-
-        return result;
-    }
-
-    /// <inheritdoc />
-    public async Task<IEnumerable<GroupObjectDialogMessageOutput>> GetObjectDialogMessagesAsync(
-        IEnumerable<long> objectIds)
+    public async Task<IEnumerable<GroupObjectDialogOutput>> GetObjectDialogsAsync(IEnumerable<long> objectIds)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -59,19 +29,53 @@ internal sealed class AbstractGroupObjectsRepository : BaseRepository, IAbstract
         parameters.Add("@abstractScopeIds", objectIds.AsList());
 
         var query = "SELECT dmes.message_id, " +
-                    "dmes.message, " +
+                    "(SELECT RIGHT(dmes.message, 40) " +
+                    "FROM communications.dialog_messages " +
+                    "WHERE dmes.dialog_id = id.dialog_id " +
+                    "ORDER BY dmes.message DESC) AS last_message, " +
                     "id.dialog_id, " +
-                    "TO_CHAR(dmes.created_at, 'dd.MM.yyyy HH24:MI'), " +
+                    "TO_CHAR(id.created_at, 'dd.MM.yyyy HH24:MI'), " +
                     "dmes.created_by, " +
                     "id.dialog_name AS label, " +
-                    "id.abstract_scope_id AS ObjectId, " +
-                    "dmes.is_my_message " +
+                    "id.abstract_scope_id AS object_id " +
                     "FROM communications.main_info_dialogs AS id " +
                     "INNER JOIN communications.dialog_members AS dm " +
                     "ON id.dialog_id = dm.dialog_id " +
                     "LEFT JOIN communications.dialog_messages AS dmes " +
                     "ON id.dialog_id = dmes.dialog_id " +
                     "WHERE id.abstract_scope_id = ANY (@abstractScopeIds) ";
+
+        var result = await connection.QueryAsync<GroupObjectDialogOutput>(query, parameters);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<GroupObjectDialogMessageOutput>> GetObjectDialogMessagesAsync(
+        IEnumerable<long> dialogIds, long userId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var parameters = new DynamicParameters();
+        parameters.Add("@dialogIds", dialogIds.AsList());
+        parameters.Add("@userId", userId);
+        
+        var query = "SELECT dmes.message_id, " +
+                    "dmes.message AS label, " +
+                    "dmes.dialog_id, " +
+                    "TO_CHAR(dmes.created_at, 'dd.MM.yyyy HH24:MI'), " +
+                    "dmes.created_by, " +
+                    "dmes.message_id," +
+                    "(CASE " +
+                    "WHEN dmes.created_by = @userId " +
+                    "THEN TRUE " +
+                    "ELSE FALSE END) AS is_my_message " +
+                    "FROM communications.main_info_dialogs AS id " +
+                    "INNER JOIN communications.dialog_members AS dm " +
+                    "ON id.dialog_id = dm.dialog_id " +
+                    "LEFT JOIN communications.dialog_messages AS dmes " +
+                    "ON id.dialog_id = dmes.dialog_id " +
+                    "WHERE dmes.dialog_id = ANY (@dialogIds) ";
 
         var result = await connection.QueryAsync<GroupObjectDialogMessageOutput>(query, parameters);
 

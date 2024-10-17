@@ -73,18 +73,19 @@ internal sealed class AbstractGroupService : IAbstractGroupService
             {
                 // Получаем диалоги каждого объекта.
                 var objectIds = result.Objects.Select(x => x.AbstractGroupId);
-                var objectDialogs = (await _abstractGroupObjectsRepository.GetObjectDialogMessagesAsync(objectIds))
+                var objectDialogs = (await _abstractGroupObjectsRepository.GetObjectDialogsAsync(objectIds))
                     ?.AsList();
                 
+                // Заполняем объекты.
                 foreach (var o in result.Objects)
                 {
                     // Вместо null будет пустой массив, фронту так проще будет.
-                    o.Items ??= new List<GroupObjectDialogMessageOutput>();
+                    o.Items ??= new List<GroupObjectDialogOutput>();
 
-                    // Если есть диалоги, то заполняем сообщениями.
+                    // Заполняем объект диалогами.
                     if (o.HasDialogs && objectDialogs?.Count > 0)
                     {
-                        o.Items = objectDialogs.Where(x => x.ObjectId == o.AbstractGroupId).AsList();
+                        o.Items.AddRange(objectDialogs.Where(x => x.ObjectId == o.AbstractGroupId));
                     }
                 }
             }
