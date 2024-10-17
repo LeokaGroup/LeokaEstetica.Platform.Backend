@@ -465,16 +465,15 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                     "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
                     "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
 
-        vacancyCatalogInput.Filters ??= new FilterVacancyInput();
-        
         // Если применили любой фильтр.
         var isFiltedApplied = false;
 
         // Фильтр по занятости.
-        if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.EmploymentsValues))
+        if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters!.EmploymentsValues))
         {
-            // EmploymentsValues разделены запятой в строке с фронта, поэтому можем через IN.
             parameters.Add("@employments", vacancyCatalogInput.Filters.EmploymentsValues);
+            
+            // EmploymentsValues разделены запятой в строке с фронта, поэтому можем через IN.
             query += "AND u.\"Employment\" IN (@employments) ";
             isFiltedApplied = true;
         }
@@ -506,7 +505,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                 isFiltedApplied = true;
             }
             
-            // Без оплата.
+            // Без оплаты.
             if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay) == FilterPayTypeEnum.NotPay)
             {
                 query += "AND u.\"Payment\" = REPLACE(u.\"Payment\", 'Без оплаты', 0)::NUMERIC(12, 2) = 0 ";
@@ -523,7 +522,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             isFiltedApplied = true;
         }
         
-        // Поисковой поисковый запрос.
+        // Поисковая строка.
         if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.SearchText))
         {
             parameters.Add("@searchText", string.Concat(vacancyCatalogInput.SearchText, "%"));
