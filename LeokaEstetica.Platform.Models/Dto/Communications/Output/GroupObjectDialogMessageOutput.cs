@@ -1,8 +1,7 @@
 ﻿namespace LeokaEstetica.Platform.Models.Dto.Communications.Output;
 
 /// <summary>
-/// Класс выходной модели диалога сообщений группы объекта абстрактной области чата.
-/// Например, проекта.
+/// Класс выходной модели сообщений диалога группы объекта абстрактной области чата.
 /// </summary>
 public class GroupObjectDialogMessageOutput
 {
@@ -10,6 +9,16 @@ public class GroupObjectDialogMessageOutput
     /// Id сообщения.
     /// </summary>
     public long MessageId { get; set; }
+    
+    /// <summary>
+    /// Id пользователя, который создал сообщение.
+    /// </summary>
+    public long CreatedBy { get; set; }
+
+    /// <summary>
+    /// Сообщение.
+    /// </summary>
+    public string? Label { get; set; }
 
     /// <summary>
     /// Id диалога.
@@ -17,27 +26,12 @@ public class GroupObjectDialogMessageOutput
     public long DialogId { get; set; }
 
     /// <summary>
-    /// Сообщение.
-    /// </summary>
-    public string? Message { get; set; }
-
-    /// <summary>
     /// Дата создания сообщения.
     /// </summary>
     public string? CreatedAt { get; set; }
 
     /// <summary>
-    /// Id пользователя, который создал сообщение.
+    /// Если текущий пользователь создал сообщение.
     /// </summary>
-    public long CreatedBy { get; set; }
-
-    /// <summary>
-    /// Название диалога.
-    /// </summary>
-    public string? Label { get; set; }
-    
-    /// <summary>
-    /// Id объекта.
-    /// </summary>
-    public long ObjectId { get; set; }
+    public bool IsMyMessage { get; set; }
 }
