@@ -274,10 +274,10 @@ internal sealed class CalendarRepository : BaseRepository, ICalendarRepository
          
         if (!string.IsNullOrWhiteSpace(calendarInput.EventDescription))
         {
-            query += " @eventDescription";
+            query += " @eventDescription, ";
         }
 
-        query += ", @createdBy, @eventStartDate, @eventEndDate";
+        query += " @createdBy, @eventStartDate, @eventEndDate"; 
          
         if (!string.IsNullOrWhiteSpace(calendarInput.EventLocation))
         {
