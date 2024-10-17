@@ -687,15 +687,20 @@ internal sealed class WikiTreeService : IWikiTreeService
 
                 cf.Children.AddRange(childFolders);
 
-                if (pages is not null && pages.Count > 0)
-                {
-                    // Заполняем страницы дочерней папки.
-                    await BuildFolderPagesAsync(cf, pages);
-                }
             }
+
+            if (pages is not null && pages.Count > 0)
+            {
+				// Заполняем страницы дочерней папки.
+				await BuildFolderPagesAsync(cf, pages);
+			}
         }
 
-        folder.Children.AddRange(folders);
+		//Берем первый элемент, чтобы выводилось без повторов 
+		var firstChild = new List<WikiTreeItem>();
+		firstChild.Add(folders.First());
+
+		folder.Children.AddRange(firstChild);
 
         if (pages is not null && pages.Count > 0)
         {
