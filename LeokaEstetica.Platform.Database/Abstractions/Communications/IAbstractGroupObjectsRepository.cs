@@ -15,11 +15,10 @@ public interface IAbstractGroupObjectsRepository
     Task<IEnumerable<GroupObjectDialogOutput>> GetObjectDialogsAsync(IEnumerable<long> objectIds);
 
     /// <summary>
-    /// Метод получает список сообщений диалогов.
+    /// Метод получает список сообщений диалога.
     /// </summary>
-    /// <param name="dialogIds">Список Id диалогов.</param>
+    /// <param name="dialogId">Id диалога.</param>
     /// <param name="userId">Id пользователя.</param>
-    /// <returns>Список сообщений диалогов.</returns>
-    Task<IEnumerable<GroupObjectDialogMessageOutput>> GetObjectDialogMessagesAsync(IEnumerable<long> dialogIds,
-        long userId);
+    /// <returns>Список сообщений диалога.</returns>
+    Task<IEnumerable<GroupObjectDialogMessageOutput>> GetObjectDialogMessagesAsync(long dialogId, long userId);
 }

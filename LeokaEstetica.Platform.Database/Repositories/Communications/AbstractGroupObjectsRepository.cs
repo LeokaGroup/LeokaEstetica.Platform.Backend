@@ -51,19 +51,19 @@ internal sealed class AbstractGroupObjectsRepository : BaseRepository, IAbstract
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<GroupObjectDialogMessageOutput>> GetObjectDialogMessagesAsync(
-        IEnumerable<long> dialogIds, long userId)
+    public async Task<IEnumerable<GroupObjectDialogMessageOutput>> GetObjectDialogMessagesAsync(long dialogId,
+        long userId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
-        parameters.Add("@dialogIds", dialogIds.AsList());
+        parameters.Add("@dialogId", dialogId);
         parameters.Add("@userId", userId);
         
         var query = "SELECT dmes.message_id, " +
                     "dmes.message AS label, " +
                     "dmes.dialog_id, " +
-                    "TO_CHAR(dmes.created_at, 'dd.MM.yyyy HH24:MI'), " +
+                    "TO_CHAR(dmes.created_at, 'dd.MM.yyyy HH24:MI') AS created_at, " +
                     "dmes.created_by, " +
                     "dmes.message_id," +
                     "(CASE " +
@@ -75,7 +75,7 @@ internal sealed class AbstractGroupObjectsRepository : BaseRepository, IAbstract
                     "ON id.dialog_id = dm.dialog_id " +
                     "LEFT JOIN communications.dialog_messages AS dmes " +
                     "ON id.dialog_id = dmes.dialog_id " +
-                    "WHERE dmes.dialog_id = ANY (@dialogIds) ";
+                    "WHERE dmes.dialog_id = @dialogId ";
 
         var result = await connection.QueryAsync<GroupObjectDialogMessageOutput>(query, parameters);
 

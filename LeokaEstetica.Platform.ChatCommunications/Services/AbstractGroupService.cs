@@ -79,7 +79,6 @@ internal sealed class AbstractGroupService : IAbstractGroupService
                 // Заполняем объекты.
                 foreach (var o in result.Objects)
                 {
-                    // Вместо null будет пустой массив, фронту так проще будет.
                     o.Items ??= new List<GroupObjectDialogOutput>();
 
                     // Заполняем объект диалогами.

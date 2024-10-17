@@ -18,6 +18,7 @@ internal sealed class CommunicationsHub : Hub
     private readonly IDiscordService _discordService;
     private readonly IConnectionService _connectionService;
     private readonly IAbstractGroupService _abstractGroupService;
+    private readonly IAbstractGroupDialogMessagesService _abstractGroupDialogMessagesService;
 
     /// <summary>
     /// Конструктор.
@@ -27,17 +28,20 @@ internal sealed class CommunicationsHub : Hub
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="connectionService">Сервис подключений Redis.</param>
     /// <param name="abstractGroupService">Сервис групп абстрактной области.</param>
+    /// <param name="abstractGroupDialogMessagesService">Сервис сообщений диалога.</param>
     public CommunicationsHub(IAbstractScopeService abstractScopeService,
         ILogger<CommunicationsHub> logger,
         IDiscordService discordService,
         IConnectionService connectionService,
-        IAbstractGroupService abstractGroupService)
+        IAbstractGroupService abstractGroupService,
+        IAbstractGroupDialogMessagesService abstractGroupDialogMessagesService)
     {
         _abstractScopeService = abstractScopeService;
         _logger = logger;
         _discordService = discordService;
         _connectionService = connectionService;
         _abstractGroupService = abstractGroupService;
+        _abstractGroupDialogMessagesService = abstractGroupDialogMessagesService;
     }
 
     #region Публичные методы.
@@ -143,6 +147,39 @@ internal sealed class CommunicationsHub : Hub
             await Clients
                 .Client(connection.ConnectionId)
                 .SendAsync("getScopeGroupObjects", result)
+                .ConfigureAwait(false);
+        }
+        
+        catch (Exception ex)
+        {
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+            
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Метод получает сообщения диалога.
+    /// </summary>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task GetDialogMessagesAsync(long dialogId, string account)
+    {
+        try
+        {
+            if (dialogId <= 0)
+            {
+                throw new InvalidOperationException("Id диалога не передан.");
+            }
+
+            var result = await _abstractGroupDialogMessagesService.GetObjectDialogMessagesAsync(dialogId, account);
+            
+            var connection = await GetConnectionCacheAsync();
+
+            await Clients
+                .Client(connection.ConnectionId)
+                .SendAsync("getDialogMessages", result)
                 .ConfigureAwait(false);
         }
         
