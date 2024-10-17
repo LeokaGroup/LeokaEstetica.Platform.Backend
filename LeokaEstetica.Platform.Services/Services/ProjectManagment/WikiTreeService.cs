@@ -483,7 +483,8 @@ internal sealed class WikiTreeService : IWikiTreeService
                         }
                         
                         folder.Value.Children.Add(cf);
-                    }
+						folder.Value.Children.Sort((x, y) => x.IsPage.CompareTo(y.IsPage));
+					}
                     
                     _excludedTreeItemIds.Add(cf.FolderId!.Value);
                 }
