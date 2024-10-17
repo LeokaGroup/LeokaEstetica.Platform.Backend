@@ -416,7 +416,7 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
 
             var folderId = await connection.ExecuteScalarAsync<long>(insertFolderQuery, insertFolderParameters);
 
-            if (parentId.HasValue)
+            if (parentId.HasValue && parentId != 0)
             {
                 var parentParameters = new DynamicParameters();
                 parentParameters.Add("@folderId", folderId);
@@ -457,7 +457,8 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
         var parameters = new DynamicParameters();
         parameters.Add("@folderIds", folderIds);
 
-        var query = "SELECT f.wiki_tree_folder_id, " +
+        var query ="with recursive temp1 as(" +
+                    "SELECT f.wiki_tree_folder_id, " +
                     "f.folder_id, " +
                     "f.wiki_tree_id, " +
                     "f.folder_name AS Name, " +
@@ -468,9 +469,29 @@ internal sealed class WikiTreeRepository : BaseRepository, IWikiTreeRepository
                     "FROM project_management.wiki_tree_folders AS f " +
                     "INNER JOIN project_management.wiki_tree_folder_relations AS fr " +
                     "ON f.folder_id = fr.folder_id " +
-                    "WHERE f.folder_id = ANY(@folderIds)";
+                    "WHERE f.folder_id = ANY(@folderIds) " +
 
-        var result = await connection.QueryAsync<WikiTreeItem>(query, parameters);
+                    "UNION " +
+
+                    "SELECT f2.wiki_tree_folder_id, " +
+                    "f2.folder_id, " +
+                    "f2.wiki_tree_id, " +
+                    "f2.folder_name AS Name, " +
+                    "f2.created_by, " +
+                    "f2.created_at," +
+                    "fr2.child_id, " +
+                    "fr2.parent_id " +
+                    "FROM project_management.wiki_tree_folders AS f2 " +
+                    "INNER JOIN project_management.wiki_tree_folder_relations AS fr2 " +
+                    "ON f2.folder_id = fr2.folder_id " +
+                    "JOIN temp1 " +
+                    "ON fr2.parent_id = temp1.folder_id) " +
+
+					"SELECT * FROM temp1 ORDER BY folder_id ";
+
+
+
+		var result = await connection.QueryAsync<WikiTreeItem>(query, parameters);
 
         return result;
     }
