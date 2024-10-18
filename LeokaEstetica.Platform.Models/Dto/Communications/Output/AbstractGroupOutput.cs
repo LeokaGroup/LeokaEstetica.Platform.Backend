@@ -35,5 +35,5 @@ public class AbstractGroupOutput
     /// <summary>
     /// Вложенные элементы.
     /// </summary>
-    public List<GroupObjectDialogMessageOutput>? Items { get; set; }
+    public List<GroupObjectDialogOutput>? Items { get; set; }
 }
