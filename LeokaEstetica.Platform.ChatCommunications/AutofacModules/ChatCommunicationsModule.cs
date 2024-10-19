@@ -30,5 +30,12 @@ public class ChatCommunicationsModule : Module
         builder.RegisterType<AbstractGroupDialogMessagesService>()
             .As<IAbstractGroupDialogMessagesService>()
             .InstancePerLifetimeScope();
+        
+        builder.RegisterType<AbstractGroupDialogService>()
+            .Named<IAbstractGroupDialogService>("AbstractGroupDialogService")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<AbstractGroupDialogService>()
+            .As<IAbstractGroupDialogService>()
+            .InstancePerLifetimeScope();
     }
 }
