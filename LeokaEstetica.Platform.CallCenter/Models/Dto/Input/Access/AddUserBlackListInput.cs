@@ -13,10 +13,15 @@ public class AddUserBlackListInput
     /// <summary>
     /// Почта.
     /// </summary>
-    public string Email { get; set; }
+    public string? Email { get; set; }
 
     /// <summary>
     /// Номер телефона.
     /// </summary>
-    public string PhoneNumber { get; set; }
+    public string? PhoneNumber { get; set; }
+
+    /// <summary>
+    /// Id пользователя в системе ВКонтакте.
+    /// </summary>
+    public string? VkUserId { get; set; }
 }
