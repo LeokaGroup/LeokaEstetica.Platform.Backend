@@ -134,9 +134,11 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
                 // Если страницу уведомлений просматривает владелец.
                 if (isProjectOwner)
                 {
-                    // Если инициатором приглашения был владелец, то не отображать кнопку апрува у него.
+                    // Если инициатором приглашения был владелец, то не отображать кнопку апрува у него и добавляем почту приглашенного.
                     if (notification.UserId != userId)
                     {
+                        var userEmailInvitee = await _userRepository.GetUserByUserIdAsync(notification.UserId);
+                        notification.EmailInvitee = userEmailInvitee.Email;
                         notification.IsAcceptButton = false;
                     }
                     

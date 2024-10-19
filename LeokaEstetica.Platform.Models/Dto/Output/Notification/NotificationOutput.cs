@@ -72,4 +72,9 @@ public class NotificationOutput
     /// Признак отображения вакансии в проект.
     /// </summary>
     public bool IsVacancyDisplay { get; set; }
+
+    /// <summary>
+    /// Почта пользователя которого пригласили.
+    /// </summary>
+    public string? EmailInvitee { get; set; }
 }
