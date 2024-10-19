@@ -31,7 +31,7 @@ public class NotificationOutput
     /// Признак отображения кнопки принятия инвайта в проект.
     /// </summary>
     public bool IsAcceptButton { get; set; }
-    
+
     /// <summary>
     /// Признак отображения кнопки отклонения инвайта в проект.
     /// </summary>
@@ -41,13 +41,13 @@ public class NotificationOutput
     /// Признак необходимости подтверждения уведомления.
     /// </summary>
     public bool IsNeedAccepted { get; set; }
-    
+
     /// <summary>
     /// Признак владельца приглашения.
     /// Если true, то инициатором приглашения был владелец, при false другой пользователь.
     /// </summary>
     public bool IsOwner { get; set; }
-    
+
     /// <summary>
     /// Признак отображения кнопок принятия и отклонения приглашений уведомлений.
     /// </summary>
@@ -57,9 +57,19 @@ public class NotificationOutput
     /// Id проекта.
     /// </summary>
     public long ProjectId { get; set; }
-    
+
     /// <summary>
     /// Id пользователя, который инициировал приглашение.
     /// </summary>
     public long UserId { get; set; }
+
+    /// <summary>
+    /// Название вакансии.
+    /// </summary>
+    public string? Vacancy { get; set; }
+
+    /// <summary>
+    /// Признак отображения вакансии в проект.
+    /// </summary>
+    public bool IsVacancyDisplay { get; set; }
 }

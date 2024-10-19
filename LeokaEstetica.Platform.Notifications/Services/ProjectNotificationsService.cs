@@ -119,6 +119,18 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
             {
                 var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(notification.ProjectId, userId);
 
+                //добавляем название вакансии если оно есть
+                var idVacancy = await _projectNotificationsRepository.GetVacancyIdByNotificationIdAsync(notification.NotificationId);
+                if (idVacancy != null)
+                {
+                    notification.Vacancy = await _vacancyRepository.GetVacancyNameByIdAsync((long)idVacancy);
+                    notification.IsVacancyDisplay = true;
+                }
+                else 
+                { 
+                    notification.IsVacancyDisplay = false;
+                }
+
                 // Если страницу уведомлений просматривает владелец.
                 if (isProjectOwner)
                 {
