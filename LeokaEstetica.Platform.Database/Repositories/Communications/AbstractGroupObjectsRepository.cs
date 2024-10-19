@@ -28,12 +28,12 @@ internal sealed class AbstractGroupObjectsRepository : BaseRepository, IAbstract
         var parameters = new DynamicParameters();
         parameters.Add("@abstractScopeIds", objectIds.AsList());
 
-        var query = "SELECT dmes.message_id, " +
+        var query = "SELECT DISTINCT (id.dialog_id), " +
+                    "dmes.message_id, " +
                     "(SELECT RIGHT(dmes.message, 40) " +
                     "FROM communications.dialog_messages " +
                     "WHERE dmes.dialog_id = id.dialog_id " +
                     "ORDER BY dmes.message DESC) AS last_message, " +
-                    "id.dialog_id, " +
                     "TO_CHAR(id.created_at, 'dd.MM.yyyy HH24:MI'), " +
                     "dmes.created_by, " +
                     "id.dialog_name AS label, " +
@@ -60,7 +60,7 @@ internal sealed class AbstractGroupObjectsRepository : BaseRepository, IAbstract
         parameters.Add("@dialogId", dialogId);
         parameters.Add("@userId", userId);
         
-        var query = "SELECT dmes.message_id, " +
+        var query = "SELECT DISTINCT (dmes.message_id), " +
                     "dmes.message AS label, " +
                     "dmes.dialog_id, " +
                     "TO_CHAR(dmes.created_at, 'dd.MM.yyyy HH24:MI') AS created_at, " +
