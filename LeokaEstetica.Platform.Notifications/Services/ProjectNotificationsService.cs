@@ -119,12 +119,26 @@ internal sealed class ProjectNotificationsService : IProjectNotificationsService
             {
                 var isProjectOwner = await _projectRepository.CheckProjectOwnerAsync(notification.ProjectId, userId);
 
+                //добавляем название вакансии если оно есть
+                var idVacancy = await _projectNotificationsRepository.GetVacancyIdByNotificationIdAsync(notification.NotificationId);
+                if (idVacancy != null)
+                {
+                    notification.Vacancy = await _vacancyRepository.GetVacancyNameByIdAsync((long)idVacancy);
+                    notification.IsVacancyDisplay = true;
+                }
+                else 
+                { 
+                    notification.IsVacancyDisplay = false;
+                }
+
                 // Если страницу уведомлений просматривает владелец.
                 if (isProjectOwner)
                 {
-                    // Если инициатором приглашения был владелец, то не отображать кнопку апрува у него.
+                    // Если инициатором приглашения был владелец, то не отображать кнопку апрува у него и добавляем почту приглашенного.
                     if (notification.UserId != userId)
                     {
+                        var userEmailInvitee = await _userRepository.GetUserByUserIdAsync(notification.UserId);
+                        notification.EmailInvitee = userEmailInvitee.Email;
                         notification.IsAcceptButton = false;
                     }
                     
