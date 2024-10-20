@@ -32,7 +32,7 @@ public class UserBlackListService : IUserBlackListService
     /// <param name="email">Почта для блока..</param>
     /// <param name="phoneNumber">Номер телефона для блока.</param>
     /// <param name="vkUserId">Id пользователя в системе ВКонтакте.</param>
-    public async Task AddUserBlackListAsync(long userId, string? email, string? phoneNumber, string? vkUserId)
+    public async Task AddUserBlackListAsync(long userId, string? email, string? phoneNumber, long? vkUserId)
     {
         try
         {

@@ -23,5 +23,5 @@ public class AddUserBlackListInput
     /// <summary>
     /// Id пользователя в системе ВКонтакте.
     /// </summary>
-    public string? VkUserId { get; set; }
+    public long? VkUserId { get; set; }
 }

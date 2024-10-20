@@ -14,7 +14,7 @@ public interface IUserBlackListRepository
     /// <param name="email">Почта для блока..</param>
     /// <param name="phoneNumber">Номер телефона для блока.</param>
     /// <param name="vkUserId">Id пользователя в системе ВКонтакте.</param>
-    Task AddUserBlackListAsync(long userId, string? email, string? phoneNumber, string? vkUserId);
+    Task AddUserBlackListAsync(long userId, string? email, string? phoneNumber, long? vkUserId);
 
     /// <summary>
     /// Метод получает список пользователей в ЧС.
