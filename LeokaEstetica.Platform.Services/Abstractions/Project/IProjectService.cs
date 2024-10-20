@@ -63,7 +63,7 @@ public interface IProjectService
     Task<ProjectOutput> GetProjectAsync(long projectId, ModeEnum mode, string account);
 
     /// <summary>
-    /// Метод получает стадии проекта для выбора.
+    /// Метод получает стадии проекта для выбора, где 0-ой элемент "Не выбрано".
     /// </summary>
     /// <returns>Стадии проекта.</returns>
     Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync();
