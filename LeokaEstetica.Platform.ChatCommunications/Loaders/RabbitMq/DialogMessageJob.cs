@@ -1,10 +1,15 @@
-﻿using LeokaEstetica.Platform.Base.Enums;
+﻿using System.Text;
+using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
+using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Communications;
 using LeokaEstetica.Platform.Core.Constants;
+using LeokaEstetica.Platform.Database.Abstractions.Communications;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
+using Newtonsoft.Json;
 using Quartz;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace LeokaEstetica.Platform.Communications.Loaders.RabbitMq;
 
@@ -18,12 +23,13 @@ internal sealed class DialogMessageJob : IJob
     private readonly ILogger<DialogMessageJob> _logger;
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IDiscordService _discordService;
+    private readonly IAbstractGroupDialogRepository _abstractGroupDialogRepository;
 
     /// <summary>
     /// Название очереди.
     /// </summary>
     private readonly string _queueName = string.Empty;
-    
+
     /// <summary>
     /// Счетчик кол-ва подключений во избежание дублей подключений.
     /// </summary>
@@ -35,13 +41,16 @@ internal sealed class DialogMessageJob : IJob
     /// <param name="logger">Логгер.</param>
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
+    /// <param name="abstractGroupDialogRepository">Репозиторий сообщений.</param>
     public DialogMessageJob(ILogger<DialogMessageJob> logger,
         IGlobalConfigRepository globalConfigRepository,
-        IDiscordService discordService)
+        IDiscordService discordService,
+        IAbstractGroupDialogRepository abstractGroupDialogRepository)
     {
         _logger = logger;
         _globalConfigRepository = globalConfigRepository;
         _discordService = discordService;
+        _abstractGroupDialogRepository = abstractGroupDialogRepository;
     }
 
     #region Публичные методы.
@@ -59,9 +68,9 @@ internal sealed class DialogMessageJob : IJob
         {
             return;
         }
-        
+
         var dataMap = context.JobDetail.JobDataMap;
-        
+
         var connection = new ConnectionFactory
         {
             HostName = dataMap.GetString("RabbitMq:HostName"),
@@ -72,7 +81,7 @@ internal sealed class DialogMessageJob : IJob
             VirtualHost = dataMap.GetString("RabbitMq:VirtualHost"),
             ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
         };
-        
+
         var flags = QueueTypeEnum.DialogMessages | QueueTypeEnum.DialogMessages;
 
         // Если кол-во подключений уже больше 1, то не будем плодить их,
@@ -87,22 +96,22 @@ internal sealed class DialogMessageJob : IJob
                     queue: _queueName.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!, flags),
                     durable: false, exclusive: false, autoDelete: false, arguments: null);
             }
-            
+
             catch (Exception ex)
             {
                 await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-                
+
                 _logger.LogError(ex, ex.Message);
                 throw;
             }
-            
+
             _counter++;
         }
 
         // Если канал не был создан, то не будем дергать память.
         if (_channel is not null)
         {
-            
+            await ProcessMessagesAsync();
         }
 
         await Task.CompletedTask;
@@ -112,7 +121,54 @@ internal sealed class DialogMessageJob : IJob
 
     #region Приватные методы.
 
-    
+    /// <summary>
+    /// Метод обрабатывает сообщения из очереди чата.
+    /// </summary>
+    private async Task ProcessMessagesAsync()
+    {
+        var consumer = new AsyncEventingBasicConsumer(_channel);
+        consumer.Received += async (_, ea) =>
+        {
+            var logger = _logger; // Вне скоупа логгер не пишет логи, поэтому должны иметь внутренний логгер тут.
+            logger.LogInformation("Начали обработку сообщения из очереди заказов...");
+
+            // Если очередь не пуста, то будем парсить результат.
+            if (!ea.Body.IsEmpty)
+            {
+                var message = Encoding.UTF8.GetString(ea.Body.ToArray());
+                var messageEvent = JsonConvert.DeserializeObject<DialogMessageEvent>(message);
+                
+                if (messageEvent is null)
+                {
+                    throw new InvalidOperationException("Событие не содержит нужных данных. " +
+                                                        $"Получили сообщение из очереди сообщений чата: {message}");
+                }
+                
+                // Добавляем сообщение в БД.
+                var addedMessage = await _abstractGroupDialogRepository.SaveMessageAsync(messageEvent.Message,
+                    messageEvent.CreatedBy, messageEvent.DialogId);
+
+                if (addedMessage is null)
+                {
+                    var ex = new InvalidOperationException(
+                        "Ошибка добавления сообщения в БД. " +
+                        $"MessageEvent: {JsonConvert.SerializeObject(messageEvent)}.");
+
+                    logger.LogError(ex, ex.Message);
+
+                    await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                }
+
+                logger.LogInformation("Закончили обработку сообщения из очереди заказов...");
+
+                await Task.Yield();
+            }
+
+            _channel.BasicConsume(_queueName, false, consumer);
+
+            await Task.CompletedTask;
+        };
+    }
 
     #endregion
 }

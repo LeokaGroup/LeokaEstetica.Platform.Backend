@@ -15,4 +15,13 @@ public interface IAbstractGroupDialogRepository
     /// <returns>Созданный диалог.</returns>
     Task<GroupObjectDialogOutput?> CreateDialogAndAddDialogMembersAsync(IEnumerable<long> memberIds,
         string? dialogName);
+
+    /// <summary>
+    /// Метод добавляет сообщение чата в БД.
+    /// </summary>
+    /// <param name="message">Сообщение.</param>
+    /// <param name="createdBy">Кто создал сообщение.</param>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <returns>Добавленное сообщение.</returns>
+    Task<GroupObjectDialogMessageOutput?> SaveMessageAsync(string? message, long createdBy, long dialogId);
 }
