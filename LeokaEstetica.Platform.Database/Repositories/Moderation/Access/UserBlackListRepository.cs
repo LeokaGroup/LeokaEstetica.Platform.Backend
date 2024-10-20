@@ -34,17 +34,17 @@ internal sealed class UserBlackListRepository : BaseRepository, IUserBlackListRe
     /// <param name="email">Почта для блока.</param>
     /// <param name="phoneNumber">Номер телефона для блока.</param>
     /// <param name="vkUserId">Id пользователя в системе ВКонтакте.</param>
-    public async Task AddUserBlackListAsync(long userId, string? email, string? phoneNumber, string? vkUserId)
+    public async Task AddUserBlackListAsync(long userId, string? email, string? phoneNumber, long? vkUserId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
-
-        var parameters = new DynamicParameters();
-        parameters.Add("@userId", userId);
-        
+ 
         try
         {
-            if (!string.IsNullOrEmpty(email))
+            var parameters = new DynamicParameters();
+            parameters.Add("@userId", userId);
+
+            if (!string.IsNullOrWhiteSpace(email))
             {
                 parameters.Add("@email", email);
 
@@ -54,7 +54,7 @@ internal sealed class UserBlackListRepository : BaseRepository, IUserBlackListRe
                 await connection.ExecuteAsync(insertUserEmailBlackQuery, parameters);
             }
 
-            if (!string.IsNullOrEmpty(phoneNumber))
+            if (!string.IsNullOrWhiteSpace(phoneNumber))
             { 
                 parameters.Add("@phoneNumber", phoneNumber);
 
@@ -63,8 +63,8 @@ internal sealed class UserBlackListRepository : BaseRepository, IUserBlackListRe
 
                 await connection.ExecuteAsync(insertUserPhoneNumberBlackQuery, parameters);
             }
-
-            if (!string.IsNullOrEmpty(vkUserId))
+           
+            if (vkUserId.HasValue)
             {
                 parameters.Add("@vkUserId", vkUserId);
 
