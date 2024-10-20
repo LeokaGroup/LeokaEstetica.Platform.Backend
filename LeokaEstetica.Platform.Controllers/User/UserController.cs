@@ -228,7 +228,16 @@ public class UserController : BaseController
     public async Task<UserRestorePasswordOutput> SendCodeRestorePasswordAsync(
         [FromBody] PreRestorePasswordInput preRestorePasswordInput)
     {
-        var result = await _userService.SendCodeRestorePasswordAsync(preRestorePasswordInput.Account);
+
+        var result = new UserRestorePasswordOutput { Errors = new List<ValidationFailure>() };
+        var validator = await new CheckRestoreAccountValidator().ValidateAsync(preRestorePasswordInput);
+
+        if (validator.Errors.Any())
+        {
+            result.Errors = validator.Errors;
+            return result;
+        }
+        result = await _userService.SendCodeRestorePasswordAsync(preRestorePasswordInput.Account);
 
         return result;
     }
