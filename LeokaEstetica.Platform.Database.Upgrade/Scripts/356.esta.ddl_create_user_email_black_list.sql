@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS access.user_email_black_list
     CONSTRAINT fk_user_email_black_list_users_user_id FOREIGN KEY (user_id) REFERENCES dbo."Users" ("UserId")
 );
 
-COMMENT ON TABLE  access.user_email_black_list IS 'Таблица ЧС почты пользователей.';
+COMMENT ON TABLE  access.user_email_black_list IS 'РўР°Р±Р»РёС†Р° Р§РЎ РїРѕС‡С‚С‹ РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№.';
 COMMENT ON COLUMN access.user_email_black_list.black_id IS 'PK.';
-COMMENT ON COLUMN access.user_email_black_list.user_id IS 'Id пользователя.';
-COMMENT ON COLUMN access.user_email_black_list.email IS 'Email пользователя.';
+COMMENT ON COLUMN access.user_email_black_list.user_id IS 'Id РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.';
+COMMENT ON COLUMN access.user_email_black_list.email IS 'Email РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.';
