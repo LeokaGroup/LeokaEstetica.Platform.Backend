@@ -152,8 +152,8 @@ internal sealed class YandexKassaService : IYandexKassaService
                 price = orderCache.Price;
                 ruleId = orderCache.RuleId;
                 
-                var isTestPayMode = await _globalConfigRepository.GetValueByKeyAsync<bool>(GlobalConfigKeys.Integrations
-                    .PaymentSystem.COMMEFCE_TEST_PRICE_MODE_ENABLED);
+                var isTestPayMode = await _globalConfigRepository.GetValueByKeyAsync<bool>(
+                    GlobalConfigKeys.Integrations.PaymentSystem.COMMEFCE_TEST_PRICE_MODE_ENABLED);
 
                 // Если хотим провести тестовый платеж, но на реальных ДС.
                 if (isTestPayMode)

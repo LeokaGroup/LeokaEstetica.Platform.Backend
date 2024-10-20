@@ -89,7 +89,7 @@ public class CommerceController : BaseController
             throw ex;
         }
 
-        // Здесь NULL, чтобы не тащить азвисимости в контроллер лишние, внутри сервиса заполним.
+        // Здесь NULL, чтобы не тащить зависимости в контроллер лишние, внутри сервиса заполним.
         BaseOrderBuilder builder = new FareRuleOrderBuilder(null, null);
         builder.OrderData ??= new OrderData();
         builder.OrderData.PublicId = createOrderInput.PublicId;

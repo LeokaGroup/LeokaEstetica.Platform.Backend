@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Base.Models.Dto;
+using LeokaEstetica.Platform.Models.Enums;
 
 namespace LeokaEstetica.Platform.Base.Models.IntegrationEvents.Communications;
 
@@ -21,4 +22,14 @@ public class DialogMessageEvent : BaseEventMessage
     /// Id диалога.
     /// </summary>
     public long DialogId { get; set; }
+
+    /// <summary>
+    /// Код пользователя.
+    /// </summary>
+    public Guid UserCode { get; set; }
+
+    /// <summary>
+    /// Модуль.
+    /// </summary>
+    public UserConnectionModuleEnum Module { get; set; }
 }

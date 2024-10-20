@@ -1,4 +1,5 @@
 ﻿using LeokaEstetica.Platform.Communications.Abstractions;
+using LeokaEstetica.Platform.Communications.Models;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Enums;
@@ -164,6 +165,7 @@ internal sealed class CommunicationsHub : Hub
     /// </summary>
     /// <param name="dialogId">Id диалога.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <returns>Возвращает через сокеты сообщения диалога.</returns>
     public async Task GetDialogMessagesAsync(long dialogId, string account)
     {
         try
@@ -190,6 +192,37 @@ internal sealed class CommunicationsHub : Hub
             _logger.LogError(ex, ex.Message);
             throw;
         }
+    }
+    
+    /// <summary>
+    /// Метод отправляет сообщение в очередь RabbitMQ.
+    /// </summary>
+    /// <param name="message">Сообщение.</param>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task SendMessageToBackAsync(string? message, long dialogId, string account)
+    {
+        var userCode = Context.GetHttpContext()?.Request.Query["userCode"].ToString();
+        var module = Enum.Parse<UserConnectionModuleEnum>(
+            Context.GetHttpContext()?.Request.Query["module"].ToString()!);
+
+        await _abstractGroupDialogMessagesService.SendMessageToQueueAsync(message, dialogId, account,
+            new Guid(userCode), module);
+    }
+
+    /// <summary>
+    /// Метод отправляет фронту сообщение через хаб.
+    /// </summary>
+    /// <param name="messageDto">Модель dto с данными сообщения.</param>
+    /// <returns>Возвращает через сокеты сообщения диалога.</returns>
+    public async Task SendMessageToFrontAsync(MessageDto messageDto)
+    {
+        var connection = await GetConnectionCacheAsync();
+
+        await Clients
+            .Client(connection.ConnectionId)
+            .SendAsync("sendMessageToFront", messageDto)
+            .ConfigureAwait(false);
     }
 
     #endregion

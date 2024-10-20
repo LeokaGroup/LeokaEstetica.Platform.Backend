@@ -1,11 +1,15 @@
 ﻿using System.Text;
+using FluentValidation;
 using LeokaEstetica.Platform.Base.Enums;
 using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
 using LeokaEstetica.Platform.Base.Models.IntegrationEvents.Communications;
+using LeokaEstetica.Platform.Communications.Hubs;
+using LeokaEstetica.Platform.Communications.Models;
 using LeokaEstetica.Platform.Core.Constants;
 using LeokaEstetica.Platform.Database.Abstractions.Communications;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
+using LeokaEstetica.Platform.Models.Enums;
 using Newtonsoft.Json;
 using Quartz;
 using RabbitMQ.Client;
@@ -24,6 +28,7 @@ internal sealed class DialogMessageJob : IJob
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IDiscordService _discordService;
     private readonly IAbstractGroupDialogRepository _abstractGroupDialogRepository;
+    private readonly CommunicationsHub _communicationsHub;
 
     /// <summary>
     /// Название очереди.
@@ -42,15 +47,18 @@ internal sealed class DialogMessageJob : IJob
     /// <param name="globalConfigRepository">Репозиторий глобал конфига.</param>
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="abstractGroupDialogRepository">Репозиторий сообщений.</param>
+    /// <param name="communicationsHub">Хаб коммуникаций.</param>
     public DialogMessageJob(ILogger<DialogMessageJob> logger,
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
-        IAbstractGroupDialogRepository abstractGroupDialogRepository)
+        IAbstractGroupDialogRepository abstractGroupDialogRepository,
+        CommunicationsHub communicationsHub)
     {
         _logger = logger;
         _globalConfigRepository = globalConfigRepository;
         _discordService = discordService;
         _abstractGroupDialogRepository = abstractGroupDialogRepository;
+        _communicationsHub = communicationsHub;
     }
 
     #region Публичные методы.
@@ -130,7 +138,7 @@ internal sealed class DialogMessageJob : IJob
         consumer.Received += async (_, ea) =>
         {
             var logger = _logger; // Вне скоупа логгер не пишет логи, поэтому должны иметь внутренний логгер тут.
-            logger.LogInformation("Начали обработку сообщения из очереди заказов...");
+            logger.LogInformation("Начали обработку сообщения из очереди сообщений чата...");
 
             // Если очередь не пуста, то будем парсить результат.
             if (!ea.Body.IsEmpty)
@@ -157,17 +165,112 @@ internal sealed class DialogMessageJob : IJob
                     logger.LogError(ex, ex.Message);
 
                     await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                    
+                    if (_channel is null)
+                    {
+                        var exChannel = new InvalidOperationException("Канал кролика был NULL.");
+                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                        
+                        throw exChannel;
+                    }
+                    
+                    // TODO: Может не стоит хранить битое сообщение в очереди, а дропать из очереди его?
+                    // TODO: Но тогда оно будет потеряно навсегда.
+                    // Оставляем сообщение в очереди.
+                    _channel.BasicRecoverAsync(false);
+                    
+                    return;
                 }
 
-                logger.LogInformation("Закончили обработку сообщения из очереди заказов...");
+                var messageDto = new MessageDto
+                {
+                    Label = addedMessage.Label,
+                    CreatedBy = addedMessage.CreatedBy,
+                    DialogId = addedMessage.DialogId,
+                    IsMyMessage = addedMessage.IsMyMessage,
+                    UserCode = messageEvent.UserCode,
+                    Module = messageEvent.Module
+                };
+
+                var errors = await ValidateMessageToFrontAsync(messageDto);
+
+                // Не ломаем систему, но оставляем сообщение в очереди.
+                if (errors.Count > 0)
+                {
+                    var ex = new AggregateException("Ошибки валидации сообщения при отправке фронту.", errors);
+                    
+                    logger.LogError(ex, ex.Message);
+
+                    await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                    
+                    if (_channel is null)
+                    {
+                        var exChannel = new InvalidOperationException("Канал кролика был NULL.");
+                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+                        
+                        throw exChannel;
+                    }
+                    
+                    // TODO: Может не стоит хранить битое сообщение в очереди, а дропать из очереди его?
+                    // TODO: Но тогда оно будет потеряно навсегда.
+                    // Оставляем сообщение в очереди.
+                    _channel.BasicRecoverAsync(false);
+                    
+                    return;
+                }
+                
+                // Отправляем сообщение фронту через хаб.
+                await _communicationsHub.SendMessageToFrontAsync(messageDto).ConfigureAwait(false);
+
+                logger.LogInformation("Закончили обработку сообщения из очереди сообщений чата...");
 
                 await Task.Yield();
             }
-
-            _channel.BasicConsume(_queueName, false, consumer);
-
-            await Task.CompletedTask;
         };
+        
+        _channel.BasicConsume(_queueName, false, consumer);
+        
+        await Task.CompletedTask;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод валидирует данные сообщения перед отправкой его на фронт.
+    /// </summary>
+    /// <param name="messageDto">Данные сообщения для валидации.</param>
+    private async Task<List<ValidationException>> ValidateMessageToFrontAsync(MessageDto messageDto)
+    {
+        var errors = new List<ValidationException>();
+        
+        if (string.IsNullOrWhiteSpace(messageDto.Label))
+        {
+            errors.Add(new ValidationException("Сообщение не заполнено при отправке сообщения фронту."));
+        }
+
+        if (messageDto.Module is UserConnectionModuleEnum.Undefined or not UserConnectionModuleEnum.Communications)
+        {
+            errors.Add(new ValidationException("Недопустимый тип модуля при отправке сообщения фронту."));
+        }
+
+        if (messageDto.DialogId <= 0)
+        {
+            errors.Add(new ValidationException("Id диалога невалиден при отправке сообщения фронту."));
+        }
+
+        if (messageDto.UserCode == Guid.Empty)
+        {
+            errors.Add(new ValidationException("Недопустимый код пользователя при отправке сообщения фронту."));
+        }
+        
+        if (messageDto.CreatedBy <= 0)
+        {
+            errors.Add(new ValidationException("Id пользователя невалиден при отправке сообщения фронту."));
+        }
+
+        return await Task.FromResult(errors);
     }
 
     #endregion

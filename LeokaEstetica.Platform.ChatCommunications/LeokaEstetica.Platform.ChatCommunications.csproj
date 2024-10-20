@@ -31,6 +31,7 @@
     <ItemGroup>
       <ProjectReference Include="..\LeokaEstetica.Platform.Classifiers\LeokaEstetica.Platform.Classifiers.csproj" />
       <ProjectReference Include="..\LeokaEstetica.Platform.Integrations\LeokaEstetica.Platform.Integrations.csproj" />
+      <ProjectReference Include="..\LeokaEstetica.Platform.RabbitMq\LeokaEstetica.Platform.RabbitMq.csproj" />
     </ItemGroup>
 
 </Project>
