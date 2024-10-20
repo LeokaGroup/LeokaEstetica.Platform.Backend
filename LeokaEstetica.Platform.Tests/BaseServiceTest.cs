@@ -139,6 +139,7 @@ internal class BaseServiceTest
     protected readonly CalendarService CalendarService;
     protected readonly MenuService MenuService;
     protected readonly AbstractScopeService AbstractScopeService;
+    protected readonly AbstractGroupDialogService AbstractGroupDialogService;
 
     protected BaseServiceTest()
     {
@@ -346,5 +347,9 @@ internal class BaseServiceTest
 
         var abstractScopeRepository = new AbstractScopeRepository(connectionProvider);
         AbstractScopeService = new AbstractScopeService(null, userRepository, abstractScopeRepository);
+
+        var abstractGroupDialogRepositoru = new AbstractGroupDialogRepository(connectionProvider);
+        AbstractGroupDialogService = new AbstractGroupDialogService(abstractGroupDialogRepositoru, null,
+            userRepository);
     }
 }

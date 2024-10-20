@@ -1,7 +1,9 @@
 using LeokaEstetica.Platform.Base;
 using LeokaEstetica.Platform.Base.Filters;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
 using LeokaEstetica.Platform.Models.Dto.Input.Search.ProjectManagment;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.ProjectManagment.Validators;
 using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
@@ -111,4 +113,26 @@ public class SearchController : BaseController
 
         return result;
     }
+
+
+	/// <summary>
+	/// Метод ищет раб.пространства проектов.
+	/// </summary>
+	/// <param name="workspaceSearchingInput">Входная модель.</param>
+	/// <returns>Выходная модель.</returns>
+	[HttpGet]
+	[Route("workspaces")]
+    [ProducesResponseType(200, Type = typeof(WorkSpaceResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<WorkSpaceResult> SearchWorkSpacesAsync(
+        [FromQuery] WorkspaceSearchingInput workspaceSearchingInput)
+	{
+        var result = await _searchProjectManagementService.SearchWorkSpacesAsync(workspaceSearchingInput,
+            GetUserName());
+
+		return result;
+	}
 }

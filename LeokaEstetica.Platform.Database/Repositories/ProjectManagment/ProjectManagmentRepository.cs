@@ -3265,19 +3265,78 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         return result.ToDictionary(k => k.StoryEpicId, v => v);
     }
+    
+    /// <inheritdoc />
+    public async Task<IEnumerable<WorkSpaceOutput>> GetSearchingWorkSpaceAsync(
+        WorkspaceSearchingInput workspaceSearchingInput, long userId)
+    {
+		using var connection = await ConnectionProvider.GetConnectionAsync();
 
-    #endregion
+		var parameters = new DynamicParameters();
+		parameters.Add("@userId", userId);
 
-    #region Приватные методы.
+        var query = "SELECT up.\"ProjectId\", " +
+                    "COALESCE(up.\"ProjectManagementName\", 'Проект без названия') AS ProjectManagementName, " +
+                    "pw.workspace_id," +
+                    "pw.organization_id AS company_id," +
+                    "(SELECT organization_name " +
+                    "FROM project_management.organizations " +
+                    "WHERE organization_id = pw.organization_id) AS CompanyName, " +
+                    "(CASE " +
+                    "WHEN ptm.\"Role\" = 'Владелец' THEN TRUE " +
+                    "ELSE FALSE END) AS IsOwner " +
+                    "FROM \"Projects\".\"UserProjects\" AS up " +
+                    "INNER JOIN project_management.workspaces AS pw " +
+                    "ON up.\"ProjectId\" = pw.project_id " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeams\" AS pt " +
+                    "ON up.\"ProjectId\" = pt.\"ProjectId\" " +
+                    "INNER JOIN \"Teams\".\"ProjectsTeamsMembers\" AS ptm " +
+                    "ON pt.\"TeamId\" = ptm.\"TeamId\" " +
+                    "WHERE ptm.\"UserId\" = @userId " +
+                    "AND NOT pw.project_id = ANY (SELECT \"ProjectId\" " +
+                    "FROM \"Moderation\".\"Projects\" " +
+                    "WHERE \"ModerationStatusId\" IN (2, 6, 7)) ";
+					
 
-    /// <summary>
-    /// Метод создает обычную связь между задачами.
-    /// </summary>
-    /// <param name="taskFromLink">Id задачи, от которой исходит связь.</param>
-    /// <param name="taskToLink">Id задачи, которую связывают.</param>
-    /// <param name="linkType">Тип связи.</param>
-    /// <param name="projectId">Id проекта.</param>
-    private async Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType,
+        // Поиск по id проекта.
+		if (workspaceSearchingInput.IsById
+            && !string.IsNullOrWhiteSpace(workspaceSearchingInput.SearchText))
+        {
+            if (!int.TryParse(workspaceSearchingInput.SearchText, out _))
+            {
+                throw new InvalidCastException("Ошибка при попытке каста SearchText к int.");
+            }
+
+            parameters.Add("@projectId", int.Parse(workspaceSearchingInput.SearchText));
+            query += " AND up.\"ProjectId\" = @projectId";
+        }
+
+        // Поиск по названию проекта.
+        else if (workspaceSearchingInput.IsByProjectName
+                 && !string.IsNullOrWhiteSpace(workspaceSearchingInput.SearchText))
+        {
+            parameters.Add("@projectName", workspaceSearchingInput.SearchText);
+            query += " AND up.\"ProjectManagementName\" ILIKE @projectName";
+        }
+
+        query+= " ORDER BY pw.workspace_id DESC";
+        
+		var result = await connection.QueryAsync<WorkSpaceOutput>(query, parameters);
+
+		return result;
+	}
+	#endregion
+
+	#region Приватные методы.
+
+	/// <summary>
+	/// Метод создает обычную связь между задачами.
+	/// </summary>
+	/// <param name="taskFromLink">Id задачи, от которой исходит связь.</param>
+	/// <param name="taskToLink">Id задачи, которую связывают.</param>
+	/// <param name="linkType">Тип связи.</param>
+	/// <param name="projectId">Id проекта.</param>
+	private async Task CreateTaskLinkDefaultAsync(long taskFromLink, long taskToLink, LinkTypeEnum linkType,
         long projectId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();

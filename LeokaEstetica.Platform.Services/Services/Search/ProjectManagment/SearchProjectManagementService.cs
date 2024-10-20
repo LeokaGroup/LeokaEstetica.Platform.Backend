@@ -6,6 +6,8 @@ using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Database.Abstractions.Search;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
+using LeokaEstetica.Platform.Models.Dto.Input.ProjectManagement;
+using LeokaEstetica.Platform.Models.Dto.Output.ProjectManagement.Output;
 using LeokaEstetica.Platform.Models.Dto.Output.Search.ProjectManagement;
 using LeokaEstetica.Platform.Services.Abstractions.Search.ProjectManagment;
 using LeokaEstetica.Platform.Services.Helpers;
@@ -297,4 +299,53 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
             throw;
         }
     }
+
+	/// <inheritdoc />
+    public async Task<WorkSpaceResult> SearchWorkSpacesAsync(WorkspaceSearchingInput workspaceSearchingInput,
+        string account)
+	{
+        try
+		{
+            var result = new WorkSpaceResult
+            {
+                UserCompanyWorkSpaces = new List<WorkSpaceOutput>(),
+                OtherCompanyWorkSpaces = new List<WorkSpaceOutput>()
+            };
+        
+            if (!workspaceSearchingInput.IsById && !workspaceSearchingInput.IsByProjectName)
+            {
+                return result;
+            }
+            
+            var userId = await _userRepository.GetUserByEmailAsync(account);
+
+			if (userId <= 0)
+			{
+				var ex = new NotFoundUserIdByAccountException(account);
+				throw ex;
+			}
+
+            var items = (await _projectManagmentRepository.GetSearchingWorkSpaceAsync(workspaceSearchingInput, userId))
+                ?.AsList();
+
+			if (items is null || items.Count == 0)
+			{
+                return result;
+			}
+
+            result.UserCompanyWorkSpaces = new List<WorkSpaceOutput>(items.Count(x => x.IsOwner));
+            result.OtherCompanyWorkSpaces = new List<WorkSpaceOutput>(items.Count(x => !x.IsOwner));
+
+            result.UserCompanyWorkSpaces.AddRange(items.Where(x => x.IsOwner));
+			result.OtherCompanyWorkSpaces.AddRange(items.Where(x => !x.IsOwner));
+
+			return result;
+        }
+
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, ex.Message);
+			throw;
+		}
+	}
 }

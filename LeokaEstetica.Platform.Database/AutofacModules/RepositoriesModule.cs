@@ -422,5 +422,12 @@ public class RepositoriesModule : Module
         builder.RegisterType<AbstractGroupObjectsRepository>()
             .As<IAbstractGroupObjectsRepository>()
             .InstancePerLifetimeScope();
+        
+        builder.RegisterType<AbstractGroupDialogRepository>()
+            .Named<IAbstractGroupDialogRepository>("AbstractGroupDialogRepository")
+            .InstancePerLifetimeScope();
+        builder.RegisterType<AbstractGroupDialogRepository>()
+            .As<IAbstractGroupDialogRepository>()
+            .InstancePerLifetimeScope();
     }
 }
