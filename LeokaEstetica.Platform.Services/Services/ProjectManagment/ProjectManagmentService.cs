@@ -1103,12 +1103,18 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
 
 			var maxUserTagPosition = await _projectManagmentRepository.GetLastPositionProjectTagAsync(projectId);
 
-			// TODO: Для чего вообще использовать класс сущности?
-			// TODO: С Dapper не нужно все это.
-			// TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
-			var projectTag = CreateUserTaskTagFactory.CreateProjectTag(tagName, tagDescription, tagSysName,
-					++maxUserTagPosition, projectId);
-			await _projectManagmentRepository.CreateProjectTaskTagAsync(projectTag);
+            var listUserTagInProject = await _projectManagmentRepository.GetProjectTagsAsync(projectId);
+            if (listUserTagInProject.Any(t => t.TagSysName == tagSysName))
+            {
+                throw new ArgumentException("Такая метка уже существует у проекта");
+            }
+
+            // TODO: Для чего вообще использовать класс сущности?
+            // TODO: С Dapper не нужно все это.
+            // TODO: Использовать просто классы DTO для этого, и факторки эти не нужны будут.
+            var projectTag = CreateUserTaskTagFactory.CreateProjectTag(tagName, tagDescription, tagSysName,
+                    ++maxUserTagPosition, projectId);
+            await _projectManagmentRepository.CreateProjectTaskTagAsync(projectTag);
 
 			var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
 
@@ -1117,8 +1123,31 @@ internal sealed class ProjectManagmentService : IProjectManagmentService
                 NotificationLevelConsts.NOTIFICATION_LEVEL_SUCCESS, "SendNotifySuccessCreateProjectTag", userCode,
                 UserConnectionModuleEnum.ProjectManagement);
         }
-        
-        catch (Npgsql.PostgresException postgresEx)
+
+        catch (ArgumentException tagExistsEx)
+        {
+            if (tagExistsEx.Message == "Такая метка уже существует у проекта")
+            {
+                var userId = await _userRepository.GetUserByEmailAsync(account);
+
+                if (userId <= 0)
+                {
+                    var ex = new NotFoundUserIdByAccountException(account);
+                    throw ex;
+                }
+                var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    "Такая метка уже существует у проекта",
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotifyErrorCreateProjectTag", userCode,
+                    UserConnectionModuleEnum.ProjectManagement);
+            }
+            Exception exception = tagExistsEx;
+			_logger.LogError(exception.Message, exception);
+			throw;
+        }
+
+		catch (Npgsql.PostgresException postgresEx)
         {
             if (postgresEx.SqlState.Equals("23505"))
             {
