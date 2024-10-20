@@ -1,4 +1,5 @@
-﻿using Quartz;
+﻿using LeokaEstetica.Platform.Communications.Loaders.RabbitMq;
+using Quartz;
 
 namespace LeokaEstetica.Platform.Communications.Loaders;
 
@@ -14,38 +15,21 @@ public class StartJobs
     /// </summary>
     public static void Start(IServiceCollectionQuartzConfigurator q, IConfiguration configuration)
     {
-        // var ordersJobKey = new JobKey("SprintDurationJob");
-        // q.AddJob<SprintDurationJob>(opts =>
-        // {
-        //     opts.WithIdentity(ordersJobKey);
-        //     opts.UsingJobData("RabbitMq:HostName", configuration["RabbitMq:HostName"]!)
-        //         .UsingJobData("RabbitMq:VirtualHost", configuration["RabbitMq:VirtualHost"]!)
-        //         .UsingJobData("RabbitMq:UserName", configuration["RabbitMq:UserName"]!)
-        //         .UsingJobData("RabbitMq:Password", configuration["RabbitMq:Password"]!)
-        //         .UsingJobData("Environment", configuration["Environment"]!);
-        // });
-        // q.AddTrigger(opts => opts
-        //     .ForJob(ordersJobKey)
-        //     .WithIdentity("SprintDurationJobTrigger")
-        //     .WithSimpleSchedule(x => x
-        //         .WithIntervalInMinutes(3)
-        //         .RepeatForever()));
-        //
-        // var scrumMasterAiJobKey = new JobKey("ScrumMasterAiJobKey");
-        // q.AddJob<ScrumMasterAIJob>(opts =>
-        // {
-        //     opts.WithIdentity(scrumMasterAiJobKey);
-        //     opts.UsingJobData("RabbitMq:HostName", configuration["RabbitMq:HostName"]!)
-        //         .UsingJobData("RabbitMq:VirtualHost", configuration["RabbitMq:VirtualHost"]!)
-        //         .UsingJobData("RabbitMq:UserName", configuration["RabbitMq:UserName"]!)
-        //         .UsingJobData("RabbitMq:Password", configuration["RabbitMq:Password"]!)
-        //         .UsingJobData("Environment", configuration["Environment"]!);
-        // });
-        // q.AddTrigger(opts => opts
-        //     .ForJob(scrumMasterAiJobKey)
-        //     .WithIdentity("ScrumMasterAiJobKeyTrigger")
-        //     .WithSimpleSchedule(x => x
-        //         .WithIntervalInSeconds(3)
-        //         .RepeatForever()));
+        var ordersJobKey = new JobKey("DialogMessageJob");
+        q.AddJob<DialogMessageJob>(opts =>
+        {
+            opts.WithIdentity(ordersJobKey);
+            opts.UsingJobData("RabbitMq:HostName", configuration["RabbitMq:HostName"]!)
+                .UsingJobData("RabbitMq:VirtualHost", configuration["RabbitMq:VirtualHost"]!)
+                .UsingJobData("RabbitMq:UserName", configuration["RabbitMq:UserName"]!)
+                .UsingJobData("RabbitMq:Password", configuration["RabbitMq:Password"]!)
+                .UsingJobData("Environment", configuration["Environment"]!);
+        });
+        q.AddTrigger(opts => opts
+            .ForJob(ordersJobKey)
+            .WithIdentity("DialogMessageJobTrigger")
+            .WithSimpleSchedule(x => x
+                .WithIntervalInSeconds(1)
+                .RepeatForever()));
     }
 }

@@ -36,5 +36,11 @@ public enum QueueTypeEnum
     /// Очередь анализа чата нейросети.
     /// </summary>
     [Description("ScrumMasterAiAnalysis.Queue")]
-    ScrumMasterAiAnalysis = 1 << 8
+    ScrumMasterAiAnalysis = 1 << 8,
+    
+    /// <summary>
+    /// Очередь чата.
+    /// </summary>
+    [Description("DialogMessages.Queue")]
+    DialogMessages = 1 << 10
 }
