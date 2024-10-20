@@ -244,14 +244,13 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         // Если применили любой фильтр.
         var isFiltedApplied = false;
 
-        catalogProjectInput.Filters ??= new FilterProjectInput();
-
         // Фильтр по стадиям проекта.
-        if (!string.IsNullOrWhiteSpace(catalogProjectInput.Filters.StageValues))
+        if (!string.IsNullOrWhiteSpace(catalogProjectInput.Filters!.StageValues))
         {
-	        parameters.Add("@stages", catalogProjectInput.Filters.StageValues);
+	        parameters.Add("@stageSysNames", catalogProjectInput.Filters.StageValues);
+	        
 	        // Приходит в строке через запятую, поэтому можем через IN.
-            query += " AND p0.\"StageSysName\" IN (@stages) ";
+            query += $" AND p0.\"StageSysName\" IN (@stageSysNames) ";
             isFiltedApplied = true;
         }
 
