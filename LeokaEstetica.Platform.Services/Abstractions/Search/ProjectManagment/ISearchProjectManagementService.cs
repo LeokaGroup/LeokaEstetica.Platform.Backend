@@ -37,10 +37,10 @@ public interface ISearchProjectManagementService
         bool isSearchByTaskName, bool isSearchByTaskDescription, long projectId, string account);
 
 	/// <summary>
-	/// Метод ищет проекты в разделе "Мое пространство"
+	/// Метод ищет проекты в разделе "Мое пространство".
 	/// </summary>
-	/// <param name="SearchInput">Входная модель поиска</param>
+	/// <param name="workspaceSearchingInput">Входная модель поиска</param>
 	/// <param name="account">Аккаунт</param>
 	/// <returns></returns>
-	Task<WorkSpaceResult> GetSearchingWorkSpaceAsync(WorkspaceSearchingInput SearchInput, string account);
+	Task<WorkSpaceResult> SearchWorkSpacesAsync(WorkspaceSearchingInput workspaceSearchingInput, string account);
 }

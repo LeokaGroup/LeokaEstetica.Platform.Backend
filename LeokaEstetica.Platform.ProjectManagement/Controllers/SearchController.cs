@@ -116,15 +116,22 @@ public class SearchController : BaseController
 
 
 	/// <summary>
-	/// Метод ищет проекты в разделе "Мое пространство"
+	/// Метод ищет раб.пространства проектов.
 	/// </summary>
-	/// <param name="workspaceSearchingInput">Входная модель поиска</param>
-	/// <returns></returns>
+	/// <param name="workspaceSearchingInput">Входная модель.</param>
+	/// <returns>Выходная модель.</returns>
 	[HttpGet]
-	[Route("search/workspace")]
-	public async Task<WorkSpaceResult> SearchingWorkSpacesAsync([FromQuery] WorkspaceSearchingInput workspaceSearchingInput)
+	[Route("workspaces")]
+    [ProducesResponseType(200, Type = typeof(WorkSpaceResult))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<WorkSpaceResult> SearchWorkSpacesAsync(
+        [FromQuery] WorkspaceSearchingInput workspaceSearchingInput)
 	{
-		var result = await _searchProjectManagementService.GetSearchingWorkSpaceAsync(workspaceSearchingInput, GetUserName());
+        var result = await _searchProjectManagementService.SearchWorkSpacesAsync(workspaceSearchingInput,
+            GetUserName());
 
 		return result;
 	}

@@ -3238,8 +3238,10 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
 
         return result.ToDictionary(k => k.StoryEpicId, v => v);
     }
-	public async Task<IEnumerable<WorkSpaceOutput>> GetSearchingWorkSpaceAsync(WorkspaceSearchingInput SearchInput, 
-        long userId)
+    
+    /// <inheritdoc />
+    public async Task<IEnumerable<WorkSpaceOutput>> GetSearchingWorkSpaceAsync(
+        WorkspaceSearchingInput workspaceSearchingInput, long userId)
     {
 		using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -3269,23 +3271,29 @@ VALUES (@task_status_id, @author_id, @watcher_ids, @name, @details, @created, @p
                     "WHERE \"ModerationStatusId\" IN (2, 6, 7)) ";
 					
 
-        //Поиск по id проекту
-		if (SearchInput.IsById is true &&
-				SearchInput.SearchText is not null)
-		{
-            parameters.Add("@projectId",Convert.ToInt32(SearchInput.SearchText));
-            query += " AND up.\"ProjectId\"=@projectId";
-		}
+        // Поиск по id проекта.
+		if (workspaceSearchingInput.IsById
+            && !string.IsNullOrWhiteSpace(workspaceSearchingInput.SearchText))
+        {
+            if (!int.TryParse(workspaceSearchingInput.SearchText, out _))
+            {
+                throw new InvalidCastException("Ошибка при попытке каста SearchText к int.");
+            }
 
-		//Поиск по названию проекту
-		if (SearchInput.SearchText is not null &&
-			SearchInput.IsByProjectName is true)
-		{
-			parameters.Add("@ProjectName", SearchInput.SearchText);
-            query += " AND up.\"ProjectManagementName\" ILIKE @ProjectName";
-		}
+            parameters.Add("@projectId", int.Parse(workspaceSearchingInput.SearchText));
+            query += " AND up.\"ProjectId\" = @projectId";
+        }
+
+        // Поиск по названию проекта.
+        else if (workspaceSearchingInput.IsByProjectName
+                 && !string.IsNullOrWhiteSpace(workspaceSearchingInput.SearchText))
+        {
+            parameters.Add("@projectName", workspaceSearchingInput.SearchText);
+            query += " AND up.\"ProjectManagementName\" ILIKE @projectName";
+        }
 
         query+= " ORDER BY pw.workspace_id DESC";
+        
 		var result = await connection.QueryAsync<WorkSpaceOutput>(query, parameters);
 
 		return result;

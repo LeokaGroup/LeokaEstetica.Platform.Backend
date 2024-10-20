@@ -301,23 +301,23 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
     }
 
 	/// <inheritdoc />
-	public async Task<WorkSpaceResult> GetSearchingWorkSpaceAsync(WorkspaceSearchingInput SearchInput, string account)
+    public async Task<WorkSpaceResult> SearchWorkSpacesAsync(WorkspaceSearchingInput workspaceSearchingInput,
+        string account)
 	{
-
-		if (SearchInput.IsById is false  && SearchInput.IsByProjectName is false)
+        try
 		{
-            return new WorkSpaceResult
+            var result = new WorkSpaceResult
             {
                 UserCompanyWorkSpaces = new List<WorkSpaceOutput>(),
                 OtherCompanyWorkSpaces = new List<WorkSpaceOutput>()
             };
-
-		}
-
-		try
-		{
-
-			var userId = await _userRepository.GetUserByEmailAsync(account);
+        
+            if (!workspaceSearchingInput.IsById && !workspaceSearchingInput.IsByProjectName)
+            {
+                return result;
+            }
+            
+            var userId = await _userRepository.GetUserByEmailAsync(account);
 
 			if (userId <= 0)
 			{
@@ -325,29 +325,22 @@ internal sealed class SearchProjectManagementService : ISearchProjectManagementS
 				throw ex;
 			}
 
-			var items = (await _projectManagmentRepository.GetSearchingWorkSpaceAsync(SearchInput,userId))?.AsList();
+            var items = (await _projectManagmentRepository.GetSearchingWorkSpaceAsync(workspaceSearchingInput, userId))
+                ?.AsList();
 
 			if (items is null || items.Count == 0)
 			{
-				return new WorkSpaceResult
-				{
-					UserCompanyWorkSpaces = new List<WorkSpaceOutput>(),
-					OtherCompanyWorkSpaces = new List<WorkSpaceOutput>()
-				};
+                return result;
 			}
 
-			var result = new WorkSpaceResult
-			{
-				UserCompanyWorkSpaces = new List<WorkSpaceOutput>(items.Count(x => x.IsOwner)),
-				OtherCompanyWorkSpaces = new List<WorkSpaceOutput>(items.Count(x => !x.IsOwner))
-			};
+            result.UserCompanyWorkSpaces = new List<WorkSpaceOutput>(items.Count(x => x.IsOwner));
+            result.OtherCompanyWorkSpaces = new List<WorkSpaceOutput>(items.Count(x => !x.IsOwner));
 
-			result.UserCompanyWorkSpaces.AddRange(items.Where(x => x.IsOwner));
+            result.UserCompanyWorkSpaces.AddRange(items.Where(x => x.IsOwner));
 			result.OtherCompanyWorkSpaces.AddRange(items.Where(x => !x.IsOwner));
 
 			return result;
-
-		}
+        }
 
 		catch (Exception ex)
 		{
