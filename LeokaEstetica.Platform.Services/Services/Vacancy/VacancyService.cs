@@ -503,6 +503,8 @@ internal sealed class VacancyService : IVacancyService
             // Очищаем теги.
             result.Vacancies = ClearVacanciesHtmlTags(vacancies);
 
+            //добавляем разделитель для цен или "Без оплаты"
+            result.Vacancies = CreatePriceWithDelimiter(vacancies);
             return result;
         }
         
@@ -843,7 +845,28 @@ internal sealed class VacancyService : IVacancyService
             vac.Payment = vac.Payment.CreatePriceWithDelimiterFromString();
         }
     }
-    
+
+    /// <summary>
+    /// Метод разбивает цену на разряды в списке вакансий или присваивает "Без оплаты".
+    /// </summary>
+    /// <param name="vacancies">Список вакансий.</param>
+    /// <returns>Список вакансий после очистки.</returns>
+    private IEnumerable<VacancyOutput> CreatePriceWithDelimiter(List<VacancyOutput> vacancies)
+    {
+        // Чистим описание вакансии от html-тегов.
+        foreach (var vac in vacancies)
+        {
+            if (vac.Payment == "0" || string.IsNullOrEmpty(vac.Payment))
+            {
+                vac.Payment = "Без оплаты";
+                continue;
+            }
+            vac.Payment = vac.Payment.CreatePriceWithDelimiterFromString();
+        }
+
+        return vacancies;
+    }
+
     /// <summary>
     /// Метод чистит описание от тегов список вакансий.
     /// </summary>
@@ -863,7 +886,7 @@ internal sealed class VacancyService : IVacancyService
 
         return vacancies;
     }
-    
+
     /// <summary>
     /// Метод проставляет статусы вакансиям.
     /// </summary>
