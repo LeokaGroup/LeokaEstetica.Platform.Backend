@@ -111,56 +111,43 @@ internal sealed class ProfileRepository : IProfileRepository
     /// <returns>Список навыков.</returns>
     public async Task SaveProfileSkillsAsync(IEnumerable<UserSkillEntity> selectedSkills, long userId)
     {
-        var userSkills = await _pgContext.UserSkills
+            var userSkills = await _pgContext.UserSkills
             .Where(s => s.UserId == userId)
             .ToListAsync();
 
-        // Если у пользователя в БД еще не было навыков, то просто добавляем из выбранных.
         var enumerable = selectedSkills.ToList();
         var skillEntities = enumerable.ToList();
         var userSkillEntities = skillEntities.ToList();
-        
-        // Если в БД нет навыков еще у пользователя, то добавляем все, что он выбрал.
-        if (!userSkills.Any())
+
+        // Если в БД еще нет навыков у пользователя и есть новые навыки для добавления,
+        // то добавляем все, что он выбрал или переходим к актуализации.
+        if (!userSkills.Any() && enumerable.Any())
         {
             await _pgContext.UserSkills.AddRangeAsync(userSkillEntities);
         }
-        
-        // Если в БД есть навыки у пользователя, но он ничего не выбрал, то удаляем все его навыки из БД.
-        else if (!enumerable.Any())
-        {
-            _pgContext.UserSkills.RemoveRange(userSkillEntities);
-        }
-
         else
         {
             // Если в БД есть навыки у пользователя, то актуализируем их.
-            foreach (var skill in userSkillEntities)
+            //добавляем новые
+            var newSkills = userSkillEntities
+                .Where(skill => !userSkills.Any(us => us.SkillId == skill.SkillId))
+                .ToList();
+
+            if (newSkills.Any())
             {
-                // Если в БД есть такой уже навык, то ничего не делаем.
-                var findIndex = userSkills.FindIndex(s => s.SkillId == skill.SkillId);
+                await _pgContext.UserSkills.AddRangeAsync(newSkills);
+            }
 
-                if (findIndex != -1)
-                {
-                    continue;
-                }
-            
-                // Если в БД нету, то добавляем.
-                await _pgContext.UserSkills.AddAsync(skill);
-            }   
+            //удаляем лишние
+            var outdatedSkills = userSkills
+                .Where(s => !skillEntities.Select(x => x.SkillId)
+                .Contains(s.SkillId)).ToList();
+
+            if (outdatedSkills.Any())
+            {
+                _pgContext.UserSkills.RemoveRange (outdatedSkills);
+            }
         }
-
-        // Удаляем те навыки, которые пользователь не выбрал, но они есть в БД.
-        if (userSkills.Any())
-        {
-            var items = await _pgContext.UserSkills
-                .Where(s => s.UserId == userId 
-                            && !skillEntities.Select(x => x.SkillId).Contains(s.SkillId))
-                .ToListAsync();
-            
-            _pgContext.UserSkills.RemoveRange(items);
-        }
-
         await _pgContext.SaveChangesAsync();
     }
 
