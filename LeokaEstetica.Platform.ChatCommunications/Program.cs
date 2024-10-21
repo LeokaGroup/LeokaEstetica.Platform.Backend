@@ -206,7 +206,7 @@ if (builder.Environment.IsDevelopment() || builder.Environment.IsStaging())
 }
 
 // Добавляем хаб приложения для работы через сокеты.
-app.MapHub<CommunicationsHub>("/communications");
+// app.MapHub<CommunicationsHub>("/communications");
 
 // app.UseProblemDetails();
 
