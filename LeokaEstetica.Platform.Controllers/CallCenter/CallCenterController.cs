@@ -275,7 +275,7 @@ public class CallCenterController : BaseController
     {
         await new AddUserBlackListValidator().ValidateAndThrowAsync(addUserBlackListInput);
         await _userBlackListService.AddUserBlackListAsync(addUserBlackListInput.UserId, addUserBlackListInput.Email,
-            addUserBlackListInput.PhoneNumber);
+            addUserBlackListInput.PhoneNumber, addUserBlackListInput.VkUserId);
     }
 
     /// <summary>

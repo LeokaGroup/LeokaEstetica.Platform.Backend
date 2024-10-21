@@ -31,11 +31,12 @@ public class UserBlackListService : IUserBlackListService
     /// <param name="userId">Id пользователя.</param>
     /// <param name="email">Почта для блока..</param>
     /// <param name="phoneNumber">Номер телефона для блока.</param>
-    public async Task AddUserBlackListAsync(long userId, string email, string phoneNumber)
+    /// <param name="vkUserId">Id пользователя в системе ВКонтакте.</param>
+    public async Task AddUserBlackListAsync(long userId, string? email, string? phoneNumber, long? vkUserId)
     {
         try
         {
-            await _userBlackListRepository.AddUserBlackListAsync(userId, email, phoneNumber);
+            await _userBlackListRepository.AddUserBlackListAsync(userId, email, phoneNumber, vkUserId);
         }
         
         catch (Exception ex)
