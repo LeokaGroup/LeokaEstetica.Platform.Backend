@@ -96,6 +96,26 @@ public static class QueueExtensions
                 queue = QueueTypeEnum.ScrumMasterAiMessage.GetEnumDescription();
             }
         }
+        
+        // Если тип очереди сообщения чата.
+        else if (queueType.HasFlag(QueueTypeEnum.DialogMessages))
+        {
+            if (environment.Equals("Development"))
+            {
+                queue = string.Concat("Develop_", QueueTypeEnum.DialogMessages.GetEnumDescription());
+            }
+        
+            else if (environment.Equals("Staging"))
+            {
+                queue = string.Concat("Test_", QueueTypeEnum.DialogMessages.GetEnumDescription());
+            }
+
+            else
+            {
+                // Обычное название, как на проде.
+                queue = QueueTypeEnum.DialogMessages.GetEnumDescription();
+            }
+        }
 
         return queue;
     }

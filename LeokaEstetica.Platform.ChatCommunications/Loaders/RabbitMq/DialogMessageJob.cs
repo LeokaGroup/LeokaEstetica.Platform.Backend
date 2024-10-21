@@ -10,6 +10,8 @@ using LeokaEstetica.Platform.Database.Abstractions.Communications;
 using LeokaEstetica.Platform.Database.Abstractions.Config;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Enums;
+using LeokaEstetica.Platform.Redis.Abstractions.Connection;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using Quartz;
 using RabbitMQ.Client;
@@ -28,7 +30,8 @@ internal sealed class DialogMessageJob : IJob
     private readonly IGlobalConfigRepository _globalConfigRepository;
     private readonly IDiscordService _discordService;
     private readonly IAbstractGroupDialogRepository _abstractGroupDialogRepository;
-    private readonly CommunicationsHub _communicationsHub;
+    private readonly IHubContext<CommunicationsHub> _communicationsHub;
+    private readonly IConnectionService _connectionService;
 
     /// <summary>
     /// Название очереди.
@@ -48,17 +51,20 @@ internal sealed class DialogMessageJob : IJob
     /// <param name="discordService">Сервис уведомлений дискорда.</param>
     /// <param name="abstractGroupDialogRepository">Репозиторий сообщений.</param>
     /// <param name="communicationsHub">Хаб коммуникаций.</param>
+    /// <param name="connectionService">Сервис подключений к кэшу Redis.</param>
     public DialogMessageJob(ILogger<DialogMessageJob> logger,
         IGlobalConfigRepository globalConfigRepository,
         IDiscordService discordService,
         IAbstractGroupDialogRepository abstractGroupDialogRepository,
-        CommunicationsHub communicationsHub)
+        IHubContext<CommunicationsHub> communicationsHub,
+        IConnectionService connectionService)
     {
         _logger = logger;
         _globalConfigRepository = globalConfigRepository;
         _discordService = discordService;
         _abstractGroupDialogRepository = abstractGroupDialogRepository;
         _communicationsHub = communicationsHub;
+        _connectionService = connectionService;
     }
 
     #region Публичные методы.
@@ -168,10 +174,8 @@ internal sealed class DialogMessageJob : IJob
                     
                     if (_channel is null)
                     {
-                        var exChannel = new InvalidOperationException("Канал кролика был NULL.");
-                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-                        
-                        throw exChannel;
+                        await ThrowChannelExceptionAsync();
+                        return;
                     }
                     
                     // TODO: Может не стоит хранить битое сообщение в очереди, а дропать из очереди его?
@@ -205,10 +209,8 @@ internal sealed class DialogMessageJob : IJob
                     
                     if (_channel is null)
                     {
-                        var exChannel = new InvalidOperationException("Канал кролика был NULL.");
-                        await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-                        
-                        throw exChannel;
+                        await ThrowChannelExceptionAsync();
+                        return;
                     }
                     
                     // TODO: Может не стоит хранить битое сообщение в очереди, а дропать из очереди его?
@@ -219,10 +221,32 @@ internal sealed class DialogMessageJob : IJob
                     return;
                 }
                 
+                var key = string.Concat(messageDto.UserCode + "_", messageDto.Module.ToString());
+                var connection = await _connectionService.GetConnectionIdCacheAsync(key);
+
+                if (string.IsNullOrWhiteSpace(connection?.ConnectionId))
+                {
+                    throw new InvalidOperationException(
+                        "Ошибка получения подключения пользователя из Redis. " +
+                        "Ошибка в джобе сообщений чата.");
+                }
+                
                 // Отправляем сообщение фронту через хаб.
-                await _communicationsHub.SendMessageToFrontAsync(messageDto).ConfigureAwait(false);
+                await _communicationsHub.Clients
+                    .Client(connection.ConnectionId)
+                    .SendAsync("sendMessageToFront", messageDto)
+                    .ConfigureAwait(false);
 
                 logger.LogInformation("Закончили обработку сообщения из очереди сообщений чата...");
+                
+                if (_channel is null)
+                {
+                    await ThrowChannelExceptionAsync();
+                    return;
+                }
+                
+                // Подтверждаем сообщение, чтобы дропнуть его из очереди.
+                _channel.BasicAck(ea.DeliveryTag, false);
 
                 await Task.Yield();
             }
@@ -271,6 +295,14 @@ internal sealed class DialogMessageJob : IJob
         }
 
         return await Task.FromResult(errors);
+    }
+
+    private async Task ThrowChannelExceptionAsync()
+    {
+        var exChannel = new InvalidOperationException("Канал кролика был NULL.");
+        await _discordService.SendNotificationErrorAsync(exChannel).ConfigureAwait(false);
+
+        throw exChannel;
     }
 
     #endregion

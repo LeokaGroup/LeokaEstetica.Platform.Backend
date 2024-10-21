@@ -104,8 +104,8 @@ internal sealed class AbstractGroupDialogRepository : BaseRepository, IAbstractG
 
         var messageQuery = "SELECT message_id, " +
                            "dialog_id, " +
-                           "message, " +
-                           "created_at, " +
+                           "message AS label, " +
+                           "TO_CHAR(created_at, 'dd.MM.yyyy HH24:MI'), " +
                            "created_by, " +
                            "(CASE " +
                            "WHEN created_by = @createdBy " +

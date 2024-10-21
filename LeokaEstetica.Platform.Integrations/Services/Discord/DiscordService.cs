@@ -57,7 +57,7 @@ internal sealed class DiscordService : IDiscordService
 
             errorMessage.AppendLine(errMsg);
             errorMessage.AppendLine("StackTrace: ");
-            errorMessage.AppendLine(exception.StackTrace);
+            errorMessage.AppendLine(exception.StackTrace ?? new System.Diagnostics.StackTrace().ToString());
 
             using var httpClient = new HttpClient();
             var request = new SendNotificationInput

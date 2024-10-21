@@ -1,5 +1,4 @@
 ﻿using LeokaEstetica.Platform.Communications.Abstractions;
-using LeokaEstetica.Platform.Communications.Models;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Enums;
@@ -208,21 +207,6 @@ internal sealed class CommunicationsHub : Hub
 
         await _abstractGroupDialogMessagesService.SendMessageToQueueAsync(message, dialogId, account,
             new Guid(userCode), module);
-    }
-
-    /// <summary>
-    /// Метод отправляет фронту сообщение через хаб.
-    /// </summary>
-    /// <param name="messageDto">Модель dto с данными сообщения.</param>
-    /// <returns>Возвращает через сокеты сообщения диалога.</returns>
-    public async Task SendMessageToFrontAsync(MessageDto messageDto)
-    {
-        var connection = await GetConnectionCacheAsync();
-
-        await Clients
-            .Client(connection.ConnectionId)
-            .SendAsync("sendMessageToFront", messageDto)
-            .ConfigureAwait(false);
     }
 
     #endregion
