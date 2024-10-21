@@ -164,6 +164,7 @@ internal sealed class CommunicationsHub : Hub
     /// </summary>
     /// <param name="dialogId">Id диалога.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <returns>Возвращает через сокеты сообщения диалога.</returns>
     public async Task GetDialogMessagesAsync(long dialogId, string account)
     {
         try
@@ -190,6 +191,22 @@ internal sealed class CommunicationsHub : Hub
             _logger.LogError(ex, ex.Message);
             throw;
         }
+    }
+    
+    /// <summary>
+    /// Метод отправляет сообщение в очередь RabbitMQ.
+    /// </summary>
+    /// <param name="message">Сообщение.</param>
+    /// <param name="dialogId">Id диалога.</param>
+    /// <param name="account">Аккаунт.</param>
+    public async Task SendMessageToBackAsync(string? message, long dialogId, string account)
+    {
+        var userCode = Context.GetHttpContext()?.Request.Query["userCode"].ToString();
+        var module = Enum.Parse<UserConnectionModuleEnum>(
+            Context.GetHttpContext()?.Request.Query["module"].ToString()!);
+
+        await _abstractGroupDialogMessagesService.SendMessageToQueueAsync(message, dialogId, account,
+            new Guid(userCode), module);
     }
 
     #endregion

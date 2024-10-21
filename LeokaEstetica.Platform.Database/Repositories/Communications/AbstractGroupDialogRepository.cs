@@ -20,7 +20,9 @@ internal sealed class AbstractGroupDialogRepository : BaseRepository, IAbstractG
         : base(connectionProvider)
     {
     }
-    
+
+    #region Публичные методы.
+
     /// <inheritdoc />
     public async Task<GroupObjectDialogOutput?> CreateDialogAndAddDialogMembersAsync(IEnumerable<long> memberIds,
         string? dialogName)
@@ -79,4 +81,50 @@ internal sealed class AbstractGroupDialogRepository : BaseRepository, IAbstractG
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public async Task<GroupObjectDialogMessageOutput?> SaveMessageAsync(string? message, long createdBy, long dialogId)
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var addedMessageParameters = new DynamicParameters();
+        addedMessageParameters.Add("@message", message);
+        addedMessageParameters.Add("@createdBy", createdBy);
+        addedMessageParameters.Add("@dialogId", dialogId);
+
+        var addedMessageQuery = "INSERT INTO communications.dialog_messages (dialog_id, message, created_by) " +
+                                "VALUES (@dialogId, @message, @createdBy) " +
+                                "RETURNING message_id";
+
+        var messageId = await connection.ExecuteScalarAsync<long>(addedMessageQuery, addedMessageParameters);
+        
+        var messageParameters = new DynamicParameters();
+        messageParameters.Add("@messageId", messageId);
+        messageParameters.Add("@createdBy", createdBy);
+
+        var messageQuery = "SELECT message_id, " +
+                           "dialog_id, " +
+                           "message AS label, " +
+                           "TO_CHAR(created_at, 'dd.MM.yyyy HH24:MI'), " +
+                           "created_by, " +
+                           "(CASE " +
+                           "WHEN created_by = @createdBy " +
+                           "THEN TRUE " +
+                           "ELSE FALSE END) AS is_my_message " +
+                           "FROM communications.dialog_messages " +
+                           "WHERE message_id = @messageId";
+
+        var result = await connection.QuerySingleOrDefaultAsync<GroupObjectDialogMessageOutput>(messageQuery,
+            messageParameters);
+
+        return result;
+    }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

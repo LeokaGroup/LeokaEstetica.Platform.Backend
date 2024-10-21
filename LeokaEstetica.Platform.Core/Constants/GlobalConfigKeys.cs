@@ -125,6 +125,11 @@ public static class GlobalConfigKeys
         /// Ключ вкл/выкл контроля длительности спринтов проекта.
         /// </summary>
         public const string PROJECT_SPRINT_DURATION_JOB_MODE_ENABLED = "ProjectSprintDuration.Mode.Enabled";
+
+        /// <summary>
+        /// Ключ вкл/откл джобу сообщений диалогов.
+        /// </summary>
+        public const string DIALOG_MESSAGES_JOB_MODE_ENABLED = "DialogMessages.Job.Mode.Enabled";
     }
 
     /// <summary>

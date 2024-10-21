@@ -16,7 +16,8 @@ public static class QueueExtensions
         QueueTypeEnum.OrdersQueue,
         QueueTypeEnum.RefundsQueue,
         QueueTypeEnum.ScrumMasterAiMessage,
-        QueueTypeEnum.ScrumMasterAiAnalysis
+        QueueTypeEnum.ScrumMasterAiAnalysis,
+        QueueTypeEnum.DialogMessages
     };
 
     /// <summary>
@@ -93,6 +94,26 @@ public static class QueueExtensions
             {
                 // Обычное название, как на проде.
                 queue = QueueTypeEnum.ScrumMasterAiMessage.GetEnumDescription();
+            }
+        }
+        
+        // Если тип очереди сообщения чата.
+        else if (queueType.HasFlag(QueueTypeEnum.DialogMessages))
+        {
+            if (environment.Equals("Development"))
+            {
+                queue = string.Concat("Develop_", QueueTypeEnum.DialogMessages.GetEnumDescription());
+            }
+        
+            else if (environment.Equals("Staging"))
+            {
+                queue = string.Concat("Test_", QueueTypeEnum.DialogMessages.GetEnumDescription());
+            }
+
+            else
+            {
+                // Обычное название, как на проде.
+                queue = QueueTypeEnum.DialogMessages.GetEnumDescription();
             }
         }
 
