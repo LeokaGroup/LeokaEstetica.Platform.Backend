@@ -29,14 +29,6 @@ internal sealed class AbstractGroupObjectsRepository : BaseRepository, IAbstract
         parameters.Add("@abstractScopeIds", objectIds.AsList());
 
         var query = "SELECT DISTINCT (id.dialog_id), " +
-                    "dmes.message_id, " +
-                    "(SELECT RIGHT(dmes.message, 40) " +
-                    "FROM communications.dialog_messages AS mes " +
-                    "WHERE dmes.dialog_id = id.dialog_id " +
-                    "AND dmes.message_id = mes.message_id " +
-                    "ORDER BY dmes.message DESC) AS last_message, " +
-                    "TO_CHAR(id.created_at, 'dd.MM.yyyy HH24:MI'), " +
-                    "dmes.created_by, " +
                     "id.dialog_name AS label, " +
                     "id.abstract_scope_id AS object_id " +
                     "FROM communications.main_info_dialogs AS id " +
