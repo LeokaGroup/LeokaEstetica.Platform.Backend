@@ -16,7 +16,8 @@ public static class QueueExtensions
         QueueTypeEnum.OrdersQueue,
         QueueTypeEnum.RefundsQueue,
         QueueTypeEnum.ScrumMasterAiMessage,
-        QueueTypeEnum.ScrumMasterAiAnalysis
+        QueueTypeEnum.ScrumMasterAiAnalysis,
+        QueueTypeEnum.DialogMessages
     };
 
     /// <summary>

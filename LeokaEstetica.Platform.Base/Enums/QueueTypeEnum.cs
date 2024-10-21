@@ -4,6 +4,7 @@ namespace LeokaEstetica.Platform.Base.Enums;
 
 /// <summary>
 /// Перечисление типов очередей кролика.
+/// При добавлении нового типа очереди, обязательно добавлять во флаги. <see cref="QueueExtensions"/>
 /// </summary>
 [Flags]
 public enum QueueTypeEnum
