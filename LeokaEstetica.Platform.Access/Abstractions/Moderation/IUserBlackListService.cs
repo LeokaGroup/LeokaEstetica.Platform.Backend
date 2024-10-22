@@ -13,7 +13,8 @@ public interface IUserBlackListService
     /// <param name="userId">Id пользователя.</param>
     /// <param name="email">Почта для блока..</param>
     /// <param name="phoneNumber">Номер телефона для блока.</param>
-    Task AddUserBlackListAsync(long userId, string email, string phoneNumber);
+    /// <param name="vkUserId">Id пользователя в системе ВКонтакте.</param>
+    Task AddUserBlackListAsync(long userId, string? email, string? phoneNumber, long? vkUserId);
 
     /// <summary>
     /// Метод получает список пользователей в ЧС.
