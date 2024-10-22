@@ -282,17 +282,12 @@ internal sealed class ProfileService : IProfileService
             var savedProfileInfoData = await _userRepository.SaveUserDataAsync(userId, profileInfoInput.PhoneNumber,
                 email!);
 
-            if (profileInfoInput.UserSkills is not null && profileInfoInput.UserSkills.Any())
-            {
-                // Сохраняем выбранные навыки пользователя.
-                await SaveUserSkillsAsync(profileInfoInput, userId);
-            }
+            // Сохраняем выбранные навыки пользователя.
+            await SaveUserSkillsAsync(profileInfoInput, userId);
             
-            if (profileInfoInput.UserIntents is not null && profileInfoInput.UserIntents.Any())
-            {
-                // Сохраняем выбранные цели пользователя.
-                await SaveUserIntentsAsync(profileInfoInput, userId);
-            }
+            
+            // Сохраняем выбранные цели пользователя.
+            await SaveUserIntentsAsync(profileInfoInput, userId);
 
             // Снова логиним юзера, так как почта изменилась а значит и токен надо менять.
             if (savedProfileInfoData.IsEmailChanged)
