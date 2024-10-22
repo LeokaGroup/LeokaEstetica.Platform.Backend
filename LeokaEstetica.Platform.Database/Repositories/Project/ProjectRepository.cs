@@ -232,7 +232,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     "WHERE ppv.\"ProjectId\" = u.\"ProjectId\") " +
                     "THEN TRUE " +
                     "ELSE FALSE " +
-                    "END AS \"HasVacancies\" " +
+                    $"END AS {nameof(CatalogProjectOutput.HasVacancies)} " +
                     "FROM \"Projects\".\"CatalogProjects\" AS c " +
                     "INNER JOIN \"Projects\".\"UserProjects\" AS u ON c.\"ProjectId\" = u.\"ProjectId\" " +
                     "LEFT JOIN \"Moderation\".\"Projects\" AS p ON u.\"ProjectId\" = p.\"ProjectId\" " +
