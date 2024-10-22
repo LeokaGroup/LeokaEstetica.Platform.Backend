@@ -297,6 +297,25 @@ public class CallCenterController : BaseController
     }
 
     /// <summary>
+    /// Метод удаляет пользователя из ЧС.
+    /// </summary>
+    /// <param name="removeUserBlackListInput"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("blacklist")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task RemoveUserBlackListAsync([FromQuery] RemoveUserBlackListInput removeUserBlackListInput)
+    {
+        await new RemoveUserBlackListValidator().ValidateAndThrowAsync(removeUserBlackListInput);
+        await _userBlackListService.RemoveUserBlackListAsync(removeUserBlackListInput.UserId,
+            removeUserBlackListInput.Email, removeUserBlackListInput.PhoneNumber, removeUserBlackListInput.VkUserId);
+    }
+
+    /// <summary>
     /// Метод получает список анкет для модерации.
     /// </summary>
     /// <returns>Список анкет.</returns>
