@@ -269,7 +269,7 @@ internal class BaseServiceTest
         ProjectPaginationService = new ProjectPaginationService(projectRepository, null);
         FareRuleService = new FareRuleService(FareRuleRepository, null);
 
-        var userBlackListService = new UserBlackListRepository(pgContext);
+        var userBlackListService = new UserBlackListRepository(pgContext, null);
         UserBlackListService = new UserBlackListService(null, userBlackListService);
 
         var landingRepository = new LandingRepository(pgContext);
