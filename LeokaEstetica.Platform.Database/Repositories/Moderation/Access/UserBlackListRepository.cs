@@ -64,7 +64,7 @@ internal sealed class UserBlackListRepository : BaseRepository, IUserBlackListRe
                 await connection.ExecuteAsync(insertUserPhoneNumberBlackQuery, parameters);
             }
            
-            if (vkUserId.HasValue)
+            if (vkUserId.HasValue && vkUserId.Value > 0)
             {
                 parameters.Add("@vkUserId", vkUserId);
 
