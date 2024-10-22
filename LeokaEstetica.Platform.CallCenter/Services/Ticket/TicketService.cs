@@ -57,7 +57,7 @@ internal sealed class TicketService : ITicketService
     #region Публичные методы.
 
     /// <summary>
-    /// Метод получает список категорий тикетов.
+    /// Метод получает список категорий тикетов, где 0-ой элемент "Не выбрано".
     /// </summary>
     /// <param name="account">Аккаунт.</param>
     /// <returns>Категории тикетов.</returns>
@@ -67,14 +67,25 @@ internal sealed class TicketService : ITicketService
         {
             var result = await _ticketRepository.GetTicketCategoriesAsync();
 
-            return result;
-        }
+            var notSelectedCategory = new TicketCategoryEntity
+            {
+                CategoryId = 0, 
+                CategoryName = "Не выбрано",
+                CategorySysName = "NotSelected",
+                Position = 0
+            };
 
+            var resultWithNotSelected = new List<TicketCategoryEntity> { notSelectedCategory };
+            resultWithNotSelected.AddRange(result);
+
+            return resultWithNotSelected;
+        }
         catch (Exception ex)
         {
             _logger?.LogError(ex, ex.Message);
             throw;
         }
+
     }
 
     /// <summary>
