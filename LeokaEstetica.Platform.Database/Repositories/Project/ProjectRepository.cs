@@ -224,15 +224,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
                     " u.\"ProjectIcon\"," +
                     " u.\"ProjectDetails\"," +
                     " u.\"UserId\"," +
-                    " p0.\"StageSysName\" AS \"ProjectStageSysName\", " +
-                    "CASE " +
-                    "WHEN EXISTS ( " +
-                    "SELECT 1 " +
-                    "FROM \"Projects\".\"ProjectVacancies\" AS ppv " +
-                    "WHERE ppv.\"ProjectId\" = u.\"ProjectId\") " +
-                    "THEN TRUE " +
-                    "ELSE FALSE " +
-                    "END AS \"HasVacancies\" " +
+                    " p0.\"StageSysName\" AS \"ProjectStageSysName\" " +
                     "FROM \"Projects\".\"CatalogProjects\" AS c " +
                     "INNER JOIN \"Projects\".\"UserProjects\" AS u ON c.\"ProjectId\" = u.\"ProjectId\" " +
                     "LEFT JOIN \"Moderation\".\"Projects\" AS p ON u.\"ProjectId\" = p.\"ProjectId\" " +
