@@ -188,14 +188,9 @@ internal sealed class ProjectModerationService : IProjectModerationService
     {
         try
         {
-            // TODO: Надо еще проверять, что внесены замечания проекта. Нельзя отклонить проект, не внеся замечания,
-            // TODO: и модератор должен это видеть.
-            // TODO: Добавить такую проверку тут.
-            var result = new RejectProjectOutput
-            {
-                IsSuccess = await _projectModerationRepository.RejectProjectAsync(projectId)
-            };
-            
+            // Проверяем, были ли внесены замечания проекта.
+            var isExists = await _projectModerationRepository.CheckExistsProjectRemarksAsync(projectId);
+
             var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
 
             if (userId <= 0)
@@ -203,7 +198,31 @@ internal sealed class ProjectModerationService : IProjectModerationService
                 var ex = new NotFoundUserIdByAccountException(account);
                 throw ex;
             }
-            
+
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
+            if (!isExists)
+            {
+                var ex = new InvalidOperationException(RemarkConst.REJECT_PROJECT_WARNING +
+                                                       $" ProjectId: {projectId}");
+                _logger.LogWarning(ex, ex.Message);
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    RemarkConst.REJECT_PROJECT_WARNING,
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningRejectProject",
+                    userCode, UserConnectionModuleEnum.Main);
+
+                return new RejectProjectOutput
+                {
+                    IsSuccess=false
+                };
+            }
+
+            var result = new RejectProjectOutput
+            {
+                IsSuccess = await _projectModerationRepository.RejectProjectAsync(projectId)
+            };
+
             var user = await _userRepository.GetUserPhoneEmailByUserIdAsync(userId);
 
             var projectName = await _projectRepository.GetProjectNameByIdAsync(projectId);
