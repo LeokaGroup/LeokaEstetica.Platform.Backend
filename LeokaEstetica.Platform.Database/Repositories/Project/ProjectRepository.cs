@@ -296,12 +296,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         parameters.Add("@countRows", 20);
 
         // Фильтр по дате.
-        query += "ORDER BY u.\"DateCreated\" ";
-
-        if(string.IsNullOrWhiteSpace(catalogProjectInput.Filters.Date)
-			|| catalogProjectInput.Filters.Date.Equals("None"))
-			query += "DESC ";
-
+        query += "ORDER BY c.\"CatalogProjectId\", u.\"DateCreated\" DESC ";
         query += "LIMIT @countRows";
 
         var items = (await connection.QueryAsync<CatalogProjectOutput>(query, parameters))?.AsList();
@@ -341,7 +336,10 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
         var result = new CatalogProjectResultOutput
         {
-	        CatalogProjects = items,
+	        CatalogProjects = !string.IsNullOrWhiteSpace(catalogProjectInput.Filters.Date)
+	                          && !catalogProjectInput.Filters.Date.Equals("None")
+		        ? items.OrderByDescending(o => o.DateCreated)
+		        : items.OrderBy(o => o.DateCreated),
 	        Total = !isFiltedApplied ? calcCount : items.Count,
 	        LastId = items.LastOrDefault()?.CatalogProjectId
         };
