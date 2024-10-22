@@ -20,4 +20,13 @@ public interface IUserBlackListRepository
     /// </summary>
     /// <returns>Список пользователей в ЧС.</returns>
     Task<(IEnumerable<UserEmailBlackListEntity>, IEnumerable<UserPhoneBlackListEntity>)> GetUsersBlackListAsync();
+
+    /// <summary>
+    /// Метод удаляет пользователя из ЧС.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="email">Почта для блока..</param>
+    /// <param name="phoneNumber">Номер телефона для блока.</param>
+    /// <param name="vkUserId">Id пользователя в системе ВКонтакте.</param>
+    Task RemoveUserBlackListAsync(long userId, string? email, string? phoneNumber, long? vkUserId);
 }

@@ -79,4 +79,25 @@ public class UserBlackListService : IUserBlackListService
             throw;
         }
     }
+
+    /// <summary>
+    /// Метод удаляет пользователя из ЧС.
+    /// </summary>
+    /// <param name="userId">Id пользователя.</param>
+    /// <param name="email">Почта для блока..</param>
+    /// <param name="phoneNumber">Номер телефона для блока.</param>
+    /// <param name="vkUserId">Id пользователя в системе ВКонтакте.</param>
+    public async Task RemoveUserBlackListAsync(long userId, string? email, string? phoneNumber, long? vkUserId)
+    {
+        try
+        {
+            await _userBlackListRepository.RemoveUserBlackListAsync(userId, email, phoneNumber, vkUserId);  
+        }
+
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
+    }
 }
