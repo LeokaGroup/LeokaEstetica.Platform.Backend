@@ -31,4 +31,10 @@ public interface IMenuService
     /// </summary>
     /// <returns>Элементы Landing меню.</returns>
     Task<LandingMenuOutput> GetLandingMenuItemsAsync();
+
+    /// <summary>
+    /// Метод получает элементы меню для групп объектов чата.
+    /// </summary>
+    /// <returns>Элементы меню для групп объектов чата.</returns>
+    Task<GroupObjectMenuOutput> GetGroupObjectMenuItemsAsync();
 }
