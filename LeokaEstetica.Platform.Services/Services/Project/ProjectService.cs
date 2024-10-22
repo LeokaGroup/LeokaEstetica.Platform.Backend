@@ -589,18 +589,27 @@ internal sealed class ProjectService : IProjectService
 		}
 	}
 
-	/// <summary>
-	/// Метод получает стадии проекта для выбора.
-	/// </summary>
-	/// <returns>Стадии проекта.</returns>
-	public async Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync()
+    /// <summary>
+    /// Метод получает стадии проекта для выбора, где 0-ой элемент "Не выбрано".
+    /// </summary>
+    /// <returns>Стадии проекта.</returns>
+    public async Task<IEnumerable<ProjectStageOutput>> ProjectStagesAsync()
 	{
 		try
 		{
 			var items = await _projectRepository.ProjectStagesAsync();
-			var result = _mapper.Map<IEnumerable<ProjectStageOutput>>(items);
+            var notSelectedStage = new ProjectStageOutput
+				{
+					StageId = 0,
+					Position = 0,
+					StageName = "Не выбрано",
+					StageSysName = "NotSelected"
+				};
 
-			return result;
+            var result = _mapper.Map<IEnumerable<ProjectStageOutput>>(items);
+            var resultWithNotSelected = result.Prepend(notSelectedStage);
+
+            return resultWithNotSelected;
 		}
 
 		catch (Exception ex)
