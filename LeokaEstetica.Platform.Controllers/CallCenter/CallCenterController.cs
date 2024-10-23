@@ -255,7 +255,9 @@ public class CallCenterController : BaseController
     [ProducesResponseType(404)]
     public async Task<RejectVacancyOutput> RejectProjectAsync([FromBody] RejectVacancyInput rejectVacancyInput)
     {
-        var result = await _vacancyModerationService.RejectVacancyAsync(rejectVacancyInput.VacancyId);
+        var result = await _vacancyModerationService.RejectVacancyAsync(rejectVacancyInput.VacancyId,
+            GetUserName()
+            );
 
         return result;
     }
