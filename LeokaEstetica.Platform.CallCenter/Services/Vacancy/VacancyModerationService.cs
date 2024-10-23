@@ -248,9 +248,40 @@ public class VacancyModerationService : IVacancyModerationService
     {
         try
         {
-            // TODO: Надо еще проверять, что внесены замечания вакансии. Нельзя отклонить вакансию, не внеся замечания,
-            // TODO: и модератор должен это видеть.
-            // TODO: Добавить такую проверку тут.
+            if (vacancyId <= 0)
+            {
+                var ex = new InvalidOperationException($"Id вакансии не был передан. VacancyId: {vacancyId}");
+                throw ex;
+            }
+
+            // Проверяем, были ли внесены замечания вакансии.
+            var isExists = await _vacancyModerationRepository.CheckVacancyRemarksAsync(vacancyId);
+
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
+            if (!isExists)
+            {
+                var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
+                                                       $" VacancyId: {vacancyId}");
+                _logger.LogWarning(ex, ex.Message);
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    RemarkConst.REJECT_VACANCY_REMARKS_WARNING,
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningSendVacancyRemarks",
+                    userCode, UserConnectionModuleEnum.Main);
+
+                return new RejectVacancyOutput() { 
+                    IsSuccess=false
+                };
+            }
             var result = new RejectVacancyOutput
             {
                 IsSuccess = await _vacancyModerationRepository.RejectVacancyAsync(vacancyId)
