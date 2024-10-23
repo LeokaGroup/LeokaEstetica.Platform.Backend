@@ -121,10 +121,11 @@ internal sealed class CommunicationsHub : Hub
     /// <param name="abstractScopeId">Id выбранной абстрактной области чата.</param>
     /// <param name="abstractScopeType">Тип выбранной абстрактной области чата.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="dialogGroupType">Тип группировки диалогов.</param>
     /// <exception cref="InvalidOperationException">Если ошибка валидации.</exception>
     /// <returns>Возвращает через сокеты группы объектов выбранной абстрактной области чата.</returns>
     public async Task GetScopeGroupObjectsAsync(long abstractScopeId, string? abstractScopeType,
-        string account)
+        string account, string? dialogGroupType)
     {
         try
         {
@@ -136,7 +137,7 @@ internal sealed class CommunicationsHub : Hub
 
             if (string.IsNullOrWhiteSpace(abstractScopeType))
             {
-                throw new InvalidOperationException("Не передали тип абстрактной области чата. " +
+                throw new InvalidOperationException("Не передан тип абстрактной области чата. " +
                                                     $"AbstractScopeType: {abstractScopeType}.");
             }
             
@@ -148,10 +149,24 @@ internal sealed class CommunicationsHub : Hub
                 throw new InvalidOperationException("Тип абстрактной области невалиден. " +
                                                     $"AbstractScopeType: {abstractScopeType}.");
             }
+            
+            if (string.IsNullOrWhiteSpace(dialogGroupType))
+            {
+                throw new InvalidOperationException("Не передан тип группировки диалогов чата. " +
+                                                    $"DialogGroupType: {dialogGroupType}.");
+            }
+
+            var groupType = Enum.Parse<DialogGroupTypeEnum>(dialogGroupType.ToPascalCase());
+            
+            if (groupType == DialogGroupTypeEnum.Undefined)
+            {
+                throw new InvalidOperationException("Тип группировки диалогов чата невалиден. " +
+                                                    $"DialogGroupType: {groupType}.");
+            }
 
             // Получаем список групп объектов выбранной абстрактной области чата.
             var result = await _abstractGroupService.GetAbstractGroupObjectsAsync(abstractScopeId, scopeType,
-                account);
+                account, groupType);
                 
             var connection = await GetConnectionCacheAsync();
 

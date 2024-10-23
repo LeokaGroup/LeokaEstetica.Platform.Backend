@@ -1,4 +1,6 @@
-﻿namespace LeokaEstetica.Platform.Models.Dto.Communications.Output;
+﻿using LeokaEstetica.Platform.Models.Enums;
+
+namespace LeokaEstetica.Platform.Models.Dto.Communications.Output;
 
 /// <summary>
 /// Класс результата объектов группы абстрактной области.
@@ -19,4 +21,9 @@ public class AbstractGroupResult
     /// Системное название группы объектов.
     /// </summary>
     public string? GroupSysName { get; set; }
+    
+    /// <summary>
+    /// Тип группировки.
+    /// </summary>
+    public string? DialogGroupType { get; set; }
 }

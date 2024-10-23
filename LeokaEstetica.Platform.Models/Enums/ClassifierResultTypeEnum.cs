@@ -14,5 +14,10 @@ public enum ClassifierResultTypeEnum
     /// <summary>
     /// Проект.
     /// </summary>
-    Project = 1
+    Project = 1,
+    
+    /// <summary>
+    /// Компания.
+    /// </summary>
+    Company = 2
 }

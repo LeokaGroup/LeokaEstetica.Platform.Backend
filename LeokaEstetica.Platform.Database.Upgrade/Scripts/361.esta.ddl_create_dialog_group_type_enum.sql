@@ -1,0 +1,1 @@
+CREATE TYPE communications.dialog_group_type_enum AS ENUM ('company', 'project');

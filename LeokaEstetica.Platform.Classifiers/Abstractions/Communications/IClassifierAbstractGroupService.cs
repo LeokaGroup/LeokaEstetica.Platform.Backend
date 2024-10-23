@@ -13,6 +13,8 @@ public interface IClassifierAbstractGroupService
     /// Результатом является группа, объекты которой нужно будет получить.
     /// </summary>
     /// <param name="abstractScopeType">Тип абстрактной области.</param>
+    /// <param name="groupType">Тип группировки диалогов.</param>
     /// <returns>Группа, объекты которой нужно будет получить.</returns>
-    Task<ClassifierResult> RunClassificationAsync(AbstractScopeTypeEnum abstractScopeType);
+    Task<ClassifierResult> RunClassificationAsync(AbstractScopeTypeEnum abstractScopeType,
+        DialogGroupTypeEnum groupType);
 }
