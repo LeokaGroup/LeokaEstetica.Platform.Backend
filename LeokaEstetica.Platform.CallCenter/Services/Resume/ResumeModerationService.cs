@@ -95,6 +95,7 @@ public class ResumeModerationService : IResumeModerationService
     /// Метод отклоняет анкету на модерации.
     /// </summary>
     /// <param name="profileInfoId">Id анкеты.</param>
+    /// <param name="account">Аккаунт.</param>
     public async Task RejectResumeAsync(long profileInfoId, string? account)
     {
         try
