@@ -140,6 +140,7 @@ internal sealed class CommunicationsHub : Hub
                                                     $"AbstractScopeType: {abstractScopeType}.");
             }
             
+            // С фронта приходит в нижнем регистре, поэтому приводим к нотации PascalCase.
             var scopeType = Enum.Parse<AbstractScopeTypeEnum>(abstractScopeType.ToPascalCase());
 
             if (scopeType == AbstractScopeTypeEnum.Undefined)
