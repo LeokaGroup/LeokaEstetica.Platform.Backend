@@ -1,4 +1,4 @@
-INSERT INTO communications.group_object_actions_menu (items)
+INSERT INTO communications.dialog_group_menu (items)
 VALUES ('{
     "items": [
         {
