@@ -184,45 +184,6 @@ internal sealed class MenuService : IMenuService
         }
     }
 
-    /// <inheritdoc />
-    public async Task<GroupObjectMenuOutput> GetGroupObjectMenuItemsAsync()
-    {
-        try
-        {
-            var json = await _menuRepository.GetGroupObjectMenuItemsAsync();
-
-            if (json is null)
-            {
-                throw new InvalidOperationException("Ошибка получения элементов меню для групп объектов чата.");
-            }
-
-            var result = JsonConvert.DeserializeObject<GroupObjectMenuOutput>(json);
-
-            if (result is null)
-            {
-                throw new InvalidOperationException(
-                    "Ошибка при десериализации элементов меню для групп объектов чата.");
-            }
-
-            if (result.Items is null || result.Items.Count == 0)
-            {
-                return new GroupObjectMenuOutput { Items = new List<MenuItem>() };
-            }
-            
-            await SortingMenuItemsAsync(result.Items);
-
-            result.Items = result.Items.OrderBy(x => x.Position).AsList();
-
-            return result;
-        }
-
-        catch (Exception ex)
-        {
-            _logger?.LogError(ex, ex.Message);
-            throw;
-        }
-    }
-
     #endregion
 
     #region Приватные методы.
@@ -231,7 +192,7 @@ internal sealed class MenuService : IMenuService
     /// Метод сортирует элементы меню.
     /// </summary>
     /// <param name="items">элементы меню.</param>
-    private async Task SortingMenuItemsAsync(List<MenuItem> items)
+    public async Task SortingMenuItemsAsync(List<MenuItem> items)
     {
         // Перебираем все элементы и сортируем.
         foreach (var item in items)

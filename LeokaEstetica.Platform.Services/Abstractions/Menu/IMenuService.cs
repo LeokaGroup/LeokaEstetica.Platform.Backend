@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Models.Dto.Output.Menu;
+﻿using LeokaEstetica.Platform.Models.Dto.Base.Menu;
+using LeokaEstetica.Platform.Models.Dto.Output.Menu;
 
 namespace LeokaEstetica.Platform.Services.Abstractions.Menu;
 
@@ -33,8 +34,8 @@ public interface IMenuService
     Task<LandingMenuOutput> GetLandingMenuItemsAsync();
 
     /// <summary>
-    /// Метод получает элементы меню для групп объектов чата.
+    /// Метод сортирует элементы меню.
     /// </summary>
-    /// <returns>Элементы меню для групп объектов чата.</returns>
-    Task<GroupObjectMenuOutput> GetGroupObjectMenuItemsAsync();
+    /// <param name="items">элементы меню.</param>
+    Task SortingMenuItemsAsync(List<MenuItem> items);
 }

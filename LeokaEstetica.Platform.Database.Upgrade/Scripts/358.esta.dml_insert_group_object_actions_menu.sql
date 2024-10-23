@@ -26,7 +26,7 @@ VALUES ('{
             "tooltipPosition": null
         },
         {
-            "id": "GroupChat",
+            "id": "ChatMembers",
             "icon": null,
             "items": [],
             "label": "Участники",

@@ -81,22 +81,4 @@ public class MenuController : BaseController
 
         return result;
     }
-    
-    /// <summary>
-    /// Метод получает элементы меню для групп объектов чата.
-    /// </summary>
-    /// <returns>Элементы меню для групп объектов чата.</returns>
-    [HttpGet]
-    [Route("communications/group-objects-menu")]
-    [ProducesResponseType(200, Type = typeof(GroupObjectMenuOutput))]
-    [ProducesResponseType(400)]
-    [ProducesResponseType(403)]
-    [ProducesResponseType(500)]
-    [ProducesResponseType(404)]
-    public async Task<GroupObjectMenuOutput> GetGroupObjectMenuItemsAsync()
-    {
-        var result = await _menuService.GetGroupObjectMenuItemsAsync();
-
-        return result;
-    }
 }
