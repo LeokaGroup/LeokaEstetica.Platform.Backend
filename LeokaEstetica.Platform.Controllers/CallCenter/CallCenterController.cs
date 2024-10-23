@@ -343,7 +343,8 @@ public class CallCenterController : BaseController
     [ProducesResponseType(404)]
     public async Task RejectResumeAsync([FromBody] RejectResumeInput rejectResumeInput)
     {
-        await _resumeModerationService.RejectResumeAsync(rejectResumeInput.ProfileInfoId);
+        await _resumeModerationService.RejectResumeAsync(rejectResumeInput.ProfileInfoId,
+            GetUserName());
     }
 
     /// <summary>

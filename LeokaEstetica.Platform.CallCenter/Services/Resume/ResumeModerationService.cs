@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Resume;
 using LeokaEstetica.Platform.CallCenter.Builders;
 using LeokaEstetica.Platform.CallCenter.Consts;
+using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Resume;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
@@ -94,7 +95,7 @@ public class ResumeModerationService : IResumeModerationService
     /// Метод отклоняет анкету на модерации.
     /// </summary>
     /// <param name="profileInfoId">Id анкеты.</param>
-    public async Task RejectResumeAsync(long profileInfoId)
+    public async Task RejectResumeAsync(long profileInfoId, string? account)
     {
         try
         {
