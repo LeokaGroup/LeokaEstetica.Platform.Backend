@@ -242,8 +242,9 @@ public class VacancyModerationService : IVacancyModerationService
     /// Метод отклоняет вакансию на модерации.
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
+    /// /// <param name="account">Аккаунт.</param>
     /// <returns>Выходная модель модерации.</returns>
-    public async Task<RejectVacancyOutput> RejectVacancyAsync(long vacancyId)
+    public async Task<RejectVacancyOutput> RejectVacancyAsync(long vacancyId, string account)
     {
         try
         {

@@ -54,7 +54,7 @@ public interface IVacancyModerationService
     /// </summary>
     /// <param name="vacancyId">Id вакансии.</param>
     /// <returns>Выходная модель модерации.</returns>
-    Task<RejectVacancyOutput> RejectVacancyAsync(long vacancyId);
+    Task<RejectVacancyOutput> RejectVacancyAsync(long vacancyId, string account);
     
     /// <summary>
     /// Метод создает замечания вакансии. 
