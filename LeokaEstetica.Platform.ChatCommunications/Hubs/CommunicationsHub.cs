@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Communications.Abstractions;
+﻿using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
+using LeokaEstetica.Platform.Communications.Abstractions;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Enums;
@@ -113,13 +114,16 @@ internal sealed class CommunicationsHub : Hub
 
     /// <summary>
     /// Метод получает группы объектов выбранной абстрактной области чата.
+    /// Группой объектов может являться список проектов компании либо список диалогов компании.
+    /// Список диалогов компании не предполагает вложенность и список диалогов открывается сразу,
+    /// а вот список проектов предполагает еще вложенность, каждый диалог по выбору проекта уже получаем.
     /// </summary>
     /// <param name="abstractScopeId">Id выбранной абстрактной области чата.</param>
     /// <param name="abstractScopeType">Тип выбранной абстрактной области чата.</param>
     /// <param name="account">Аккаунт.</param>
     /// <exception cref="InvalidOperationException">Если ошибка валидации.</exception>
     /// <returns>Возвращает через сокеты группы объектов выбранной абстрактной области чата.</returns>
-    public async Task GetScopeGroupObjectsAsync(long abstractScopeId, int abstractScopeType,
+    public async Task GetScopeGroupObjectsAsync(long abstractScopeId, string? abstractScopeType,
         string account)
     {
         try
@@ -130,16 +134,22 @@ internal sealed class CommunicationsHub : Hub
                                                     $"abstractScopeId: {abstractScopeId}.");
             }
 
-            var enumValue = Enum.GetValues<AbstractScopeTypeEnum>().FirstOrDefault(x => (int)x == abstractScopeType);
+            if (string.IsNullOrWhiteSpace(abstractScopeType))
+            {
+                throw new InvalidOperationException("Не передали тип абстрактной области чата. " +
+                                                    $"AbstractScopeType: {abstractScopeType}.");
+            }
+            
+            var scopeType = Enum.Parse<AbstractScopeTypeEnum>(abstractScopeType.ToPascalCase());
 
-            if (enumValue == AbstractScopeTypeEnum.Undefined)
+            if (scopeType == AbstractScopeTypeEnum.Undefined)
             {
                 throw new InvalidOperationException("Тип абстрактной области невалиден. " +
                                                     $"AbstractScopeType: {abstractScopeType}.");
             }
 
             // Получаем список групп объектов выбранной абстрактной области чата.
-            var result = await _abstractGroupService.GetAbstractGroupObjectsAsync(abstractScopeId, enumValue,
+            var result = await _abstractGroupService.GetAbstractGroupObjectsAsync(abstractScopeId, scopeType,
                 account);
                 
             var connection = await GetConnectionCacheAsync();
