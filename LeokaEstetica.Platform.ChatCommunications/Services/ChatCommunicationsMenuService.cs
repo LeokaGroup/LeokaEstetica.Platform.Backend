@@ -73,6 +73,45 @@ internal sealed class ChatCommunicationsMenuService : IChatCommunicationsMenuSer
         }
     }
 
+    /// <inheritdoc />
+    public async Task<DialogGroupMenuOutput> GetDialogGroupMenuItemsAsync()
+    {
+        try
+        {
+            var json = await _menuRepository.GetDialogGroupMenuItemsAsync();
+
+            if (json is null)
+            {
+                throw new InvalidOperationException("Ошибка получения элементов меню для группировок диалогов чата.");
+            }
+
+            var result = JsonConvert.DeserializeObject<DialogGroupMenuOutput>(json);
+
+            if (result is null)
+            {
+                throw new InvalidOperationException(
+                    "Ошибка при десериализации элементов меню для группировок диалогов чата.");
+            }
+
+            if (result.Items is null || result.Items.Count == 0)
+            {
+                return new DialogGroupMenuOutput { Items = new List<MenuItem>() };
+            }
+            
+            await _menuService.SortingMenuItemsAsync(result.Items);
+
+            result.Items = result.Items.OrderBy(x => x.Position).AsList();
+
+            return result;
+        }
+
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, ex.Message);
+            throw;
+        }
+    }
+
     #endregion
 
     #region Приватные методы.

@@ -42,4 +42,22 @@ public class MenuController : BaseController
 
         return result;
     }
+    
+    /// <summary>
+    /// Метод получает элементы меню группировок диалогов чата.
+    /// </summary>
+    /// <returns>Элементы меню группировок диалогов чата.</returns>
+    [HttpGet]
+    [Route("dialog-group-menu")]
+    [ProducesResponseType(200, Type = typeof(DialogGroupMenuOutput))]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(500)]
+    [ProducesResponseType(404)]
+    public async Task<DialogGroupMenuOutput> GetDialogGroupMenuItemsAsync()
+    {
+        var result = await _chatCommunicationsMenuService.GetDialogGroupMenuItemsAsync();
+
+        return result;
+    }
 }

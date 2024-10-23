@@ -12,4 +12,10 @@ public interface IChatCommunicationsMenuService
     /// </summary>
     /// <returns>Элементы меню для групп объектов чата.</returns>
     Task<GroupObjectMenuOutput> GetGroupObjectMenuItemsAsync();
+    
+    /// <summary>
+    /// Метод получает элементы меню группировок диалогов чата.
+    /// </summary>
+    /// <returns>Элементы меню группировок диалогов чата.</returns>
+    Task<DialogGroupMenuOutput> GetDialogGroupMenuItemsAsync();
 }

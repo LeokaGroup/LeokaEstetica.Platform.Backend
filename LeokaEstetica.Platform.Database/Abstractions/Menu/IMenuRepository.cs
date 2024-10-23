@@ -35,4 +35,10 @@ public interface IMenuRepository
     /// </summary>
     /// <returns>Элементы меню для групп объектов чата.</returns>
     Task<string?> GetGroupObjectMenuItemsAsync();
+    
+    /// <summary>
+    /// Метод получает элементы меню группировок диалогов чата.
+    /// </summary>
+    /// <returns>Элементы меню группировок диалогов чата.</returns>
+    Task<string?> GetDialogGroupMenuItemsAsync();
 }
