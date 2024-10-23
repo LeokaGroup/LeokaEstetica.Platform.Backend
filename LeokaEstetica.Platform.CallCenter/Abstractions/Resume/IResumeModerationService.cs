@@ -25,7 +25,7 @@ public interface IResumeModerationService
     /// Метод отклоняет анкету на модерации.
     /// </summary>
     /// <param name="profileInfoId">Id анкеты.</param>
-    Task RejectResumeAsync(long profileInfoId);
+    Task RejectResumeAsync(long profileInfoId, string? account);
     
     /// <summary>
     /// Метод создает замечания анкет. 

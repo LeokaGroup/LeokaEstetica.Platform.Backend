@@ -3,6 +3,7 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.User;
 using LeokaEstetica.Platform.CallCenter.Abstractions.Resume;
 using LeokaEstetica.Platform.CallCenter.Builders;
 using LeokaEstetica.Platform.CallCenter.Consts;
+using LeokaEstetica.Platform.CallCenter.Models.Dto.Input.Resume;
 using LeokaEstetica.Platform.Core.Enums;
 using LeokaEstetica.Platform.Core.Exceptions;
 using LeokaEstetica.Platform.Database.Abstractions.Moderation.Resume;
@@ -94,13 +95,42 @@ public class ResumeModerationService : IResumeModerationService
     /// Метод отклоняет анкету на модерации.
     /// </summary>
     /// <param name="profileInfoId">Id анкеты.</param>
-    public async Task RejectResumeAsync(long profileInfoId)
+    public async Task RejectResumeAsync(long profileInfoId, string? account)
     {
         try
         {
-            // TODO: Надо еще проверять, что внесены замечания анкеты. Нельзя отклонить анкету, не внеся замечания,
-            // TODO: и модератор должен это видеть.
-            // TODO: Добавить такую проверку тут.
+            if (profileInfoId <= 0)
+            {
+                var ex = new InvalidOperationException($"Id анкеты не был передан. ProfileInfoId: {profileInfoId}");
+                throw ex;
+            }
+
+            // Проверяем, были ли внесены замечания анкеты.
+            var isExists = await _resumeModerationRepository.CheckResumeRemarksAsync(profileInfoId);
+
+            var userId = await _userRepository.GetUserIdByEmailOrLoginAsync(account);
+
+            if (userId <= 0)
+            {
+                var ex = new NotFoundUserIdByAccountException(account);
+                throw ex;
+            }
+
+            var userCode = await _userRepository.GetUserCodeByUserIdAsync(userId);
+
+            if (!isExists)
+            {
+                var ex = new InvalidOperationException(RemarkConst.SEND_PROJECT_REMARKS_WARNING +
+                                                       $" ProfileInfoId: {profileInfoId}");
+                _logger.LogWarning(ex, ex.Message);
+
+                await _hubNotificationService.Value.SendNotificationAsync("Внимание",
+                    RemarkConst.REJECT_RESUME_REMARKS_WARNING,
+                    NotificationLevelConsts.NOTIFICATION_LEVEL_WARNING, "SendNotificationWarningRejectResume",
+                    userCode, UserConnectionModuleEnum.Main);
+
+                return;
+            }
             await _resumeModerationRepository.RejectResumeAsync(profileInfoId);
         }
         
