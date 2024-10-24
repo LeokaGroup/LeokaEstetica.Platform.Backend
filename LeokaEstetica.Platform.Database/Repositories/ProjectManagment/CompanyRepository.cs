@@ -4,6 +4,8 @@ using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.ProjectManagment;
 using LeokaEstetica.Platform.Models.Dto.Communications.Output;
 using LeokaEstetica.Platform.Models.Dto.ProjectManagement;
+using LeokaEstetica.Platform.Models.Enums;
+using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Database.Repositories.ProjectManagment;
 
@@ -76,13 +78,14 @@ internal sealed class CompanyRepository : BaseRepository, ICompanyRepository
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<AbstractGroupOutput>> GetAbstractGroupObjectsAsync(long abstractScopeId, long userId)
+    public async Task<IEnumerable<AbstractGroupOutput>> GetCompanyProjectsAsync(long abstractScopeId, long userId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
         var parameters = new DynamicParameters();
         parameters.Add("@companyId", abstractScopeId);
         parameters.Add("@userId", userId);
+        parameters.Add("@dialogGroupType", new Enum(DialogGroupTypeEnum.Project));
 
         var query = "SELECT op.project_id AS abstract_group_id, " +
                     "COALESCE((SELECT \"ParamValue\" " +
@@ -104,6 +107,7 @@ internal sealed class CompanyRepository : BaseRepository, ICompanyRepository
                     "WHERE op.is_active " +
                     "AND om.member_id = @userId " +
                     "AND op.organization_id = @companyId " +
+                    "AND dialog_group_type = @dialogGroupType " +
                     "GROUP BY abstract_group_id " +
                     "ORDER BY abstract_group_id";
 

@@ -68,18 +68,22 @@ internal sealed class AbstractGroupDialogMessagesService : IAbstractGroupDialogM
             throw new InvalidOperationException("Ошибка определения пользователя при получении сообщений диалога. " +
                                                 $"UserId: {userId}.");
         }
-        
-        var queueType = string.Empty.CreateQueueDeclareNameFactory(_configuration["Environment"],
-            QueueTypeEnum.DialogMessages);
+
+        var queueType = string.Empty.CreateQueueDeclareNameFactory(
+            _configuration["Environment"] ?? throw new InvalidOperationException(
+                "Ошибка получения конфигурации приложения."), QueueTypeEnum.DialogMessages);
 
         await _rabbitMqService.PublishAsync(new DialogMessageEvent
-        {
-            CreatedBy = userId,
-            Message = message,
-            DialogId = dialogId,
-            UserCode = userCode,
-            Module = module
-        }, queueType, _configuration);
+            {
+                CreatedBy = userId,
+                Message = message,
+                DialogId = dialogId,
+                UserCode = userCode,
+                Module = module,
+                IsMyMessage = true
+            }, queueType, _configuration, QueueTypeEnum.DialogMessages | QueueTypeEnum.DialogMessages)
+            .ConfigureAwait(false);
+        Console.WriteLine();
     }
 
     #endregion

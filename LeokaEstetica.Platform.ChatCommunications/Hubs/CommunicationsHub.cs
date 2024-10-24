@@ -1,4 +1,5 @@
-﻿using LeokaEstetica.Platform.Communications.Abstractions;
+﻿using LeokaEstetica.Platform.Base.Extensions.StringExtensions;
+using LeokaEstetica.Platform.Communications.Abstractions;
 using LeokaEstetica.Platform.Integrations.Abstractions.Discord;
 using LeokaEstetica.Platform.Models.Dto.Common.Cache.Output;
 using LeokaEstetica.Platform.Models.Enums;
@@ -113,14 +114,18 @@ internal sealed class CommunicationsHub : Hub
 
     /// <summary>
     /// Метод получает группы объектов выбранной абстрактной области чата.
+    /// Группой объектов может являться список проектов компании либо список диалогов компании.
+    /// Список диалогов компании не предполагает вложенность и список диалогов открывается сразу,
+    /// а вот список проектов предполагает еще вложенность, каждый диалог по выбору проекта уже получаем.
     /// </summary>
     /// <param name="abstractScopeId">Id выбранной абстрактной области чата.</param>
     /// <param name="abstractScopeType">Тип выбранной абстрактной области чата.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="dialogGroupType">Тип группировки диалогов.</param>
     /// <exception cref="InvalidOperationException">Если ошибка валидации.</exception>
     /// <returns>Возвращает через сокеты группы объектов выбранной абстрактной области чата.</returns>
-    public async Task GetScopeGroupObjectsAsync(long abstractScopeId, int abstractScopeType,
-        string account)
+    public async Task GetScopeGroupObjectsAsync(long abstractScopeId, string? abstractScopeType,
+        string account, string? dialogGroupType)
     {
         try
         {
@@ -130,17 +135,38 @@ internal sealed class CommunicationsHub : Hub
                                                     $"abstractScopeId: {abstractScopeId}.");
             }
 
-            var enumValue = Enum.GetValues<AbstractScopeTypeEnum>().FirstOrDefault(x => (int)x == abstractScopeType);
+            if (string.IsNullOrWhiteSpace(abstractScopeType))
+            {
+                throw new InvalidOperationException("Не передан тип абстрактной области чата. " +
+                                                    $"AbstractScopeType: {abstractScopeType}.");
+            }
+            
+            // С фронта приходит в нижнем регистре, поэтому приводим к нотации PascalCase.
+            var scopeType = Enum.Parse<AbstractScopeTypeEnum>(abstractScopeType.ToPascalCase());
 
-            if (enumValue == AbstractScopeTypeEnum.Undefined)
+            if (scopeType == AbstractScopeTypeEnum.Undefined)
             {
                 throw new InvalidOperationException("Тип абстрактной области невалиден. " +
                                                     $"AbstractScopeType: {abstractScopeType}.");
             }
+            
+            if (string.IsNullOrWhiteSpace(dialogGroupType))
+            {
+                throw new InvalidOperationException("Не передан тип группировки диалогов чата. " +
+                                                    $"DialogGroupType: {dialogGroupType}.");
+            }
+
+            var groupType = Enum.Parse<DialogGroupTypeEnum>(dialogGroupType.ToPascalCase());
+            
+            if (groupType == DialogGroupTypeEnum.Undefined)
+            {
+                throw new InvalidOperationException("Тип группировки диалогов чата невалиден. " +
+                                                    $"DialogGroupType: {groupType}.");
+            }
 
             // Получаем список групп объектов выбранной абстрактной области чата.
-            var result = await _abstractGroupService.GetAbstractGroupObjectsAsync(abstractScopeId, enumValue,
-                account);
+            var result = await _abstractGroupService.GetAbstractGroupObjectsAsync(abstractScopeId, scopeType,
+                account, groupType);
                 
             var connection = await GetConnectionCacheAsync();
 
@@ -205,8 +231,20 @@ internal sealed class CommunicationsHub : Hub
         var module = Enum.Parse<UserConnectionModuleEnum>(
             Context.GetHttpContext()?.Request.Query["module"].ToString()!);
 
-        await _abstractGroupDialogMessagesService.SendMessageToQueueAsync(message, dialogId, account,
-            new Guid(userCode), module);
+        try
+        {
+            await _abstractGroupDialogMessagesService.SendMessageToQueueAsync(message, dialogId, account,
+                    new Guid(userCode), module)
+                .ConfigureAwait(false);
+        }
+        
+        catch (Exception ex)
+        {
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+            
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
     }
 
     #endregion

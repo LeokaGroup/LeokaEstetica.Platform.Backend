@@ -106,6 +106,8 @@ internal sealed class DialogMessageJob : IJob
             {
                 var connection1 = connection.CreateConnection();
                 _channel = connection1.CreateModel();
+                
+                // Учитывать, что признак autoDelete при отправке в очередь тоже должен быть таким же, как в джобе.
                 _channel.QueueDeclare(
                     queue: _queueName.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!, flags),
                     durable: false, exclusive: false, autoDelete: false, arguments: null);
@@ -120,6 +122,17 @@ internal sealed class DialogMessageJob : IJob
             }
 
             _counter++;
+        }
+        
+        // TODO: Проверить, не будет ли плодить подключения это?
+        if (_counter == 1 && _channel is null)
+        {
+            var connection1 = connection.CreateConnection();
+            _channel = connection1.CreateModel();
+        
+            // Учитывать, что признак autoDelete при отправке в очередь тоже должен быть таким же, как в джобе.
+            _channel.QueueDeclare(queue: string.Empty.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!,
+                flags), durable: false, exclusive: false, autoDelete: false, arguments: null);
         }
 
         // Если канал не был создан, то не будем дергать память.
@@ -160,7 +173,7 @@ internal sealed class DialogMessageJob : IJob
                 
                 // Добавляем сообщение в БД.
                 var addedMessage = await _abstractGroupDialogRepository.SaveMessageAsync(messageEvent.Message,
-                    messageEvent.CreatedBy, messageEvent.DialogId);
+                    messageEvent.CreatedBy, messageEvent.DialogId, messageEvent.IsMyMessage);
 
                 if (addedMessage is null)
                 {
@@ -171,18 +184,7 @@ internal sealed class DialogMessageJob : IJob
                     logger.LogError(ex, ex.Message);
 
                     await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-                    
-                    if (_channel is null)
-                    {
-                        await ThrowChannelExceptionAsync();
-                        return;
-                    }
-                    
-                    // TODO: Может не стоит хранить битое сообщение в очереди, а дропать из очереди его?
-                    // TODO: Но тогда оно будет потеряно навсегда.
-                    // Оставляем сообщение в очереди.
-                    _channel.BasicRecoverAsync(false);
-                    
+
                     return;
                 }
 
@@ -206,18 +208,7 @@ internal sealed class DialogMessageJob : IJob
                     logger.LogError(ex, ex.Message);
 
                     await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
-                    
-                    if (_channel is null)
-                    {
-                        await ThrowChannelExceptionAsync();
-                        return;
-                    }
-                    
-                    // TODO: Может не стоит хранить битое сообщение в очереди, а дропать из очереди его?
-                    // TODO: Но тогда оно будет потеряно навсегда.
-                    // Оставляем сообщение в очереди.
-                    _channel.BasicRecoverAsync(false);
-                    
+
                     return;
                 }
                 

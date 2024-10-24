@@ -78,6 +78,11 @@ public class Enum : IEnum
     public const string CalendarEventMemberStatus = "calendar_member_status_enum";
 
     /// <summary>
+    /// Тип Enum группировки диалогов.
+    /// </summary>
+    public const string DialogGroupType = "dialog_group_type_enum";
+
+    /// <summary>
     /// Конструктор по дефолту.
     /// </summary>
     /// <param name="type">Тип Enum в базе данных.</param>
@@ -242,5 +247,15 @@ public class Enum : IEnum
         where TEnum : struct
     {
         return System.Enum.Parse<TEnum>(stringValue.ToPascalCase());
+    }
+    
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="value">Значение типа.</param>
+    public Enum(DialogGroupTypeEnum value)
+    {
+        Type = DialogGroupType;
+        Value = value.ToString().ToLower();
     }
 }

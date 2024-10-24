@@ -15,7 +15,7 @@ public class AbstractScopeOutput
     /// <summary>
     /// Тип абстрактных областей.
     /// </summary>
-    public AbstractScopeTypeEnum AbstractScopeType { get; set; }
+    public string? AbstractScopeType { get; set; }
 
     /// <summary>
     /// Id пользователя области.

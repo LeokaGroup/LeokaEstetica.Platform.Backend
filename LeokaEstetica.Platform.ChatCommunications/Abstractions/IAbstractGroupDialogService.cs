@@ -13,7 +13,10 @@ public interface IAbstractGroupDialogService
     /// <param name="memberEmails">Список участников диалога.</param>
     /// <param name="dialogName">Название диалога.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="dialogGroupType">Тип группировки диалогов.</param>
+    /// <param name="abstractId">Id группы. Это может быть либо компании либо проекта и тд.</param>
     /// <returns>Выходная модель.</returns>
     Task<CreateDialogAndAddDialogMembersOutput> CreateDialogAndAddDialogMembersAsync(
-        IEnumerable<string>? memberEmails, string? dialogName, string account);
+        IEnumerable<string>? memberEmails, string? dialogName, string account, string? dialogGroupType,
+        long? abstractId);
 }

@@ -229,7 +229,8 @@ internal sealed class OrdersService : IOrdersService
                 throw new InvalidOperationException("Ошибка формирования ивента для кролика.");
             }
 
-            await rabbitMqService.PublishAsync(orderEvent, queueType, configuration);
+            await rabbitMqService.PublishAsync(orderEvent, queueType, configuration,
+                QueueTypeEnum.OrdersQueue | QueueTypeEnum.OrdersQueue).ConfigureAwait(false);
 
             var isEnabledEmailNotifications = await globalConfigRepository.GetValueByKeyAsync<bool>(
                 GlobalConfigKeys.EmailNotifications.EMAIL_NOTIFICATIONS_DISABLE_MODE_ENABLED);
@@ -238,7 +239,7 @@ internal sealed class OrdersService : IOrdersService
 
             await mailingsService.SendNotificationCreatedOrderAsync(
                 createPaymentOrderAggregateInput.Account, sendMessage, isEnabledEmailNotifications,
-                createPaymentOrderAggregateInput.Month);
+                createPaymentOrderAggregateInput.Month).ConfigureAwait(false);
 
             return result;
         }

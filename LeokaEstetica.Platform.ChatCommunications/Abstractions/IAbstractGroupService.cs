@@ -14,7 +14,8 @@ public interface IAbstractGroupService
     /// <param name="abstractScopeId">Id абстрактной области.</param>
     /// <param name="abstractScopeType">Тип абстрактной области.</param>
     /// <param name="account">Аккаунт.</param>
+    /// <param name="groupType">Тип группировки диалогов.</param>
     /// <returns>Объекты группы абстрактной области.</returns>
     Task<AbstractGroupResult> GetAbstractGroupObjectsAsync(long abstractScopeId,
-        AbstractScopeTypeEnum abstractScopeType, string account);
+        AbstractScopeTypeEnum abstractScopeType, string account, DialogGroupTypeEnum groupType);
 }

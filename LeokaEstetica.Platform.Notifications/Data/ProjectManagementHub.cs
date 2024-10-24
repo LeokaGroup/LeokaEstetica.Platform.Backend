@@ -221,7 +221,8 @@ internal sealed class ProjectManagementHub : Hub, IHubService
                 connection.ConnectionId, -1, ScrumMasterAiEventTypeEnum.Message, dialogId);
             
             // Отправляем событие в кролика для ответа нейросети в джобе.
-            await _rabbitMqService.PublishAsync(scrumMasterAiMessageEvent, queueType, _configuration);
+            await _rabbitMqService.PublishAsync(scrumMasterAiMessageEvent, queueType, _configuration,
+                QueueTypeEnum.ScrumMasterAiMessage | QueueTypeEnum.ScrumMasterAiMessage).ConfigureAwait(false);
 
             // Пишем сообщение в БД.
             await _chatService.SendMessageAsync(message, dialogId, userId, token, true, true).ConfigureAwait(false);

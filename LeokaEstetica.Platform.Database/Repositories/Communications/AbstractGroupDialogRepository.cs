@@ -4,6 +4,8 @@ using LeokaEstetica.Platform.Base.Abstractions.Connection;
 using LeokaEstetica.Platform.Base.Abstractions.Repositories.Base;
 using LeokaEstetica.Platform.Database.Abstractions.Communications;
 using LeokaEstetica.Platform.Models.Dto.Communications.Output;
+using LeokaEstetica.Platform.Models.Enums;
+using Enum = LeokaEstetica.Platform.Models.Enums.Enum;
 
 namespace LeokaEstetica.Platform.Database.Repositories.Communications;
 
@@ -25,7 +27,7 @@ internal sealed class AbstractGroupDialogRepository : BaseRepository, IAbstractG
 
     /// <inheritdoc />
     public async Task<GroupObjectDialogOutput?> CreateDialogAndAddDialogMembersAsync(IEnumerable<long> memberIds,
-        string? dialogName)
+        string? dialogName, DialogGroupTypeEnum dialogGroupType, long? abstractId)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
         using var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
@@ -34,10 +36,12 @@ internal sealed class AbstractGroupDialogRepository : BaseRepository, IAbstractG
         {
             var addDialogParameters = new DynamicParameters();
             addDialogParameters.Add("@dialogName", dialogName);
-            addDialogParameters.Add("@abstractScopeId", null);
+            addDialogParameters.Add("@abstractId", abstractId);
+            addDialogParameters.Add("@dialogGroupType", new Enum(dialogGroupType));
 
-            var addDialogQuery = "INSERT INTO communications.main_info_dialogs (dialog_name, abstract_scope_id) " +
-                                 "VALUES (@dialogName, @abstractScopeId) " +
+            var addDialogQuery = "INSERT INTO communications.main_info_dialogs (dialog_name, abstract_scope_id, " +
+                                 "dialog_group_type) " +
+                                 "VALUES (@dialogName, @abstractId, @dialogGroupType) " +
                                  "RETURNING dialog_id";
 
             var dialogId = await connection.ExecuteAsync(addDialogQuery, addDialogParameters);
@@ -83,7 +87,8 @@ internal sealed class AbstractGroupDialogRepository : BaseRepository, IAbstractG
     }
 
     /// <inheritdoc />
-    public async Task<GroupObjectDialogMessageOutput?> SaveMessageAsync(string? message, long createdBy, long dialogId)
+    public async Task<GroupObjectDialogMessageOutput?> SaveMessageAsync(string? message, long createdBy, long dialogId,
+        bool isMyMessage)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -91,9 +96,11 @@ internal sealed class AbstractGroupDialogRepository : BaseRepository, IAbstractG
         addedMessageParameters.Add("@message", message);
         addedMessageParameters.Add("@createdBy", createdBy);
         addedMessageParameters.Add("@dialogId", dialogId);
+        addedMessageParameters.Add("@isMyMessage", isMyMessage);
 
-        var addedMessageQuery = "INSERT INTO communications.dialog_messages (dialog_id, message, created_by) " +
-                                "VALUES (@dialogId, @message, @createdBy) " +
+        var addedMessageQuery = "INSERT INTO communications.dialog_messages (dialog_id, message, created_by, " +
+                                " is_my_message) " +
+                                "VALUES (@dialogId, @message, @createdBy, @isMyMessage) " +
                                 "RETURNING message_id";
 
         var messageId = await connection.ExecuteScalarAsync<long>(addedMessageQuery, addedMessageParameters);

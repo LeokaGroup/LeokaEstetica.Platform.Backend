@@ -22,19 +22,27 @@ internal class ClassifierAbstractGroupService : IClassifierAbstractGroupService
     }
 
     /// <inheritdoc />
-    public Task<ClassifierResult> RunClassificationAsync(AbstractScopeTypeEnum abstractScopeType)
+    public Task<ClassifierResult> RunClassificationAsync(AbstractScopeTypeEnum abstractScopeType,
+        DialogGroupTypeEnum groupType)
     {
         try
         {
             var result = new ClassifierResult();
 
-            // Если абстрактная область - компания, то группа объектов это проекты.
-            // Для такой классификации достаточно знать, что пришел тип - компания.
-            // В будущем возможно будут еще вакансии учитываться, а не только проекты.
-            // Тогда классификация изменится и усложнится.
-            if (abstractScopeType == AbstractScopeTypeEnum.Company)
+            // Если абстрактная область - компания и если тип группировки диалогов проектов компании,
+            // то группа объектов это проекты. 
+            if (abstractScopeType == AbstractScopeTypeEnum.Company 
+                && groupType == DialogGroupTypeEnum.Project)
             {
                 result.ClassifierResultType = ClassifierResultTypeEnum.Project;
+            }
+
+            // Если абстрактная область - компания и если тип группировки диалогов компании,
+            // то группа объектов это диалоги компании.
+            else if (abstractScopeType == AbstractScopeTypeEnum.Company
+                     && groupType == DialogGroupTypeEnum.Company)
+            {
+                result.ClassifierResultType = ClassifierResultTypeEnum.Company;
             }
 
             return Task.FromResult(result);

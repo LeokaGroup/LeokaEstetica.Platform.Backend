@@ -30,10 +30,10 @@ public interface ICompanyRepository
     Task<IEnumerable<CompanyOutput>?> GetUserCompaniesAsync(long userId);
     
     /// <summary>
-    /// Метод получает объекты группы абстрактной области.
+    /// Метод получает проекты компании.
     /// </summary>
     /// <param name="abstractScopeId">Id абстрактной области.</param>
     /// <param name="userId">Id пользователя.</param>
     /// <returns>Объекты группы абстрактной области.</returns>
-    Task<IEnumerable<AbstractGroupOutput>> GetAbstractGroupObjectsAsync(long abstractScopeId, long userId);
+    Task<IEnumerable<AbstractGroupOutput>> GetCompanyProjectsAsync(long abstractScopeId, long userId);
 }

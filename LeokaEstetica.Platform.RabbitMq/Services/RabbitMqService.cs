@@ -25,8 +25,11 @@ internal sealed class RabbitMqService : IRabbitMqService
     /// </summary>
     private static uint _counter;
 
+    #region Публичные методы.
+
     /// <inheritdoc />
-    public async Task PublishAsync(IIntegrationEvent @event, string queueType, IConfiguration configuration)
+    public async Task PublishAsync(IIntegrationEvent @event, string queueType, IConfiguration configuration,
+        QueueTypeEnum flags)
     {
         var connection = new ConnectionFactory
         {
@@ -38,18 +41,12 @@ internal sealed class RabbitMqService : IRabbitMqService
             VirtualHost = configuration["RabbitMq:VirtualHost"],
             ContinuationTimeout = new TimeSpan(0, 0, 10, 0)
         };
-        
-        var flags = QueueTypeEnum.ScrumMasterAiMessage | QueueTypeEnum.ScrumMasterAiMessage;
 
         // Если кол-во подключений уже больше 1, то не будем плодить их,
         // а в рамках одного подключения будем работать с очередью.
         if (_counter < 1)
         {
-            var connection1 = connection.CreateConnection();
-            _channel = connection1.CreateModel();
-
-            _channel.QueueDeclare(queue: string.Empty.CreateQueueDeclareNameFactory(configuration["Environment"], flags),
-                durable: false, exclusive: false, autoDelete: true, arguments: null);
+            await CreateQueueAsync(connection, configuration, flags);
 
             _counter++;
         }
@@ -57,11 +54,7 @@ internal sealed class RabbitMqService : IRabbitMqService
         // TODO: Проверить, не будет ли плодить подключения это?
         if (_counter == 1 && _channel is null)
         {
-            var connection1 = connection.CreateConnection();
-            _channel = connection1.CreateModel();
-
-            _channel.QueueDeclare(queue: string.Empty.CreateQueueDeclareNameFactory(configuration["Environment"], flags),
-                durable: false, exclusive: false, autoDelete: true, arguments: null);
+            await CreateQueueAsync(connection, configuration, flags);
         }
 
         var message = JsonConvert.SerializeObject(@event);
@@ -71,4 +64,29 @@ internal sealed class RabbitMqService : IRabbitMqService
 
         await Task.CompletedTask;
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    /// <summary>
+    /// Метод создает новую очередь.
+    /// </summary>
+    /// <param name="connection">Факторка подключения.</param>
+    /// <param name="configuration">Конфигурация приложения.</param>
+    /// <param name="flags">Флаги очереди.</param>
+    private async Task CreateQueueAsync(ConnectionFactory connection, IConfiguration configuration,
+        QueueTypeEnum flags)
+    {
+        var connection1 = connection.CreateConnection();
+        _channel = connection1.CreateModel();
+
+        // Учитывать, что признак autoDelete при отправке в очередь тоже должен быть таким же, как в джобе.
+        _channel.QueueDeclare(queue: string.Empty.CreateQueueDeclareNameFactory(configuration["Environment"],
+            flags), durable: false, exclusive: false, autoDelete: false, arguments: null);
+
+        await Task.CompletedTask;
+    }
+
+    #endregion
 }
