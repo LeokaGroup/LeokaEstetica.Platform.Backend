@@ -47,4 +47,16 @@ public class DialogController : BaseController
 
       return result;
    }
+
+   [HttpPost]
+   [Route("personal")]
+   [ProducesResponseType(200, Type = typeof(CreateDialogAndAddDialogMembersOutput))]
+   [ProducesResponseType(400)]
+   [ProducesResponseType(403)]
+   [ProducesResponseType(500)]
+   [ProducesResponseType(404)]
+   public async Task CreatePersonalDialogAsync([FromBody] CreatePersonalDialogInput createPersonalDialogInput)
+   {
+      
+   }
 }
