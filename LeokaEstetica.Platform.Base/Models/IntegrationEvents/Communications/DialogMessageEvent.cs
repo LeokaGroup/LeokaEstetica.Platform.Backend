@@ -32,4 +32,9 @@ public class DialogMessageEvent : BaseEventMessage
     /// Модуль.
     /// </summary>
     public UserConnectionModuleEnum Module { get; set; }
+
+    /// <summary>
+    /// Признак сообщения текущего пользователя.
+    /// </summary>
+    public bool IsMyMessage { get; set; }
 }

@@ -83,7 +83,8 @@ internal sealed class AbstractGroupDialogRepository : BaseRepository, IAbstractG
     }
 
     /// <inheritdoc />
-    public async Task<GroupObjectDialogMessageOutput?> SaveMessageAsync(string? message, long createdBy, long dialogId)
+    public async Task<GroupObjectDialogMessageOutput?> SaveMessageAsync(string? message, long createdBy, long dialogId,
+        bool isMyMessage)
     {
         using var connection = await ConnectionProvider.GetConnectionAsync();
 
@@ -91,9 +92,11 @@ internal sealed class AbstractGroupDialogRepository : BaseRepository, IAbstractG
         addedMessageParameters.Add("@message", message);
         addedMessageParameters.Add("@createdBy", createdBy);
         addedMessageParameters.Add("@dialogId", dialogId);
+        addedMessageParameters.Add("@isMyMessage", isMyMessage);
 
-        var addedMessageQuery = "INSERT INTO communications.dialog_messages (dialog_id, message, created_by) " +
-                                "VALUES (@dialogId, @message, @createdBy) " +
+        var addedMessageQuery = "INSERT INTO communications.dialog_messages (dialog_id, message, created_by, " +
+                                " is_my_message) " +
+                                "VALUES (@dialogId, @message, @createdBy, @isMyMessage) " +
                                 "RETURNING message_id";
 
         var messageId = await connection.ExecuteScalarAsync<long>(addedMessageQuery, addedMessageParameters);

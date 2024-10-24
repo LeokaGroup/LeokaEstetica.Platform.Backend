@@ -231,8 +231,20 @@ internal sealed class CommunicationsHub : Hub
         var module = Enum.Parse<UserConnectionModuleEnum>(
             Context.GetHttpContext()?.Request.Query["module"].ToString()!);
 
-        await _abstractGroupDialogMessagesService.SendMessageToQueueAsync(message, dialogId, account,
-            new Guid(userCode), module);
+        try
+        {
+            await _abstractGroupDialogMessagesService.SendMessageToQueueAsync(message, dialogId, account,
+                    new Guid(userCode), module)
+                .ConfigureAwait(false);
+        }
+        
+        catch (Exception ex)
+        {
+            await _discordService.SendNotificationErrorAsync(ex).ConfigureAwait(false);
+            
+            _logger.LogError(ex, ex.Message);
+            throw;
+        }
     }
 
     #endregion

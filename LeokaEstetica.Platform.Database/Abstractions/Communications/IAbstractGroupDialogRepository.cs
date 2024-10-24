@@ -22,6 +22,8 @@ public interface IAbstractGroupDialogRepository
     /// <param name="message">Сообщение.</param>
     /// <param name="createdBy">Кто создал сообщение.</param>
     /// <param name="dialogId">Id диалога.</param>
+    /// <param name="isMyMessage">Признак сообщения текущего пользователя.</param>
     /// <returns>Добавленное сообщение.</returns>
-    Task<GroupObjectDialogMessageOutput?> SaveMessageAsync(string? message, long createdBy, long dialogId);
+    Task<GroupObjectDialogMessageOutput?> SaveMessageAsync(string? message, long createdBy, long dialogId,
+        bool isMyMessage);
 }
