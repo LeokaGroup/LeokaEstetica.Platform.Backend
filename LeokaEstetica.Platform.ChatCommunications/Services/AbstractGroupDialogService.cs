@@ -7,6 +7,8 @@ using LeokaEstetica.Platform.Communications.Abstractions;
 using LeokaEstetica.Platform.Core.Extensions;
 using LeokaEstetica.Platform.Database.Abstractions.Communications;
 using LeokaEstetica.Platform.Models.Dto.Communications.Output;
+using LeokaEstetica.Platform.Models.Enums;
+using Enum = System.Enum;
 
 [assembly: InternalsVisibleTo("LeokaEstetica.Platform.Tests")]
 
@@ -36,9 +38,12 @@ internal sealed class AbstractGroupDialogService : IAbstractGroupDialogService
         _userRepository = userRepository;
     }
 
+    #region Публичные методы.
+
     /// <inheritdoc />
     public async Task<CreateDialogAndAddDialogMembersOutput> CreateDialogAndAddDialogMembersAsync(
-        IEnumerable<string>? memberEmails, string? dialogName, string account)
+        IEnumerable<string>? memberEmails, string? dialogName, string account, string? dialogGroupType,
+        long? abstractId)
     {
         try
         {
@@ -67,17 +72,32 @@ internal sealed class AbstractGroupDialogService : IAbstractGroupDialogService
             }
 
             // Если были ошибки, то просто возвращаем их. Диалог не будет создаваться.
+            // Эти ошибки показываем пользователю.
             if (result.Errors.Count > 0)
             {
                 result.IsSuccess = false;
 
                 return result;
             }
+
+            if (string.IsNullOrWhiteSpace(dialogGroupType))
+            {
+                throw new InvalidOperationException("Не передан тип группировки диалогов чата. " +
+                                                    $"DialogGroupType: {dialogGroupType}.");
+            }
+
+            var groupType = Enum.Parse<DialogGroupTypeEnum>(dialogGroupType);
+
+            if (groupType == DialogGroupTypeEnum.Undefined)
+            {
+                throw new InvalidOperationException("Недопустимый тип группировки диалогов чата. " +
+                                                    $"GroupType: {groupType}.");
+            }
             
             var memberIds = members.Select(x => x.Value);
 
             result.Dialog = await _abstractGroupDialogRepository.CreateDialogAndAddDialogMembersAsync(memberIds,
-                dialogName);
+                dialogName, groupType, abstractId);
 
             result.IsSuccess = true;
 
@@ -90,4 +110,12 @@ internal sealed class AbstractGroupDialogService : IAbstractGroupDialogService
             throw;
         }
     }
+
+    #endregion
+
+    #region Приватные методы.
+
+    
+
+    #endregion
 }

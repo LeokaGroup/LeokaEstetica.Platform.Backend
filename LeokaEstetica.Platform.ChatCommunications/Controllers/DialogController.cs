@@ -42,7 +42,8 @@ public class DialogController : BaseController
       [FromBody] CreateDialogAndAddDialogMembers createDialogAndAddDialogMembers)
    {
       var result = await _abstractGroupDialogService.CreateDialogAndAddDialogMembersAsync(
-         createDialogAndAddDialogMembers.MemberEmails, createDialogAndAddDialogMembers.DialogName, GetUserName());
+         createDialogAndAddDialogMembers.MemberEmails, createDialogAndAddDialogMembers.DialogName, GetUserName(),
+         createDialogAndAddDialogMembers.DialogGroupType, createDialogAndAddDialogMembers.AbstractId);
 
       return result;
    }

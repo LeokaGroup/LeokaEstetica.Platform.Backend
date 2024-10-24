@@ -256,6 +256,6 @@ public class Enum : IEnum
     public Enum(DialogGroupTypeEnum value)
     {
         Type = DialogGroupType;
-        Value = value.ToString().ToSnakeCase();
+        Value = value.ToString().ToLower();
     }
 }

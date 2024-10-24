@@ -12,7 +12,7 @@ internal class CreateDialogAndAddDialogMembersTest : BaseServiceTest
         {
             "sierra_93@mail.ru",
             "test1@mail.ru"
-        }, "test_dialog", "sierra_93@mail.ru");
+        }, "test_dialog", "sierra_93@mail.ru", null, null);
         
         Assert.NotNull(result.Dialog);
         Assert.True(result.IsSuccess);
