@@ -192,7 +192,7 @@ internal sealed class MenuService : IMenuService
     /// Метод сортирует элементы меню.
     /// </summary>
     /// <param name="items">элементы меню.</param>
-    private async Task SortingMenuItemsAsync(List<MenuItem> items)
+    public async Task SortingMenuItemsAsync(List<MenuItem> items)
     {
         // Перебираем все элементы и сортируем.
         foreach (var item in items)

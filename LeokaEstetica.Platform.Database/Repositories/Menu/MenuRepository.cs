@@ -72,6 +72,32 @@ internal sealed class MenuRepository : BaseRepository, IMenuRepository
         return result;
     }
 
+    /// <inheritdoc />
+    public async Task<string?> GetGroupObjectMenuItemsAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var query = "SELECT items " +
+                    "FROM communications.group_object_actions_menu";
+
+        var result = await connection.QueryFirstOrDefaultAsync<string>(query);
+
+        return result;
+    }
+
+    /// <inheritdoc />
+    public async Task<string?> GetDialogGroupMenuItemsAsync()
+    {
+        using var connection = await ConnectionProvider.GetConnectionAsync();
+
+        var query = "SELECT items " +
+                    "FROM communications.dialog_group_menu";
+
+        var result = await connection.QueryFirstOrDefaultAsync<string>(query);
+
+        return result;
+    }
+
     #endregion
 
     #region Приватные методы.
