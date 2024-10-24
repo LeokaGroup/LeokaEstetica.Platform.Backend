@@ -106,6 +106,8 @@ internal sealed class DialogMessageJob : IJob
             {
                 var connection1 = connection.CreateConnection();
                 _channel = connection1.CreateModel();
+                
+                // Учитывать, что признак autoDelete при отправке в очередь тоже должен быть таким же, как в джобе.
                 _channel.QueueDeclare(
                     queue: _queueName.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!, flags),
                     durable: false, exclusive: false, autoDelete: false, arguments: null);
@@ -128,8 +130,9 @@ internal sealed class DialogMessageJob : IJob
             var connection1 = connection.CreateConnection();
             _channel = connection1.CreateModel();
         
+            // Учитывать, что признак autoDelete при отправке в очередь тоже должен быть таким же, как в джобе.
             _channel.QueueDeclare(queue: string.Empty.CreateQueueDeclareNameFactory(dataMap.GetString("Environment")!,
-                flags), durable: false, exclusive: false, autoDelete: true, arguments: null);
+                flags), durable: false, exclusive: false, autoDelete: false, arguments: null);
         }
 
         // Если канал не был создан, то не будем дергать память.

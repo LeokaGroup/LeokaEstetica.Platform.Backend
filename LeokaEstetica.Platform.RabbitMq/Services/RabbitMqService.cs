@@ -81,6 +81,7 @@ internal sealed class RabbitMqService : IRabbitMqService
         var connection1 = connection.CreateConnection();
         _channel = connection1.CreateModel();
 
+        // Учитывать, что признак autoDelete при отправке в очередь тоже должен быть таким же, как в джобе.
         _channel.QueueDeclare(queue: string.Empty.CreateQueueDeclareNameFactory(configuration["Environment"],
             flags), durable: false, exclusive: false, autoDelete: false, arguments: null);
 
