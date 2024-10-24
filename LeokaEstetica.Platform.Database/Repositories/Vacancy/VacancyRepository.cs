@@ -465,17 +465,23 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
                     "AND (p.\"ModerationStatusId\" NOT IN (2, 3, 6, 7) " +
                     "AND (p.\"ModerationStatusId\" IS NOT NULL)) ";
 
-        vacancyCatalogInput.Filters ??= new FilterVacancyInput();
-        
         // Если применили любой фильтр.
         var isFiltedApplied = false;
 
         // Фильтр по занятости.
-        if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.EmploymentsValues))
+        if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters!.EmploymentsValues))
         {
-            // EmploymentsValues разделены запятой в строке с фронта, поэтому можем через IN.
-            parameters.Add("@employments", vacancyCatalogInput.Filters.EmploymentsValues);
-            query += "AND u.\"Employment\" IN (@employments) ";
+            // Для корректной работы с Postgresql набор значений должен быть массивом
+            var employmentsValuesArray = vacancyCatalogInput.Filters.EmploymentsValues
+                .Replace("Full", "Полная занятость")
+                .Replace("ProjectWork", "Проектная работа")
+                .Replace("Partial", "Частичная занятость")
+                .Split(",").ToArray();
+
+            parameters.Add("@employments", employmentsValuesArray);
+
+            // Для корректной работы с Postgresql требуенся использовать ANY вместо IN.
+            query += "AND u.\"Employment\" = ANY (@employments) ";
             isFiltedApplied = true;
         }
 
@@ -483,36 +489,51 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.Experience)
             && !vacancyCatalogInput.Filters.Experience.Equals("None"))
         {
-            parameters.Add("@workExperience", vacancyCatalogInput.Filters.Experience);
+            string experienseParameter="";
+
+            if (Enum.Parse<FilterExperienceTypeEnum>(vacancyCatalogInput.Filters.Experience) == FilterExperienceTypeEnum.ManySix)
+                experienseParameter = "Более 6 лет";
+
+            if (Enum.Parse<FilterExperienceTypeEnum>(vacancyCatalogInput.Filters.Experience) == FilterExperienceTypeEnum.NotExperience)
+                experienseParameter = "Нет опыта";
+
+            if (Enum.Parse<FilterExperienceTypeEnum>(vacancyCatalogInput.Filters.Experience) == FilterExperienceTypeEnum.UnknownExperience)
+                experienseParameter = "Не имеет значения";
+
+            if (Enum.Parse<FilterExperienceTypeEnum>(vacancyCatalogInput.Filters.Experience) == FilterExperienceTypeEnum.ThreeSix)
+                experienseParameter = "От 3 до 6 лет";
+
+            if (Enum.Parse<FilterExperienceTypeEnum>(vacancyCatalogInput.Filters.Experience) == FilterExperienceTypeEnum.OneThree)
+                experienseParameter = "От 1 года до 3 лет";
+
+            if (string.IsNullOrWhiteSpace(experienseParameter))
+                experienseParameter = vacancyCatalogInput.Filters.Experience;
+
+            parameters.Add("@workExperience", experienseParameter);
             query += "AND u.\"WorkExperience\" = @workExperience ";
             isFiltedApplied = true;
         }
 
         // Фильтр по оплате.
         if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.Pay)
-            && !vacancyCatalogInput.Filters.Pay.Equals("None"))
+            && !vacancyCatalogInput.Filters.Pay.Equals("None")
+            && !vacancyCatalogInput.Filters.Pay.Equals("UnknownPay"))
         {
-            // Без разницы.
-            if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay) == FilterPayTypeEnum.UnknownPay)
-            {
-                query += "AND u.\"Payment\" = 'Без оплаты' ";
-                isFiltedApplied = true;
-            }
-            
             // Есть оплата.
             if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay) == FilterPayTypeEnum.Pay)
             {
-                query += "AND u.\"Payment\" = REPLACE(u.\"Payment\", 'Без оплаты', 0)::NUMERIC(12, 2) > 0 ";
+                query += "AND LEFT(REPLACE(REPLACE(u.\"Payment\", 'Без оплаты','0'), ' ', '' ),16)::NUMERIC(18, 2) <> 0 ";
                 isFiltedApplied = true;
             }
-            
-            // Без оплата.
+
+            // Без оплаты.
             if (Enum.Parse<FilterPayTypeEnum>(vacancyCatalogInput.Filters.Pay) == FilterPayTypeEnum.NotPay)
             {
-                query += "AND u.\"Payment\" = REPLACE(u.\"Payment\", 'Без оплаты', 0)::NUMERIC(12, 2) = 0 ";
+                query += "AND LEFT(REPLACE(REPLACE(u.\"Payment\", 'Без оплаты','0'), ' ', '' ),16)::NUMERIC(18, 2) = 0 ";
                 isFiltedApplied = true;
             }
         }
+        
         
         if (vacancyCatalogInput.IsPagination && vacancyCatalogInput.LastId.HasValue)
         {
@@ -523,7 +544,7 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
             isFiltedApplied = true;
         }
         
-        // Поисковой поисковый запрос.
+        // Поисковая строка.
         if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.SearchText))
         {
             parameters.Add("@searchText", string.Concat(vacancyCatalogInput.SearchText, "%"));
@@ -534,41 +555,34 @@ internal sealed class VacancyRepository : BaseRepository, IVacancyRepository
         
         // TODO: Передавать с фронта будем кол-во строк, при настройке пагинации пользователем.
         parameters.Add("@countRows", 20);
-        
-        // Фильтр по дате (возрастанию даты).
+
+        // Сортировка.
         if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.Salary)
-            && Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary) == FilterSalaryTypeEnum.Date
             && !vacancyCatalogInput.Filters.Salary.Equals("None"))
         {
-            // Фильтр по дате.
-            query += "ORDER BY c.\"CatalogVacancyId\", u.\"DateCreated\" ";
-            isFiltedApplied = true;
-        }
-
-        // По убыванию даты и по доп.фильтрам сортировки.
-        else
-        {
-            // Фильтр по возрастанию оплаты.
-            if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.Salary)
-                && Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary) ==
-                FilterSalaryTypeEnum.AscSalary)
+            // Фильтр по дате (возрастанию даты).
+            if (Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary)
+                == FilterSalaryTypeEnum.Date)
             {
-                // Фильтр по дате и по возрастанию оплаты.
-                query += "ORDER BY c.\"CatalogVacancyId\", " +
-                         "u.\"DateCreated\" DESC, " +
-                         "REPLACE(u.\"Payment\", 'Без оплаты', 0)::NUMERIC(12, 2) ";
+                query += "ORDER BY u.\"DateCreated\" ";
                 isFiltedApplied = true;
             }
-            
-            // Фильтр по убыванию оплаты.
-            if (!string.IsNullOrWhiteSpace(vacancyCatalogInput.Filters.Salary)
-                && Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary) ==
-                FilterSalaryTypeEnum.DescSalary)
+
+            // Фильтр по возрастанию оплаты.
+            if (Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary)
+                == FilterSalaryTypeEnum.AscSalary)
             {
-                // Фильтр по дате и по убыванию оплаты.
-                query += "ORDER BY c.\"CatalogVacancyId\", " +
-                         "u.\"DateCreated\" DESC, " +
-                         "REPLACE(u.\"Payment\", 'Без оплаты', 0)::NUMERIC(12, 2) DESC ";
+                query += "ORDER BY " +
+                    "LEFT(REPLACE(REPLACE(u.\"Payment\", 'Без оплаты','0'), ' ', '' ),16)::NUMERIC(18, 2) ASC ";
+                isFiltedApplied = true;
+            }
+
+            // Фильтр по убыванию оплаты.
+            if (Enum.Parse<FilterSalaryTypeEnum>(vacancyCatalogInput.Filters.Salary)
+                == FilterSalaryTypeEnum.DescSalary)
+            {
+                query += "ORDER BY " +
+                    "LEFT(REPLACE(REPLACE(u.\"Payment\", 'Без оплаты','0'), ' ', '' ),16)::NUMERIC(18, 2) DESC ";
                 isFiltedApplied = true;
             }
         }

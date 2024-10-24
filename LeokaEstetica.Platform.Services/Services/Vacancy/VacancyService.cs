@@ -371,6 +371,7 @@ internal sealed class VacancyService : IVacancyService
     {
         try
         {
+            vacancyCatalogInput.Filters ??= new FilterVacancyInput();
             var result = await _vacancyRepository.GetCatalogVacanciesAsync(vacancyCatalogInput);
 
             return result;

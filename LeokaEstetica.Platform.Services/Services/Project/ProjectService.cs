@@ -431,6 +431,7 @@ internal sealed class ProjectService : IProjectService
     {
         try
         {
+	        catalogProjectInput.Filters ??= new FilterProjectInput();
 	        var result = await _projectRepository.GetCatalogProjectsAsync(catalogProjectInput);
 
 	        // TODO: Делать все это в запросе метода GetCatalogProjectsAsync.

@@ -244,14 +244,16 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         // Если применили любой фильтр.
         var isFiltedApplied = false;
 
-        catalogProjectInput.Filters ??= new FilterProjectInput();
-
         // Фильтр по стадиям проекта.
-        if (!string.IsNullOrWhiteSpace(catalogProjectInput.Filters.StageValues))
+        if (!string.IsNullOrWhiteSpace(catalogProjectInput.Filters!.StageValues))
         {
-	        parameters.Add("@stages", catalogProjectInput.Filters.StageValues);
-	        // Приходит в строке через запятую, поэтому можем через IN.
-            query += " AND p0.\"StageSysName\" IN (@stages) ";
+            // Для корректной работы с Postgresql набор значений должен быть массивом
+            var stageValuesArray = catalogProjectInput.Filters.StageValues.Trim().Split(",").ToArray();
+
+            parameters.Add("@stageSysNames", stageValuesArray);
+	        
+	        // Для корректной работы с Postgresql требуенся использовать ANY вместо IN.
+            query += $" AND p0.\"StageSysName\" = ANY (@stageSysNames) ";
             isFiltedApplied = true;
         }
 
@@ -286,7 +288,12 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
         parameters.Add("@countRows", 20);
 
         // Фильтр по дате.
-        query += "ORDER BY c.\"CatalogProjectId\", u.\"DateCreated\" DESC ";
+        query += "ORDER BY u.\"DateCreated\" ";
+
+        if(string.IsNullOrWhiteSpace(catalogProjectInput.Filters.Date)
+			|| catalogProjectInput.Filters.Date.Equals("None"))
+			query += "DESC ";
+
         query += "LIMIT @countRows";
 
         var items = (await connection.QueryAsync<CatalogProjectOutput>(query, parameters))?.AsList();
@@ -326,10 +333,7 @@ internal sealed class ProjectRepository : BaseRepository, IProjectRepository
 
         var result = new CatalogProjectResultOutput
         {
-	        CatalogProjects = !string.IsNullOrWhiteSpace(catalogProjectInput.Filters.Date)
-	                          && !catalogProjectInput.Filters.Date.Equals("None")
-		        ? items.OrderByDescending(o => o.DateCreated)
-		        : items.OrderBy(o => o.DateCreated),
+	        CatalogProjects = items,
 	        Total = !isFiltedApplied ? calcCount : items.Count,
 	        LastId = items.LastOrDefault()?.CatalogProjectId
         };
